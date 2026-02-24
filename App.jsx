@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.35
+// GKBS INVENTORY v1.36
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.35";
+const APP_VERSION = "v1.36";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -980,7 +980,7 @@ function BestellbedarfModal({prods,products,onClose}){
                       <div style={S.pillNum(ok)}>{toOrder}</div>
                     </div>
                     {minStock>0&&<div style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`}}>
-                      <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>+ SOLL</div>
+                      <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>MAX</div>
                       <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
                     </div>}
                   </div>
@@ -1259,13 +1259,13 @@ function BestellbedarfView({prods,products,onBestellen}){
                       {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
                     </div>
                     <button type="button" onClick={(e)=>{e.stopPropagation();onBestellen(blank,key,isCapKey,capColor,toOrder);}}
-                      style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:64,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
-                      <div style={{fontSize:9,color:ok?"#16a34a":"#ef4444",fontWeight:700}}>BESTELLEN</div>
+                      style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
+                      <div style={{fontSize:9,color:ok?"#16a34a":"#ef4444",fontWeight:700}}>MIN</div>
                       <div style={{fontSize:18,fontWeight:900,color:ok?"#16a34a":"#ef4444",lineHeight:1}}>{toOrder}</div>
                     </button>
                     {minStockVal>0&&<button type="button" onClick={(e)=>{e.stopPropagation();onBestellen(blank,key,isCapKey,capColor,toOrderWithMin);}}
-                      style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:64,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:"pointer",flexShrink:0}}>
-                      <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>+ SOLL</div>
+                      style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:"pointer",flexShrink:0}}>
+                      <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>MAX</div>
                       <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
                     </button>}
                   </div>
