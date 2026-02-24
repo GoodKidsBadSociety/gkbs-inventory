@@ -1111,12 +1111,13 @@ function PrintView({type, products, prods, onClose}){
 
   const printStyles = `
     @media print {
+      body > * { display: none !important; }
+      .print-root { display: block !important; position: static !important; background: #f4f4f4 !important; overflow: visible !important; }
       .no-print { display: none !important; }
-      .print-root { position: static !important; background: #f4f4f4 !important; }
       @page { size: A4; margin: 10mm; }
     }
     .print-root {
-      position: fixed; inset: 0; background: #f4f4f4; z-index: 999;
+      position: fixed; inset: 0; background: #f4f4f4; z-index: 9999;
       overflow-y: auto; font-family: -apple-system, Helvetica, Arial, sans-serif;
       color: #111; font-size: 12px; padding: 20px;
     }
