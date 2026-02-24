@@ -1,4 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+
+// Prevent iOS auto-zoom on input focus
+if (typeof document !== "undefined") {
+  const meta = document.querySelector("meta[name=viewport]");
+  if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
+}
 const MAX_HISTORY = 50;
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
@@ -605,7 +611,7 @@ function ProductionModal({products,initial,onClose,onSave}){
   const fileRef=useRef();
   const blank=products.find(p=>p.id===blankId);
   const isCap=blank?.category==="Cap";
-  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,width:"100%",outline:"none",boxSizing:"border-box"};
+  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
   return(
@@ -709,7 +715,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [minStock,setMinStock]=useState(initial?.minStock||mkQty());
   const [capColors,setCapColors]=useState(initial?.capColors||[{id:mkId(),name:"Black",hex:"#111111",stock:0}]);
   const isCap=category==="Cap";
-  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,width:"100%",outline:"none",boxSizing:"border-box"};
+  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   return(
     <ModalWrap onClose={onClose} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
@@ -1772,7 +1778,7 @@ function AppInner(){
             {/* Search + filters – scrollable */}
             <div style={{display:"flex",gap:8,marginBottom:14,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
               <input placeholder="🔍 Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
-                style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"9px 13px",fontSize:13,outline:"none",width:mobile?120:160,flexShrink:0}}/>
+                style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"9px 13px",fontSize:16,outline:"none",width:mobile?120:160,flexShrink:0}}/>
               {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"8px 12px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
             </div>
             <div style={{display:"grid",gap:10,gridTemplateColumns:mobile?"1fr":"repeat(auto-fill, minmax(560px, 1fr))"}}>
