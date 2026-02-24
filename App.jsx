@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.15
+// GKBS INVENTORY v1.17
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.15";
+const APP_VERSION = "v1.17";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -170,16 +170,30 @@ function CapColorEditor({colors,onChange,mode}){
 }
 
 // ─── Stock Cell – adapts to mobile ───────────────────────────────
-function StockCell({size,value,minVal,onInc,onDec,mobile}){
+function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   const isOut=value===0,isLow=!isOut&&value<=LOW_STOCK,belowMin=minVal>0&&value<minVal;
+  const [editing,setEditing]=useState(false);
+  const [draft,setDraft]=useState("");
+  const inputRef=useRef(null);
+
+  const startEdit=()=>{setDraft(String(value));setEditing(true);setTimeout(()=>{inputRef.current?.select();},30);};
+  const commitEdit=()=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)onSet(n);setEditing(false);};
+  const handleKey=(e)=>{if(e.key==="Enter")commitEdit();if(e.key==="Escape")setEditing(false);};
+
   if(mobile){
     return(
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#f8f8f8",borderRadius:10,padding:"10px 12px",position:"relative"}}>
         <span style={{fontSize:14,color:"#555",fontWeight:800,width:36}}>{size}</span>
-        <span style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center"}}>
-          {value}
-          {minVal>0&&<span style={{fontSize:10,color:belowMin?"#ef4444":"#bbb",fontWeight:700,marginLeft:3}}>/{minVal}</span>}
-        </span>
+        {editing?(
+          <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
+            onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
+            style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
+        ):(
+          <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
+            {value}
+            {minVal>0&&<span style={{fontSize:10,color:belowMin?"#ef4444":"#bbb",fontWeight:700,marginLeft:3}}>/{minVal}</span>}
+          </span>
+        )}
         <div style={{display:"flex",gap:6}}>
           <button onClick={onDec} style={btn(36,true)}>−</button>
           <button onClick={onInc} style={btn(36)}>+</button>
@@ -190,7 +204,13 @@ function StockCell({size,value,minVal,onInc,onDec,mobile}){
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,background:"#f8f8f8",borderRadius:12,padding:"10px 4px",flex:1,minWidth:0,position:"relative"}}>
       <span style={{fontSize:14,color:"#666",fontWeight:900}}>{size}</span>
-      <span style={{fontSize:32,fontWeight:900,color:sCol(value),lineHeight:1}}>{value}</span>
+      {editing?(
+        <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
+          onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
+          style={{fontSize:32,fontWeight:900,color:sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
+      ):(
+        <span onDoubleClick={startEdit} style={{fontSize:32,fontWeight:900,color:sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
+      )}
       {minVal>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:belowMin?"#ef4444":"#bbb",fontWeight:700}}>/{minVal}</span>}
       <div style={{display:"flex",gap:4}}>
         <button onClick={onDec} style={btn(28,true)}>−</button>
@@ -344,12 +364,12 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
       ):mobile?(
         // Mobile: vertical list instead of 8-column grid
         <div style={S.col6}>
-          {DEFAULT_SIZES.map(size=><StockCell key={size} mobile size={size} value={(product.stock??{})[size]??0} minVal={(product.minStock??{})[size]??0} onInc={()=>adj(size,1)} onDec={()=>adj(size,-1)}/>)}
+          {DEFAULT_SIZES.map(size=><StockCell key={size} mobile size={size} value={(product.stock??{})[size]??0} minVal={(product.minStock??{})[size]??0} onInc={()=>adj(size,1)} onDec={()=>adj(size,-1)} onSet={(v)=>onUpdate({...product,stock:{...(product.stock||{}),[size]:v}})}/>)}
         </div>
       ):(
         // Desktop: horizontal grid
         <div style={{display:"flex",gap:4}}>
-          {DEFAULT_SIZES.map(size=><StockCell key={size} size={size} value={(product.stock??{})[size]??0} minVal={(product.minStock??{})[size]??0} onInc={()=>adj(size,1)} onDec={()=>adj(size,-1)}/>)}
+          {DEFAULT_SIZES.map(size=><StockCell key={size} size={size} value={(product.stock??{})[size]??0} minVal={(product.minStock??{})[size]??0} onInc={()=>adj(size,1)} onDec={()=>adj(size,-1)} onSet={(v)=>onUpdate({...product,stock:{...(product.stock||{}),[size]:v}})}/>)}
         </div>
       )}
       {/* Mobile reorder link */}
@@ -638,7 +658,7 @@ function ProductionModal({products,initial,onClose,onSave}){
   return(
     <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,isCapOrder:isCap,qty,done,capColors});}} width={640}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
-      <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)} autoFocus/>
+      <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
       <div>
         <div style={S.secLabel}>PRIORITÄT</div>
@@ -740,7 +760,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   return(
     <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stock,minStock,capColors});}} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
-      <input style={inp} placeholder="Produktname" value={name} onChange={e=>setName(e.target.value)} autoFocus/>
+      <input style={inp} placeholder="Produktname" value={name} onChange={e=>setName(e.target.value)}/>
       <div style={{display:"flex",gap:10}}>
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
         <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
@@ -1484,7 +1504,7 @@ function LoginScreen({onUnlock}){
             value={pw}
             onChange={e=>{setPw(e.target.value);setError(false);}}
             onKeyDown={e=>e.key==="Enter"&&check()}
-            autoFocus
+           
             style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#ef4444":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef2f2":"#fff",transition:"border-color 0.2s"}}
           />
           <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:18,padding:0,lineHeight:1}}>
