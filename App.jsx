@@ -6,6 +6,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
+const APP_VERSION = "v1.13";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -589,15 +590,14 @@ function ModalWrap({onClose,onSave,children,width=600}){
         display:"flex",
         flexDirection:"column",
         boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
-        paddingBottom:"env(safe-area-inset-bottom, 16px)"
       }} onClick={e=>e.stopPropagation()}>
         {/* Sticky header – always visible, never clipped */}
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
           {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
           <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
         </div>
-        {/* Scrollable content */}
-        <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px 24px":"16px 26px 26px",display:"flex",flexDirection:"column",gap:14,flex:1}}>
+        {/* Scrollable content - flex:1 means it shrinks when keyboard appears, header stays visible */}
+        <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px env(safe-area-inset-bottom, 24px)":"16px 26px 26px",display:"flex",flexDirection:"column",gap:14,flex:1,minHeight:0}}>
           {children}
         </div>
       </div>
@@ -1724,7 +1724,7 @@ function AppInner(){
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",padding:mobile?"12px 14px":"16px 24px",position:"sticky",top:0,zIndex:50}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
-            <div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#111"}}>INVENTORY</div>
+            <div style={{display:"flex",alignItems:"baseline",gap:8}}><div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#111"}}>INVENTORY</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
             {!mobile&&<div style={{fontSize:12,color:"#bbb",fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
               GKBS · Textile Stock
               {syncStatus==="loading"&&<span style={{color:"#f97316"}}>⟳ Laden...</span>}
