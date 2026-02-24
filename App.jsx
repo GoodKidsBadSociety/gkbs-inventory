@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.30
+// GKBS INVENTORY v1.31
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.30";
+const APP_VERSION = "v1.31";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1367,6 +1367,9 @@ function AppInner({currentUser,onLogout}){
   const [syncStatus,setSyncStatus]=useState("idle"); // idle | loading | saving | error | ok
   const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
   const saveTimeout=useRef(null);
+  const historyRef=useRef([]);
+  const productsRef=useRef([]);
+  const prodsRef=useRef([]);
 
   // Load from Sheets on mount
   useEffect(()=>{
@@ -1393,9 +1396,6 @@ function AppInner({currentUser,onLogout}){
       setTimeout(()=>setSyncStatus("idle"),2000);
     });
   },[]);
-  const historyRef=useRef([]);
-  const productsRef=useRef([]);
-  const prodsRef=useRef([]);
 
   const triggerSave=useCallback((nextProducts, nextProds)=>{
     if(!SHEETS_URL)return;
