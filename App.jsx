@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.29
+// GKBS INVENTORY v1.30
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.29";
+const APP_VERSION = "v1.30";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1582,8 +1582,38 @@ function AppInner({currentUser,onLogout}){
 
   return(
     <>    <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
-      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{if(showProdModal==="add"){setProducts(ps=>[...ps,p]);log(`Neues Produkt angelegt: ${p.name}`);}else{setProducts(ps=>ps.map(x=>x.id===p.id?p:x));log(`Produkt bearbeitet: ${p.name}`);}setShowProdModal(false);}}/>}
-      {showPAModal&&<ProductionModal products={products} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add"){setProds(ps=>[...ps,p]);log(`Neuer Auftrag angelegt: ${p.name}`);}else{setProds(ps=>ps.map(x=>x.id===p.id?p:x));log(`Auftrag bearbeitet: ${p.name}`);}setShowPAModal(false);}}/>}
+      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{if(showProdModal==="add"){setProducts(ps=>[...ps,p]);(() => {
+  const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
+  const stockParts=SIZES.filter(s=>(p.stock||{})[s]>0).map(s=>`${s}: ${p.stock[s]}`);
+  const stockStr=stockParts.length>0?` | Bestand: ${stockParts.join(", ")}`:"";
+  const priceStr=p.buyPrice?` | EK: €${p.buyPrice}`:"";
+  log(`Produkt angelegt – ${p.name}${stockStr}${priceStr}`);
+})();}else{setProducts(ps=>ps.map(x=>x.id===p.id?p:x));(() => {
+  const old=products.find(x=>x.id===p.id);
+  const parts=[];
+  if(old?.name!==p.name) parts.push(`Name: ${old?.name}→${p.name}`);
+  if(old?.buyPrice!==p.buyPrice) parts.push(`EK: €${old?.buyPrice||0}→€${p.buyPrice||0}`);
+  const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
+  SIZES.forEach(s=>{const ov=(old?.stock||{})[s]||0,nv=(p.stock||{})[s]||0;if(ov!==nv)parts.push(`${s}: ${ov}→${nv}`);});
+  log(parts.length>0?`Produkt bearbeitet – ${p.name} | ${parts.join(", ")}`:`Produkt gespeichert – ${p.name}`);
+})();}setShowProdModal(false);}}/>}
+      {showPAModal&&<ProductionModal products={products} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add"){setProds(ps=>[...ps,p]);(() => {
+  const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
+  let qtyStr="";
+  if(p.isCapOrder){
+    qtyStr=(p.capColors||[]).filter(c=>c.qty>0).map(c=>`${c.name}: ${c.qty}St`).join(", ");
+  } else {
+    qtyStr=SIZES.filter(s=>(p.qty||{})[s]>0).map(s=>`${s}: ${(p.qty||{})[s]}St`).join(", ");
+  }
+  const blankName=products.find(x=>x.id===p.blankId)?.name||"";
+  log(`Auftrag angelegt – ${p.name} | ${blankName}${qtyStr?` | ${qtyStr}`:""}${p.priority?` | ${p.priority}`:""}${p.status?` | ${p.status}`:""}`);
+})();}else{setProds(ps=>ps.map(x=>x.id===p.id?p:x));(() => {
+  const old=prods.find(x=>x.id===p.id);
+  const parts=[];
+  if(old?.status!==p.status) parts.push(`Status: ${old?.status}→${p.status}`);
+  if(old?.priority!==p.priority) parts.push(`Priorität: ${old?.priority}→${p.priority}`);
+  log(parts.length>0?`Auftrag bearbeitet – ${p.name} | ${parts.join(", ")}`:`Auftrag gespeichert – ${p.name}`);
+})();}setShowPAModal(false);}}/>}
       {showCats&&<CategoryModal categories={categories} onClose={()=>setShowCats(false)} onSave={cats=>{setCategories(cats);setShowCats(false);}}/>}
       {confirmDelete&&<DeleteConfirmModal name={confirmDelete.name} onConfirm={()=>{confirmDelete.onConfirm();setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
       {confirmProduce&&<ConfirmProduceModal prod={confirmProduce} blank={products.find(p=>p.id===confirmProduce.blankId)} onConfirm={handleProduceConfirm} onCancel={()=>setConfirmProduce(null)}/>}
@@ -1687,7 +1717,18 @@ function AppInner({currentUser,onLogout}){
                   <ProductionCard prod={prod} blank={products.find(p=>p.id===prod.blankId)}
                     onDelete={()=>setConfirmDelete({name:prod.name,onConfirm:()=>setProds(ps=>ps.filter(x=>x.id!==prod.id))})}
                     onEdit={()=>setShowPAModal(prod)}
-                    onUpdate={u=>{setProds(ps=>ps.map(x=>x.id===u.id?u:x));log(`Produktion aktualisiert: ${u.name}`);} }
+                    onUpdate={u=>{
+  const old=prods.find(x=>x.id===u.id);
+  const changes=[];
+  if(u.isCapOrder){
+    (u.capColors||[]).forEach(c=>{const oc=(old?.capColors||[]).find(x=>x.id===c.id);if(oc&&oc.done!==c.done)changes.push(`${c.name}: ${oc.done}→${c.done} fertig`);});
+  } else {
+    const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
+    SIZES.forEach(s=>{const ov=(old?.done||{})[s]||0,nv=(u.done||{})[s]||0;if(ov!==nv)changes.push(`${s}: ${ov}→${nv} fertig`);});
+  }
+  setProds(ps=>ps.map(x=>x.id===u.id?u:x));
+  log(changes.length>0?`Produktion – ${u.name} | ${changes.join(", ")}`:(`Status geändert – ${u.name}: ${u.status||""}`));
+}}
                     onConfirmProduce={()=>setConfirmProduce(prod)}
                   />
                 </div>
@@ -1723,7 +1764,22 @@ function AppInner({currentUser,onLogout}){
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
                 :filtered.map(p=>(
                   <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
-                    <ProductCard product={p} onUpdate={u=>{setProducts(ps=>ps.map(x=>x.id===u.id?u:x));log(`Bestand geändert: ${u.name}`);}} onDelete={()=>setConfirmDelete({name:p.name,onConfirm:()=>{setProducts(ps=>ps.filter(x=>x.id!==p.id));log(`Produkt gelöscht: ${p.name}`);}})} onEdit={()=>setShowProdModal(p)}/>
+                    <ProductCard product={p} onUpdate={u=>{
+  const old=products.find(x=>x.id===u.id);
+  const changes=[];
+  if(u.isCapOrder){
+    (u.capColors||[]).forEach(c=>{const oc=(old?.capColors||[]).find(x=>x.id===c.id);if(oc&&oc.stock!==c.stock)changes.push(`${c.name}: ${oc.stock}→${c.stock}`);});
+  } else {
+    const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
+    SIZES.forEach(s=>{const ov=(old?.stock||{})[s]||0,nv=(u.stock||{})[s]||0;if(ov!==nv)changes.push(`${s}: ${ov}→${nv}`);});
+  }
+  setProducts(ps=>ps.map(x=>x.id===u.id?u:x));
+  log(changes.length>0?`Bestand geändert – ${u.name} | ${changes.join(", ")}`:(`Bestand gespeichert: ${u.name}`));
+}} onDelete={()=>setConfirmDelete({name:p.name,onConfirm:()=>{setProducts(ps=>ps.filter(x=>x.id!==p.id));(() => {
+  const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
+  const total=SIZES.reduce((a,s)=>a+((p.stock||{})[s]||0),0);
+  log(`Produkt gelöscht – ${p.name}${total>0?` | ${total} Stk im Lager`:""}`);
+})();}})} onEdit={()=>setShowProdModal(p)}/>
                   </div>
                 ))}
             </div>
