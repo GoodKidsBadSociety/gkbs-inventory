@@ -576,7 +576,8 @@ function ModalWrap({onClose,children,width=600}){
   const mobile=useIsMobile();
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center",zIndex:100}} onClick={onClose}>
-      <div style={{background:"#fff",borderRadius:mobile?"20px 20px 0 0":18,padding:mobile?"20px 16px 32px":"26px",width:mobile?"100%":width,maxWidth:"100vw",maxHeight:mobile?"92vh":"90vh",overflowY:"auto",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",display:"flex",flexDirection:"column",gap:14}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:"#fff",borderRadius:mobile?"20px 20px 0 0":18,padding:mobile?"20px 16px 32px":"26px",width:mobile?"100%":width,maxWidth:"100vw",maxHeight:mobile?"92vh":"90vh",overflowY:"auto",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",display:"flex",flexDirection:"column",gap:14,position:"relative"}} onClick={e=>e.stopPropagation()}>
+        <button onClick={onClose} style={{position:"absolute",top:14,right:14,width:32,height:32,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,zIndex:10,lineHeight:1,flexShrink:0}}>✕</button>
         {children}
       </div>
     </div>
@@ -1663,7 +1664,7 @@ function AppInner(){
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",padding:mobile?"12px 14px":"16px 24px",position:"sticky",top:0,zIndex:50}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
-            <div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#111"}}>INVENTORY MANAGER</div>
+            <div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#111"}}>INVENTORY</div>
             {!mobile&&<div style={{fontSize:12,color:"#bbb",fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
               GKBS · Textile Stock
               {syncStatus==="loading"&&<span style={{color:"#f97316"}}>⟳ Laden...</span>}
