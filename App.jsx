@@ -11,13 +11,10 @@ const mkQty = () => Object.fromEntries(DEFAULT_SIZES.map(s=>[s,0]));
 const mkId = () => Math.random().toString(36).slice(2,8);
 
 // ─── Google Sheets Config ─────────────────────────────────────────
-// Trage hier deine Apps Script URL ein nach dem Setup:
-const SHEETS_URL = typeof window !== "undefined" 
-  ? (localStorage.getItem("gkbs_sheets_url") || "")
-  : "";
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyD2V3HWqSCi_5tlj5rkbVk1HuJoOomE6p8mWATzjCS4aDX0Vz-4uuV5XUlbTx5JKsI/exec";
 
 async function sheetsLoad() {
-  const url = localStorage.getItem("gkbs_sheets_url");
+  const url = SHEETS_URL;
   if (!url) return null;
   try {
     const r = await fetch(url + "?action=load");
@@ -27,7 +24,7 @@ async function sheetsLoad() {
 }
 
 async function sheetsSave(products, prods) {
-  const url = localStorage.getItem("gkbs_sheets_url");
+  const url = SHEETS_URL;
   if (!url) return;
   try {
     await fetch(url, {
@@ -1065,10 +1062,9 @@ function BestellbedarfView({prods,products,onExport}){
 
 // ─── Google Sheets Setup Modal ────────────────────────────────────
 function SheetsSetupModal({onClose,onSave}){
-  const [url,setUrl]=useState(()=>localStorage.getItem("gkbs_sheets_url")||"");
+  const [url,setUrl]=useState(SHEETS_URL);
   const save=()=>{
-    localStorage.setItem("gkbs_sheets_url",url.trim());
-    onSave(url.trim());
+    onSave(SHEETS_URL);
     onClose();
   };
   return(
@@ -1420,12 +1416,12 @@ export default function App(){
   const [products,__setProducts]=useState(DEMO_PRODUCTS);
   const [prods,__setProds]=useState(DEMO_PRODS);
   const [syncStatus,setSyncStatus]=useState("idle"); // idle | loading | saving | error | ok
-  const [sheetsUrl,setSheetsUrl]=useState(()=>typeof window!=="undefined"?localStorage.getItem("gkbs_sheets_url")||"":"");
+  const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
   const saveTimeout=useRef(null);
 
   // Load from Sheets on mount
   useEffect(()=>{
-    const url=localStorage.getItem("gkbs_sheets_url");
+    const url=SHEETS_URL;
     if(!url)return;
     setSyncStatus("loading");
     sheetsLoad().then(data=>{
@@ -1440,7 +1436,7 @@ export default function App(){
   const prodsRef=useRef(DEMO_PRODS);
 
   const triggerSave=useCallback((nextProducts, nextProds)=>{
-    if(!localStorage.getItem("gkbs_sheets_url"))return;
+    if(!SHEETS_URL)return;
     clearTimeout(saveTimeout.current);
     setSyncStatus("saving");
     saveTimeout.current=setTimeout(()=>{
