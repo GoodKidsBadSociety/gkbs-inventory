@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.17
+// GKBS INVENTORY v1.29
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.17";
+const APP_VERSION = "v1.29";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -29,6 +29,16 @@ async function sheetsLoad() {
     if (!r.ok) return null;
     return await r.json();
   } catch { return null; }
+}
+
+async function sheetsLogActivity(user, action){
+  try{
+    await fetch(SHEETS_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"log",user,actionText:action,ts:new Date().toISOString()})
+    });
+  }catch(e){}
 }
 
 async function sheetsSave(products, prods) {
@@ -624,6 +634,29 @@ function ModalWrap({onClose,onSave,children,width=600}){
   );
 }
 
+// ─── QtyRow – editable qty row in production modal ───────────────
+function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
+  const [editing,setEditing]=useState(false);
+  const [draft,setDraft]=useState("");
+  const inputRef=useRef(null);
+  const startEdit=()=>{setDraft(String(value));setEditing(true);setTimeout(()=>{inputRef.current?.select();},30);};
+  const commit=()=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)onSet(n);setEditing(false);};
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:10,background:over?"#fef2f2":"#f8f8f8",borderRadius:10,padding:"8px 12px",border:`1px solid ${over?"#fecaca":"transparent"}`}}>
+      <span style={S.sizeTag}>{size}</span>
+      <span style={{fontSize:11,color:"#aaa",flex:1}}>Lager: {avail}</span>
+      <button type="button" onClick={onDec} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+      {editing
+        ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
+            onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+            style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",border:"none",background:"transparent",outline:"none"}}/>
+        : <span onDoubleClick={startEdit} style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",cursor:"text"}}>{value}</span>
+      }
+      <button type="button" onClick={onInc} style={{width:32,height:32,borderRadius:8,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+    </div>
+  );
+}
+
 function ProductionModal({products,initial,onClose,onSave}){
   const editing=!!initial;
   const [modalLightbox,setModalLightbox]=useState(null);
@@ -723,15 +756,13 @@ function ProductionModal({products,initial,onClose,onSave}){
         <div>
           <div style={S.secLabel}>SOLL-MENGE PRO GRÖSSE</div>
           <div style={S.col5}>
-            {DEFAULT_SIZES.map(size=>{const avail=(blank?.stock||{})[size]??0,over=(qty[size]||0)>avail;return(
-              <div key={size} style={{display:"flex",alignItems:"center",gap:10,background:over?"#fef2f2":"#f8f8f8",borderRadius:10,padding:"8px 12px",border:`1px solid ${over?"#fecaca":"transparent"}`}}>
-                <span style={S.sizeTag}>{size}</span>
-                <span style={{fontSize:11,color:"#aaa",flex:1}}>Lager: {avail}</span>
-                <button type="button" onClick={()=>setQty(q=>({...q,[size]:Math.max(0,(q[size]||0)-1)}))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-                <span style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:30,textAlign:"center"}}>{qty[size]||0}</span>
-                <button type="button" onClick={()=>setQty(q=>({...q,[size]:(q[size]||0)+1}))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
-              </div>
-            );})}
+            {DEFAULT_SIZES.map(size=>{
+              const avail=(blank?.stock||{})[size]??0,over=(qty[size]||0)>avail;
+              return <QtyRow key={size} size={size} avail={avail} over={over} value={qty[size]||0}
+                onDec={()=>setQty(q=>({...q,[size]:Math.max(0,(q[size]||0)-1)}))}
+                onInc={()=>setQty(q=>({...q,[size]:(q[size]||0)+1}))}
+                onSet={(v)=>setQty(q=>({...q,[size]:v}))}/>;
+            })}
           </div>
         </div>
       )}
@@ -787,13 +818,10 @@ function ProductModal({categories,initial,onClose,onSave}){
             <div style={S.secLabel}>BESTAND</div>
             <div style={S.col5}>
               {DEFAULT_SIZES.map(size=>(
-                <div key={size} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"8px 12px"}}>
-                  <span style={S.sizeTag}>{size}</span>
-                  <div style={{flex:1}}/>
-                  <button type="button" onClick={()=>setStock(s=>({...s,[size]:Math.max(0,(s[size]||0)-1)}))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-                  <span style={{fontSize:20,fontWeight:900,color:"#111",width:32,textAlign:"center"}}>{stock[size]||0}</span>
-                  <button type="button" onClick={()=>setStock(s=>({...s,[size]:(s[size]||0)+1}))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
-                </div>
+                <QtyRow key={size} size={size} avail={0} over={false} value={stock[size]||0}
+                  onDec={()=>setStock(s=>({...s,[size]:Math.max(0,(s[size]||0)-1)}))}
+                  onInc={()=>setStock(s=>({...s,[size]:(s[size]||0)+1}))}
+                  onSet={(v)=>setStock(s=>({...s,[size]:v}))}/>
               ))}
             </div>
           </div>
@@ -878,7 +906,7 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
   );
 }
 
-function BestellbedarfModal({prods,products,onClose,onExport}){
+function BestellbedarfModal({prods,products,onClose}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [openSize,setOpenSize]=useState(null);
   const bedarfMap={};
@@ -975,7 +1003,7 @@ function BestellbedarfModal({prods,products,onClose,onExport}){
         );
       })}
       <div style={{display:"flex",gap:8}}>
-        <button type="button" onClick={onExport} style={{flex:1,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>🖨 Als PDF exportieren</button>
+
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Schließen</button>
       </div>
     </ModalWrap>
@@ -1045,7 +1073,7 @@ function FinanceView({products}){
 
 
 // ─── Bestellbedarf View (Tab) ─────────────────────────────────────
-function BestellbedarfView({prods,products,onExport}){
+function BestellbedarfView({prods,products}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [openSize,setOpenSize]=useState(null);
   const bedarfMap={};   // {blankId: {sizeOrColorId: needed}}
@@ -1183,347 +1211,159 @@ function PrintPie({colors,r=10,vk="stock"}){
 }
 
 // ─── Print View ───────────────────────────────────────────────────
-function PrintView({type, products, prods, onClose}){
-  const date = new Date().toLocaleDateString("de-AT");
-
-  const printStyles = `
-    @media print {
-      #root > * { visibility: hidden; }
-      #root > * .print-root { visibility: visible; }
-      .no-print { display: none !important; }
-      .print-root { position: fixed !important; inset: 0 !important; visibility: visible !important; background: #f4f4f4 !important; overflow: visible !important; z-index: 9999 !important; }
-      @page { size: A4; margin: 10mm; }
-    }
-    .print-root {
-      position: fixed; inset: 0; background: #f4f4f4; z-index: 9999;
-      overflow-y: auto; font-family: -apple-system, Helvetica, Arial, sans-serif;
-      color: #111; font-size: 12px; padding: 20px;
-    }
-    .p-card {
-      background: #fff; border: 1px solid #ebebeb; border-radius: 14px;
-      padding: 16px; margin-bottom: 10px; page-break-inside: avoid;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    }
-    .p-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #444; display: inline-block; vertical-align: middle; flex-shrink: 0; }
-    .p-badge { display: inline-block; border-radius: 6px; padding: 2px 7px; font-size: 10px; font-weight: 700; margin-right: 4px; }
-    .p-bar-wrap { height: 5px; background: #e8e8e8; border-radius: 99px; overflow: hidden; margin: 5px 0; }
-    .p-bar-fill { height: 100%; background: #111; border-radius: 99px; }
-    .p-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; margin-bottom: 4px; }
-    .p-badge-pill { border-radius: 8px; padding: 3px 10px; text-align: center; min-width: 52px; display: inline-block; }
-    .p-label { font-size: 9px; font-weight: 700; display: block; }
-    .p-num { font-size: 18px; font-weight: 900; line-height: 1; display: block; }
-  `;
-
-  const activeProds = prods.filter(p=>p.status!=="Fertig");
-  const bedarfMap = {};
-  const breakdownMap = {};
-  const activeProdsBedarf = prods.filter(p=>p.status!=="Fertig"&&!p.isCapOrder);
-  activeProdsBedarf.forEach(prod=>{
-    if(!bedarfMap[prod.blankId])bedarfMap[prod.blankId]={};
-    if(!breakdownMap[prod.blankId])breakdownMap[prod.blankId]={};
-    DEFAULT_SIZES.forEach(s=>{
-      const q=(prod.qty||{})[s]||0;
-      bedarfMap[prod.blankId][s]=(bedarfMap[prod.blankId][s]||0)+q;
-      if(q>0){
-        if(!breakdownMap[prod.blankId][s])breakdownMap[prod.blankId][s]=[];
-        breakdownMap[prod.blankId][s].push({name:prod.name,qty:q});
-      }
-    });
-  });
-
-  return(
-    <div className="print-root">
-      <style>{printStyles}</style>
-
-      {/* Toolbar – hidden on print */}
-      <div className="no-print" style={{display:"flex",alignItems:"center",gap:12,marginBottom:24,padding:"12px 16px",background:"#111",borderRadius:12,position:"sticky",top:0,zIndex:10}}>
-        <div style={{color:"#fff",fontWeight:800,fontSize:15,flex:1}}>
-          {type==="bestand"?"📦 Bestandsliste":type==="produktion"?"🏭 Produktionsliste":"📋 Bestellbedarf"} – Druckvorschau
-        </div>
-        <button onClick={()=>window.print()} style={{padding:"9px 20px",borderRadius:9,border:"none",background:"#fff",color:"#111",cursor:"pointer",fontWeight:800,fontSize:14}}>
-          🖨 Drucken / Als PDF
-        </button>
-        <button onClick={onClose} style={{padding:"9px 14px",borderRadius:9,border:"1px solid #555",background:"none",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:13}}>✕ Schließen</button>
-      </div>
-
-      {/* ── BESTAND ── */}
-      {type==="bestand"&&(<>
-        <div style={S.printH}>📦 Bestandsliste</div>
-        <div style={S.printSub}>GKBS · Inventory Manager · {date}</div>
-        {products.map(p=>{
-          const isCap=p.category==="Cap";
-          const total=totalStock(p);
-          return(
-            <div key={p.id} className="p-card">
-              <div style={S.cardHdr}>
-{p.category==="Cap"?<PrintPie colors={p.capColors||[]} r={10}/>:<span className="p-dot" style={{background:p.colorHex||"#888",width:20,height:20}}/>}
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800}}>{p.name}</div>
-                  <div style={{fontSize:11,color:"#aaa"}}>{p.category}{p.color?" · "+p.color:""}</div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:20,fontWeight:900}}>{total}</div>
-                  <div style={{fontSize:9,color:"#bbb",fontWeight:700}}>GESAMT STK</div>
-                </div>
-              </div>
-              {isCap?(
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {(p.capColors||[]).map(cc=>(
-                    <div key={cc.id} style={{flex:1,minWidth:60,background:cc.stock===0?"#fef2f2":cc.stock<=3?"#fff7ed":"#f8f8f8",borderRadius:10,padding:"8px 6px",textAlign:"center",border:`1px solid ${cc.stock===0?"#fecaca":cc.stock<=3?"#fed7aa":"#f0f0f0"}`}}>
-                      <div style={{width:14,height:14,borderRadius:"50%",background:cc.hex,border:"2px solid #444",margin:"0 auto 4px"}}/>
-                      <div style={{fontSize:10,color:"#666",fontWeight:800}}>{cc.name}</div>
-                      <div style={{fontSize:20,fontWeight:900,color:cc.stock===0?"#ef4444":cc.stock<=3?"#f97316":"#111"}}>{cc.stock}</div>
-                    </div>
-                  ))}
-                </div>
-              ):(
-                <div style={S.col4}>
-                  {DEFAULT_SIZES.map(s=>{const v=(p.stock||{})[s]||0,minV=(p.minStock||{})[s]||0;if(v===0&&minV===0)return null;return(
-                    <div key={s} className="p-row" style={{background:v===0?"#fef2f2":v<=3?"#fff7ed":"#f8f8f8"}}>
-                      <span style={S.sizeTag}>{s}</span>
-                      <span style={{flex:1,fontSize:14,color:v===0?"#ef4444":v<=3?"#f97316":"#111",fontWeight:800}}>{v} <span style={{fontSize:10,fontWeight:400,color:"#aaa"}}>Stk</span></span>
-                      {minV>0&&<span style={{fontSize:10,color:"#bbb",background:"#f0f0f0",padding:"2px 8px",borderRadius:6}}>Soll: {minV}</span>}
-                    </div>
-                  );})}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </>)}
-
-      {/* ── PRODUKTION ── */}
-      {type==="produktion"&&(<>
-        <div style={S.printH}>🏭 Produktionsliste</div>
-        <div style={S.printSub}>GKBS · Inventory Manager · {date} · {activeProds.length} aktive Aufträge</div>
-        {activeProds.map(prod=>{
-          const blank=products.find(p=>p.id===prod.blankId);
-          const isCap=prod.isCapOrder;
-          const totalQty=isCap?(prod.capColors||[]).reduce((a,cc)=>a+cc.qty,0):DEFAULT_SIZES.reduce((a,s)=>a+((prod.qty||{})[s]||0),0);
-          const totalDone=isCap?(prod.capColors||[]).reduce((a,cc)=>a+cc.done,0):DEFAULT_SIZES.reduce((a,s)=>a+((prod.done||{})[s]||0),0);
-          const pct=totalQty>0?Math.round(totalDone/totalQty*100):0;
-          const PRIO={"Hoch":{bg:"#fef2f2",c:"#ef4444"},"Mittel":{bg:"#fff7ed",c:"#f97316"},"Niedrig":{bg:"#f0f0f0",c:"#888"}};
-          const ps=PRIO[prod.priority]||PRIO["Niedrig"];
-          const ss=prod.status==="In Produktion"?{bg:"#fef9c3",c:"#a16207"}:{bg:"#f0f0f0",c:"#666"};
-          return(
-            <div key={prod.id} className="p-card">
-              {/* Header */}
-              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
-{prod.isCapOrder?<PrintPie colors={prod.capColors||[]} r={10} vk="qty"/>:<span className="p-dot" style={{background:prod.colorHex||"#888",width:20,height:20,marginTop:2}}/>}
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>{prod.name}</div>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:4,alignItems:"center"}}>
-                    <span className="p-badge" style={{background:ps.bg,color:ps.c}}>{prod.priority}</span>
-                    <span className="p-badge" style={{background:ss.bg,color:ss.c}}>{prod.status}</span>
-                    {(prod.veredelung||[]).map(v=><span key={v} className="p-badge" style={{background:v==="Drucken"?"#eff6ff":"#fdf4ff",color:v==="Drucken"?"#3b82f6":"#a855f7"}}>{v==="Drucken"?"🖨 Drucken":"🪡 Sticken"}</span>)}
-                    {blank&&<span style={{fontSize:10,color:"#aaa",display:"flex",alignItems:"center",gap:4}}><span className="p-dot" style={{background:blank.colorHex,width:10,height:10}}/>{blank.name}</span>}
-                  </div>
-                  {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic",marginTop:3}}>{prod.notes}</div>}
-                </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:22,fontWeight:900,lineHeight:1}}>{totalDone}<span style={{fontSize:13,color:"#bbb",fontWeight:400}}>/{totalQty}</span></div>
-                  <div style={{fontSize:9,color:totalDone>=totalQty&&totalQty>0?"#16a34a":"#bbb",fontWeight:700}}>{totalDone>=totalQty&&totalQty>0?"✓ DONE":"DONE"}</div>
-                </div>
-              </div>
-              {/* Progress bar */}
-              {totalQty>0&&<><div className="p-bar-wrap"><div className="p-bar-fill" style={{width:pct+"%"}}/></div><div style={{fontSize:10,color:"#bbb",marginBottom:8}}>{pct}% erledigt · {totalQty-totalDone} verbleibend</div></>}
-              {/* Sizes / Cap colors */}
-              {isCap?(
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {(prod.capColors||[]).map(cc=>{
-                    const open=Math.max(0,cc.qty-cc.done);
-                    const complete=cc.qty>0&&cc.done>=cc.qty;
-                    return(
-                      <div key={cc.id} style={{flex:1,minWidth:65,background:complete?"#f0fdf4":"#f8f8f8",borderRadius:10,padding:"8px 6px",textAlign:"center",border:`1px solid ${complete?"#bbf7d0":"#f0f0f0"}`}}>
-                        <div style={{width:14,height:14,borderRadius:"50%",background:cc.hex,border:"2px solid #444",margin:"0 auto 3px"}}/>
-                        <div style={{fontSize:10,color:"#666",fontWeight:800}}>{cc.name}</div>
-                        <div style={{fontSize:9,color:"#bbb",fontWeight:700,marginTop:2}}>SOLL {cc.qty}</div>
-                        <div style={{fontSize:18,fontWeight:900,color:complete?"#16a34a":"#111",marginTop:2}}>{cc.done}</div>
-                        {open>0&&<div style={{fontSize:9,color:"#ef4444",fontWeight:700}}>{open} offen</div>}
-                        {complete&&<div style={{fontSize:9,color:"#16a34a",fontWeight:700}}>✓</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-              ):(
-                <div style={S.col4}>
-                  {DEFAULT_SIZES.map(s=>{
-                    const soll=(prod.qty||{})[s]||0;
-                    const done=(prod.done||{})[s]||0;
-                    const open=Math.max(0,soll-done);
-                    const complete=soll>0&&done>=soll;
-                    if(soll===0)return null;
-                    return(
-                      <div key={s} className="p-row" style={{background:complete?"#f0fdf4":open===soll?"#fef2f2":"#f8f8f8",border:`1px solid ${complete?"#bbf7d0":open===soll?"#fecaca":"#f0f0f0"}`}}>
-                        <span style={S.sizeTag}>{s}</span>
-                        <span style={{fontSize:11,color:"#888",flex:1}}>Soll: <b style={{color:"#111"}}>{soll}</b></span>
-                        <span style={{fontSize:11,color:"#16a34a",fontWeight:700,minWidth:42}}>✓ {done}</span>
-                        <span style={{background:complete?"#dcfce7":open>0?"#fef2f2":"#dcfce7",color:complete?"#16a34a":open>0?"#ef4444":"#16a34a",borderRadius:8,padding:"3px 10px",fontSize:12,fontWeight:900,minWidth:52,textAlign:"center"}}>
-                          {complete?"✓":open+" offen"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </>)}
-
-      {/* ── BESTELLBEDARF ── */}
-      {type==="bestellbedarf"&&(<>
-        <div style={S.printH}>📋 Bestellbedarf</div>
-        <div style={S.printSub}>GKBS · Inventory Manager · {date}</div>
-        {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
-          const blank=products.find(p=>p.id===blankId);
-          if(!blank)return null;
-          const relSizes=DEFAULT_SIZES.filter(s=>(sizeNeeds[s]||0)>0);
-          return(
-            <div key={blankId} className="p-card">
-              <div style={S.cardHdr}>
-                <span className="p-dot" style={{background:blank.colorHex||"#888",width:20,height:20}}/>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800}}>{blank.name}</div>
-                  <div style={{fontSize:11,color:"#aaa"}}>{blank.color||""} · {blank.category}</div>
-                </div>
-                {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} style={{fontSize:11,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
-              </div>
-              <div style={S.col6}>
-                {relSizes.map(size=>{
-                  const needed=sizeNeeds[size]||0,avail=(blank.stock||{})[size]||0;
-                  const minS=(blank.minStock||{})[size]||0;
-                  const toOrder=Math.max(0,needed-avail),toOrderMin=Math.max(0,needed+minS-avail);
-                  const ok=toOrder===0,okMin=toOrderMin===0;
-                  const orders=(breakdownMap[blankId]?.[size]||[]).map(o=>o.name+" ("+o.qty+")").join(", ");
-                  return(
-                    <div key={size} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,overflow:"hidden"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px"}}>
-                        <span style={S.sizeTag}>{size}</span>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{fontSize:11,color:"#888"}}>Produktion: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
-                          {minS>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minS} Stk</div>}
-                        </div>
-                        <div style={S.pill(ok)}>
-                          <div style={S.pillLbl(ok)}>PRODUKTION</div>
-                          <div style={S.pillNum(ok)}>{toOrder}</div>
-                        </div>
-                        {minS>0&&<div style={{background:okMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okMin?"#bbf7d0":"#fed7aa"}`}}>
-                          <div style={{fontSize:9,color:okMin?"#16a34a":"#f97316",fontWeight:700}}>+ SOLL</div>
-                          <div style={{fontSize:18,fontWeight:900,color:okMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderMin}</div>
-                        </div>}
-                      </div>
-                      {orders&&<div style={{borderTop:"1px solid #f0f0f0",padding:"6px 14px",background:"#fafafa",fontSize:10,color:"#888"}}>{orders}</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </>)}
-
-      {/* ── FINANZEN ── */}
-      {type==="finanzen"&&(<>
-        <div style={S.printH}>💶 Finanzen</div>
-        <div style={S.printSub}>GKBS · Inventory Manager · {date}</div>
-        {products.map(p=>{
-          const isCap=p.category==="Cap";
-          const qty=totalStock(p);
-          const tot=p.buyPrice!=null?qty*p.buyPrice:null;
-          return(
-            <div key={p.id} className="p-card">
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-{p.category==="Cap"?<PrintPie colors={p.capColors||[]} r={7}/>:<span className="p-dot" style={{background:p.colorHex||"#888"}}/>}
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:800}}>{p.name}</div>
-                  <div style={{fontSize:10,color:"#888"}}>{p.color||p.category}{p.buyPrice!=null?" · EK: €"+p.buyPrice.toFixed(2)+"/St":""}</div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:15,fontWeight:900}}>{tot!=null?"€"+tot.toFixed(2):"—"}</div>
-                  <div style={{fontSize:10,color:"#888"}}>{qty} Stk</div>
-                </div>
-              </div>
-              {isCap?(
-                <div>
-                  {(p.capColors||[]).map(cc=>{if(cc.stock===0)return null;return(
-                    <div key={cc.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderBottom:"1px solid #f0f0f0"}}>
-                      <div style={{width:12,height:12,borderRadius:"50%",background:cc.hex,border:"1.5px solid #444",flexShrink:0}}/>
-                      <span style={{fontWeight:800,fontSize:12,flex:1,color:cc.stock<=3?"#f97316":"#111"}}>{cc.name}</span>
-                      <span style={{fontSize:12,color:"#888"}}>{cc.stock} Stk</span>
-                      {p.buyPrice!=null&&<span style={{fontSize:12,color:"#888",minWidth:60,textAlign:"right"}}>€{(cc.stock*p.buyPrice).toFixed(2)}</span>}
-                    </div>
-                  );})}
-                </div>
-              ):(
-                <div>
-                  {DEFAULT_SIZES.map(s=>{const v=(p.stock||{})[s]||0;if(v===0)return null;return(
-                    <div key={s} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderBottom:"1px solid #f0f0f0"}}>
-                      <span style={{fontWeight:800,fontSize:12,width:36,color:"#444"}}>{s}</span>
-                      <span style={{flex:1,fontSize:12,color:v<=3?"#f97316":"#111",fontWeight:700}}>{v} Stk</span>
-                      {p.buyPrice!=null&&<span style={{fontSize:12,color:"#888"}}>€{(v*p.buyPrice).toFixed(2)}</span>}
-                    </div>
-                  );})}
-                </div>
-              )}
-            </div>
-          );
-        })}
-        <div style={{background:"#111",borderRadius:10,padding:"14px 18px",display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-          <div style={{color:"#555",fontSize:11,fontWeight:700}}>GESAMTER LAGERWERT</div>
-          <div style={{color:"#fff",fontSize:26,fontWeight:900}}>
-            €{products.reduce((a,p)=>p.buyPrice==null?a:a+totalStock(p)*p.buyPrice,0).toFixed(2)}
-          </div>
-        </div>
-      </>)}
-    </div>
-  );
-}
 
 
 // ─── Password Lock ────────────────────────────────────────────────
-const APP_PASSWORD = "roboty";
+// ─── Users (passwords stored as SHA-256 hashes) ───────────────────
+const USERS = [
+  {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#3b82f6"},
+  {name:"GKBS",   hash:"62936c7f995c57dee05ec9666e6600fa1318448bd8b6373a99e7129e2106e14b", avatar:"G", color:"#ef4444"},
+  {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#a855f7"},
+];
 
+async function sha256(str){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+// ─── Activity Log helpers ──────────────────────────────────────────
+const LOG_KEY = "gkbs_activity_log";
+const LOG_DAYS = 14;
+
+function logActivity(user, action){
+  const now = new Date();
+  const entry = {
+    ts: now.toISOString(),
+    user,
+    action,
+  };
+  try {
+    const raw = localStorage.getItem(LOG_KEY);
+    const logs = raw ? JSON.parse(raw) : [];
+    logs.unshift(entry);
+    const cutoff = Date.now() - LOG_DAYS * 24 * 60 * 60 * 1000;
+    const filtered = logs.filter(l => new Date(l.ts).getTime() > cutoff);
+    localStorage.setItem(LOG_KEY, JSON.stringify(filtered.slice(0, 1000)));
+  } catch(e){}
+  // Also sync to Google Sheets
+  sheetsLogActivity(user, action);
+}
+
+function getLogs(){
+  try {
+    const raw = localStorage.getItem(LOG_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e){ return []; }
+}
+
+function fmtTs(iso){
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getDate()}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// ─── Activity Log Modal ────────────────────────────────────────────
+function ActivityLogModal({onClose}){
+  const logs = getLogs();
+  const userColors = {};
+  USERS.forEach(u => userColors[u.name] = u.color);
+  return(
+    <ModalWrap onClose={onClose} width={540}>
+      <div style={{fontSize:17,fontWeight:800}}>📋 Activity Log</div>
+      <div style={{fontSize:11,color:"#bbb",marginTop:-8}}>Letzte 14 Tage · {logs.length} Einträge</div>
+      {logs.length===0&&<div style={{color:"#ccc",textAlign:"center",padding:40,fontSize:14}}>Noch keine Aktivitäten</div>}
+      <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:400,overflowY:"auto"}}>
+        {logs.map((l,i)=>{
+          const col = userColors[l.user] || "#888";
+          return(
+            <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"9px 12px",background:"#f8f8f8",borderRadius:10,borderLeft:`3px solid ${col}`}}>
+              <div style={{width:28,height:28,borderRadius:"50%",background:col,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:900,flexShrink:0}}>
+                {l.user[0]}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{l.action}</div>
+                <div style={{fontSize:10,color:"#aaa",marginTop:2}}>{l.user} · {fmtTs(l.ts)}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </ModalWrap>
+  );
+}
+
+// ─── Login Screen ──────────────────────────────────────────────────
 function LoginScreen({onUnlock}){
+  const [selected,setSelected] = useState(null);
   const [pw,setPw] = useState("");
   const [error,setError] = useState(false);
   const [show,setShow] = useState(false);
-  const check = () => {
-    if(pw === APP_PASSWORD){ localStorage.setItem("gkbs_auth","1"); onUnlock(); }
-    else { setError(true); setTimeout(()=>setError(false),1500); }
+
+  const check = async () => {
+    const user = USERS.find(u => u.name === selected);
+    if(user){
+      const h = await sha256(pw);
+      if(h === user.hash){
+        localStorage.setItem("gkbs_user", selected);
+        logActivity(selected, "Eingeloggt");
+        onUnlock(selected);
+        return;
+      }
+    }
+    setError(true);
+    setTimeout(()=>setError(false),1500);
   };
+
   return(
-    <div style={{minHeight:"100vh",background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
-      <div style={{background:"#fff",borderRadius:20,padding:"40px 36px",width:"100%",maxWidth:380,boxShadow:"0 20px 60px rgba(0,0,0,0.4)"}}>
-        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4}}>INVENTORY</div>
-        <div style={{fontSize:13,color:"#bbb",fontWeight:600,marginBottom:32}}>GKBS · Textile Stock</div>
-        <div style={{position:"relative",marginBottom:12}}>
-          <input
-            type={show?"text":"password"}
-            placeholder="Passwort"
-            value={pw}
-            onChange={e=>{setPw(e.target.value);setError(false);}}
-            onKeyDown={e=>e.key==="Enter"&&check()}
-           
-            style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#ef4444":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef2f2":"#fff",transition:"border-color 0.2s"}}
-          />
-          <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:18,padding:0,lineHeight:1}}>
-            {show?"🙈":"👁"}
-          </button>
+    <div style={{minHeight:"100vh",background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif",padding:20}}>
+      <div style={{background:"#fff",borderRadius:20,padding:"40px 32px",width:"100%",maxWidth:360,boxShadow:"0 20px 60px rgba(0,0,0,0.4)"}}>
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4,color:"#ef4444"}}>GKBS</div>
+        <div style={{fontSize:13,color:"#bbb",fontWeight:600,marginBottom:28}}>Inventory Management</div>
+
+        {/* Profile selection */}
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:10}}>PROFIL AUSWÄHLEN</div>
+        <div style={{display:"flex",gap:10,marginBottom:24}}>
+          {USERS.map(u=>(
+            <button key={u.name} onClick={()=>{setSelected(u.name);setPw("");setError(false);}}
+              style={{flex:1,padding:"12px 6px",borderRadius:12,border:`2px solid ${selected===u.name?u.color:"#e8e8e8"}`,background:selected===u.name?u.color+"15":"#fff",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"all 0.15s"}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:u.color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900}}>{u.avatar}</div>
+              <span style={{fontSize:11,fontWeight:700,color:selected===u.name?u.color:"#555"}}>{u.name}</span>
+            </button>
+          ))}
         </div>
-        {error&&<div style={{color:"#ef4444",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
-        <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-          Einloggen →
-        </button>
+
+        {/* Password */}
+        {selected&&(
+          <>
+            <div style={{position:"relative",marginBottom:12}}>
+              <input
+                type={show?"text":"password"}
+                placeholder="Passwort"
+                value={pw}
+                onChange={e=>{setPw(e.target.value);setError(false);}}
+                onKeyDown={e=>e.key==="Enter"&&check()}
+                style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#ef4444":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef2f2":"#fff",transition:"border-color 0.2s"}}
+              />
+              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:18,padding:0,lineHeight:1}}>
+                {show?"🙈":"👁"}
+              </button>
+            </div>
+            {error&&<div style={{color:"#ef4444",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
+            <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+              Einloggen →
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function AppInner(){
+function AppInner({currentUser,onLogout}){
   const mobile=useIsMobile();
   const [products,__setProducts]=useState([]);
   const [prods,__setProds]=useState([]);
+  const log = (action) => logActivity(currentUser.name, action);
   const [syncStatus,setSyncStatus]=useState("idle"); // idle | loading | saving | error | ok
   const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
   const saveTimeout=useRef(null);
@@ -1536,6 +1376,19 @@ function AppInner(){
     sheetsLoad().then(data=>{
       if(data?.products){__setProducts(data.products);productsRef.current=data.products;}
       if(data?.prods){__setProds(data.prods);prodsRef.current=data.prods;}
+      // Merge remote logs with localStorage
+      if(data?.logs && Array.isArray(data.logs)){
+        try{
+          const raw=localStorage.getItem(LOG_KEY);
+          const local=raw?JSON.parse(raw):[];
+          const merged=[...data.logs,...local];
+          const seen=new Set();
+          const deduped=merged.filter(l=>{const k=l.ts+l.user+l.action;if(seen.has(k))return false;seen.add(k);return true;});
+          const cutoff=Date.now()-LOG_DAYS*24*60*60*1000;
+          const filtered=deduped.filter(l=>new Date(l.ts).getTime()>cutoff).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+          localStorage.setItem(LOG_KEY,JSON.stringify(filtered.slice(0,1000)));
+        }catch(e){}
+      }
       setSyncStatus(data?"ok":"error");
       setTimeout(()=>setSyncStatus("idle"),2000);
     });
@@ -1723,29 +1576,33 @@ function AppInner(){
 
 
   // ─── PDF Export ───────────────────────────────────────────────
-  const [printView,setPrintView]=useState(null); // {type, data}
-  const exportPDF = (type) => { setPrintView(type); };
 
   const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
+  const [showActivityLog,setShowActivityLog]=useState(false);
 
   return(
-    <>{printView&&<PrintView type={printView} products={products} prods={prods} onClose={()=>setPrintView(null)}/>}
-    <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
-      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{if(showProdModal==="add")setProducts(ps=>[...ps,p]);else setProducts(ps=>ps.map(x=>x.id===p.id?p:x));setShowProdModal(false);}}/>}
-      {showPAModal&&<ProductionModal products={products} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add")setProds(ps=>[...ps,p]);else setProds(ps=>ps.map(x=>x.id===p.id?p:x));setShowPAModal(false);}}/>}
+    <>    <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
+      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{if(showProdModal==="add"){setProducts(ps=>[...ps,p]);log(`Neues Produkt angelegt: ${p.name}`);}else{setProducts(ps=>ps.map(x=>x.id===p.id?p:x));log(`Produkt bearbeitet: ${p.name}`);}setShowProdModal(false);}}/>}
+      {showPAModal&&<ProductionModal products={products} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add"){setProds(ps=>[...ps,p]);log(`Neuer Auftrag angelegt: ${p.name}`);}else{setProds(ps=>ps.map(x=>x.id===p.id?p:x));log(`Auftrag bearbeitet: ${p.name}`);}setShowPAModal(false);}}/>}
       {showCats&&<CategoryModal categories={categories} onClose={()=>setShowCats(false)} onSave={cats=>{setCategories(cats);setShowCats(false);}}/>}
       {confirmDelete&&<DeleteConfirmModal name={confirmDelete.name} onConfirm={()=>{confirmDelete.onConfirm();setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
       {confirmProduce&&<ConfirmProduceModal prod={confirmProduce} blank={products.find(p=>p.id===confirmProduce.blankId)} onConfirm={handleProduceConfirm} onCancel={()=>setConfirmProduce(null)}/>}
       {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)}/>}
-      {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)} onExport={()=>exportPDF("bestellbedarf")}/>}
+      {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
+    {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
 
       {/* ── Header ── */}
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",padding:mobile?"12px 14px":"16px 24px",position:"sticky",top:0,zIndex:50}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
-            <div style={{display:"flex",alignItems:"baseline",gap:8}}><div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#111"}}>INVENTORY</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
+              <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:30,height:30,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:12,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {currentUser.avatar}
+              </button>
+            </div>
             {!mobile&&<div style={{fontSize:12,color:"#bbb",fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
-              GKBS · Textile Stock
+              Inventory Management
               {syncStatus==="loading"&&<span style={{color:"#f97316"}}>⟳ Laden...</span>}
               {syncStatus==="saving"&&<span style={{color:"#f97316"}}>⟳ Speichern...</span>}
               {syncStatus==="ok"&&<span style={{color:"#16a34a"}}>✓ Gespeichert</span>}
@@ -1763,20 +1620,20 @@ function AppInner(){
               style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",fontWeight:700,fontSize:mobile?12:13,display:"flex",alignItems:"center",gap:4}}>
               ↩{!mobile&&` Undo`}{canUndo&&<span style={{fontSize:10,color:"#bbb",fontWeight:500}}>({historyRef.current.length})</span>}
             </button>
-{view==="inventory"&&<button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🗂{!mobile&&" Kategorien"}</button>}
-            {view==="inventory"&&<>
-              <button onClick={()=>exportPDF("bestand")} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🖨{!mobile&&" PDF"}</button>
-              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button>
+{view==="inventory"&&<>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
+              <button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🗂{!mobile&&" Kategorien"}</button>
+              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button>
             </>}
             {view==="production"&&<>
-              <button onClick={()=>exportPDF("produktion")} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🖨{!mobile&&" PDF"}</button>
-              <button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
+              <button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>
             </>}
             {view==="bestellbedarf"&&<>
-              <button onClick={()=>exportPDF("bestellbedarf")} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🖨{!mobile&&" PDF"}</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
             </>}
             {view==="finance"&&<>
-              <button onClick={()=>exportPDF("finanzen")} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🖨{!mobile&&" PDF"}</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
             </>}
           </div>
         </div>
@@ -1808,7 +1665,7 @@ function AppInner(){
         {view==="finance"&&<FinanceView products={products}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} onExport={()=>exportPDF("bestellbedarf")}/>}
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products}/>}
 
         {/* Production */}
         {view==="production"&&(
@@ -1830,7 +1687,7 @@ function AppInner(){
                   <ProductionCard prod={prod} blank={products.find(p=>p.id===prod.blankId)}
                     onDelete={()=>setConfirmDelete({name:prod.name,onConfirm:()=>setProds(ps=>ps.filter(x=>x.id!==prod.id))})}
                     onEdit={()=>setShowPAModal(prod)}
-                    onUpdate={u=>setProds(ps=>ps.map(x=>x.id===u.id?u:x))}
+                    onUpdate={u=>{setProds(ps=>ps.map(x=>x.id===u.id?u:x));log(`Produktion aktualisiert: ${u.name}`);} }
                     onConfirmProduce={()=>setConfirmProduce(prod)}
                   />
                 </div>
@@ -1866,7 +1723,7 @@ function AppInner(){
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
                 :filtered.map(p=>(
                   <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
-                    <ProductCard product={p} onUpdate={u=>setProducts(ps=>ps.map(x=>x.id===u.id?u:x))} onDelete={()=>setConfirmDelete({name:p.name,onConfirm:()=>setProducts(ps=>ps.filter(x=>x.id!==p.id))})} onEdit={()=>setShowProdModal(p)}/>
+                    <ProductCard product={p} onUpdate={u=>{setProducts(ps=>ps.map(x=>x.id===u.id?u:x));log(`Bestand geändert: ${u.name}`);}} onDelete={()=>setConfirmDelete({name:p.name,onConfirm:()=>{setProducts(ps=>ps.filter(x=>x.id!==p.id));log(`Produkt gelöscht: ${p.name}`);}})} onEdit={()=>setShowProdModal(p)}/>
                   </div>
                 ))}
             </div>
@@ -1892,7 +1749,8 @@ function AppInner(){
 }
 
 export default function App(){
-  const [auth,setAuth] = useState(()=>localStorage.getItem("gkbs_auth")==="1");
-  if(!auth) return <LoginScreen onUnlock={()=>setAuth(true)}/>;
-  return <AppInner/>;
+  const [user,setUser] = useState(()=>localStorage.getItem("gkbs_user"));
+  const validUser = USERS.find(u=>u.name===user);
+  if(!validUser) return <LoginScreen onUnlock={(name)=>setUser(name)}/>;
+  return <AppInner currentUser={validUser} onLogout={()=>{localStorage.removeItem("gkbs_user");setUser(null);}}/>;
 }
