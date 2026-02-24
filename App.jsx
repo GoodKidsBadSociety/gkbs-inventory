@@ -574,13 +574,31 @@ function ArchivedCard({prod,blank,onDelete}){
 }
 
 // ─── Modals ───────────────────────────────────────────────────────
-function ModalWrap({onClose,children,width=600}){
+function ModalWrap({onClose,onSave,children,width=600}){
   const mobile=useIsMobile();
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center",zIndex:100,paddingTop:mobile?"env(safe-area-inset-top, 44px)":0}} onClick={onClose}>
-      <div style={{background:"#fff",borderRadius:mobile?"20px 20px 0 0":18,padding:mobile?"calc(env(safe-area-inset-top, 0px) + 20px) 16px 32px":"26px",width:mobile?"100%":width,maxWidth:"100vw",maxHeight:mobile?"92vh":"90vh",overflowY:"auto",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",display:"flex",flexDirection:"column",gap:14,position:"relative"}} onClick={e=>e.stopPropagation()}>
-        <button onClick={onClose} style={{position:"absolute",top:14,right:14,width:32,height:32,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,zIndex:10,lineHeight:1,flexShrink:0}}>✕</button>
-        {children}
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:100,paddingTop:"10%"}} onClick={onClose}>
+      <div style={{
+        background:"#fff",
+        borderRadius:mobile?"20px 20px 0 0":18,
+        width:mobile?"100%":width,
+        maxWidth:"100vw",
+        height:mobile?"90%":"auto",
+        maxHeight:mobile?"90%":"90vh",
+        display:"flex",
+        flexDirection:"column",
+        boxShadow:"0 8px 40px rgba(0,0,0,0.18)",
+        paddingBottom:mobile?"env(safe-area-inset-bottom, 20px)":"0"
+      }} onClick={e=>e.stopPropagation()}>
+        {/* Sticky header – always visible, never clipped */}
+        <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
+          {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
+          <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
+        </div>
+        {/* Scrollable content */}
+        <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px 24px":"16px 26px 26px",display:"flex",flexDirection:"column",gap:14,flex:1}}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -618,7 +636,7 @@ function ProductionModal({products,initial,onClose,onSave}){
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
   return(
-    <ModalWrap onClose={onClose} width={640}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,isCapOrder:isCap,qty,done,capColors});}} width={640}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
       <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)} autoFocus/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
@@ -720,7 +738,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   const isCap=category==="Cap";
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   return(
-    <ModalWrap onClose={onClose} width={620}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stock,minStock,capColors});}} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
       <input style={inp} placeholder="Produktname" value={name} onChange={e=>setName(e.target.value)} autoFocus/>
       <div style={{display:"flex",gap:10}}>
