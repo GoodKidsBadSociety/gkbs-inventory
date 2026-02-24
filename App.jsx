@@ -452,7 +452,7 @@ function ProductionCard({prod,blank,onDelete,onEdit,onUpdate,onConfirmProduce}){
       {/* ── Sizes / Cap colors – matching ProductCard grid style ── */}
       {isCap?(
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {(prod.capColors||[]).map(c=>{
+          {(prod.capColors||[]).filter(c=>c.qty>0).map(c=>{
             const bs=(blank?.capColors||[]).find(bc=>bc.id===c.id||bc.name===c.name);
             const avail=bs?.stock??0;
             const max=Math.min(c.qty,avail);
@@ -1069,7 +1069,7 @@ function BestellbedarfView({prods,products,onExport}){
                     style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",cursor:"pointer",userSelect:"none"}}>
                     <span style={{fontSize:12,color:"#bbb",width:12}}>{openSize===`${blankId}-${key}`?"▾":"▸"}</span>
                     {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={16}/>:null}
-                    <span style={S.sizeTag}>{label}</span>
+                    <span style={isCapKey?{fontSize:13,fontWeight:800,color:"#444",minWidth:52,marginRight:4}:S.sizeTag}>{label}</span>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
                       {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
