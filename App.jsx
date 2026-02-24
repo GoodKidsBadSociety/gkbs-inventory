@@ -1649,6 +1649,10 @@ export default function App(){
             </div>}
           </div>
           <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            {/* Sheets */}
+            <button onClick={()=>setShowSheetsSetup(true)} style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:sheetsUrl?"#f0fdf4":"#fff",color:sheetsUrl?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>
+              ☁️{!mobile&&(sheetsUrl?" Verbunden":" Sheets")}
+            </button>
             {/* Undo */}
             <button onClick={undo} disabled={!canUndo} title="Rückgängig"
               style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",fontWeight:700,fontSize:mobile?12:13,display:"flex",alignItems:"center",gap:4}}>
