@@ -577,18 +577,23 @@ function ArchivedCard({prod,blank,onDelete}){
 function ModalWrap({onClose,onSave,children,width=600}){
   const mobile=useIsMobile();
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:100,paddingTop:"10%"}} onClick={onClose}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:100,display:"flex",flexDirection:"column",justifyContent:"flex-end"}} onClick={onClose}>
+      {/* 10% spacer at top - always visible */}
+      <div style={{flexShrink:0,minHeight:"10vh"}}/>
       <div style={{
         background:"#fff",
         borderRadius:mobile?"20px 20px 0 0":18,
         width:mobile?"100%":width,
         maxWidth:"100vw",
-        height:mobile?"90%":"auto",
-        maxHeight:mobile?"90%":"90vh",
+        flex:1,
+        minHeight:0,
         display:"flex",
         flexDirection:"column",
-        boxShadow:"0 8px 40px rgba(0,0,0,0.18)",
-        paddingBottom:mobile?"env(safe-area-inset-bottom, 20px)":"0"
+        boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
+        alignSelf:mobile?"stretch":"center",
+        margin:mobile?"0":"auto",
+        maxHeight:mobile?"none":"90vh",
+        paddingBottom:"env(safe-area-inset-bottom, 16px)"
       }} onClick={e=>e.stopPropagation()}>
         {/* Sticky header – always visible, never clipped */}
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
