@@ -1111,9 +1111,10 @@ function PrintView({type, products, prods, onClose}){
 
   const printStyles = `
     @media print {
-      body > * { display: none !important; }
-      .print-root { display: block !important; position: static !important; background: #f4f4f4 !important; overflow: visible !important; }
+      #root > * { visibility: hidden; }
+      #root > * .print-root { visibility: visible; }
       .no-print { display: none !important; }
+      .print-root { position: fixed !important; inset: 0 !important; visibility: visible !important; background: #f4f4f4 !important; overflow: visible !important; z-index: 9999 !important; }
       @page { size: A4; margin: 10mm; }
     }
     .print-root {
