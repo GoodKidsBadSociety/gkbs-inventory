@@ -1411,7 +1411,47 @@ function PrintView({type, products, prods, onClose}){
   );
 }
 
-export default function App(){
+
+// ─── Password Lock ────────────────────────────────────────────────
+const APP_PASSWORD = "roboty";
+
+function LoginScreen({onUnlock}){
+  const [pw,setPw] = useState("");
+  const [error,setError] = useState(false);
+  const [show,setShow] = useState(false);
+  const check = () => {
+    if(pw === APP_PASSWORD){ localStorage.setItem("gkbs_auth","1"); onUnlock(); }
+    else { setError(true); setTimeout(()=>setError(false),1500); }
+  };
+  return(
+    <div style={{minHeight:"100vh",background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
+      <div style={{background:"#fff",borderRadius:20,padding:"40px 36px",width:"100%",maxWidth:380,boxShadow:"0 20px 60px rgba(0,0,0,0.4)"}}>
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4}}>INVENTORY</div>
+        <div style={{fontSize:13,color:"#bbb",fontWeight:600,marginBottom:32}}>GKBS · Textile Stock</div>
+        <div style={{position:"relative",marginBottom:12}}>
+          <input
+            type={show?"text":"password"}
+            placeholder="Passwort"
+            value={pw}
+            onChange={e=>{setPw(e.target.value);setError(false);}}
+            onKeyDown={e=>e.key==="Enter"&&check()}
+            autoFocus
+            style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#ef4444":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef2f2":"#fff",transition:"border-color 0.2s"}}
+          />
+          <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:18,padding:0,lineHeight:1}}>
+            {show?"🙈":"👁"}
+          </button>
+        </div>
+        {error&&<div style={{color:"#ef4444",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
+        <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+          Einloggen →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AppInner(){
   const mobile=useIsMobile();
   const [products,__setProducts]=useState(DEMO_PRODUCTS);
   const [prods,__setProds]=useState(DEMO_PRODS);
@@ -1780,4 +1820,10 @@ export default function App(){
     </div>
     </>
   );
+}
+
+export default function App(){
+  const [auth,setAuth] = useState(()=>localStorage.getItem("gkbs_auth")==="1");
+  if(!auth) return <LoginScreen onUnlock={()=>setAuth(true)}/>;
+  return <AppInner/>;
 }
