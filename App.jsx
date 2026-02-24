@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.13
+// GKBS INVENTORY v1.15
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.13";
+const APP_VERSION = "v1.15";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -579,15 +579,13 @@ function ArchivedCard({prod,blank,onDelete}){
 function ModalWrap({onClose,onSave,children,width=600}){
   const mobile=useIsMobile();
   return(
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:100}} onClick={onClose}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:100,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{
-        position:"absolute",
-        top:"10%",
-        left:0,
-        right:0,
-        bottom:0,
         background:"#fff",
         borderRadius:mobile?"20px 20px 0 0":18,
+        width:mobile?"100%":width,
+        maxWidth:"100vw",
+        maxHeight:mobile?"92dvh":"90vh",
         display:"flex",
         flexDirection:"column",
         boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
