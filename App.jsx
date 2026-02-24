@@ -202,7 +202,9 @@ function StockCell({size,value,minVal,onInc,onDec,mobile}){
 
 // ─── PieDot – pie chart circle for any capColors array ──────────
 function PieDot({capColors,fallbackHex="#888",size=28,valueKey="stock"}){
-  const allColors=(capColors||[]);
+  const allColorsRaw=(capColors||[]);
+  // For qty-based views, only show colors that have qty>0
+  const allColors=valueKey==="qty"?allColorsRaw.filter(c=>(c[valueKey]||0)>0):allColorsRaw;
   if(allColors.length===0) return <ColorDot hex={fallbackHex} size={size}/>;
   if(allColors.length===1) return <ColorDot hex={allColors[0].hex} size={size}/>;
   // Use actual values if available, otherwise equal weight so all colors always show
@@ -575,8 +577,8 @@ function ArchivedCard({prod,blank,onDelete}){
 function ModalWrap({onClose,children,width=600}){
   const mobile=useIsMobile();
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center",zIndex:100}} onClick={onClose}>
-      <div style={{background:"#fff",borderRadius:mobile?"20px 20px 0 0":18,padding:mobile?"20px 16px 32px":"26px",width:mobile?"100%":width,maxWidth:"100vw",maxHeight:mobile?"92vh":"90vh",overflowY:"auto",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",display:"flex",flexDirection:"column",gap:14,position:"relative"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center",zIndex:100,paddingTop:mobile?"env(safe-area-inset-top, 44px)":0}} onClick={onClose}>
+      <div style={{background:"#fff",borderRadius:mobile?"20px 20px 0 0":18,padding:mobile?"calc(env(safe-area-inset-top, 0px) + 20px) 16px 32px":"26px",width:mobile?"100%":width,maxWidth:"100vw",maxHeight:mobile?"92vh":"90vh",overflowY:"auto",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",display:"flex",flexDirection:"column",gap:14,position:"relative"}} onClick={e=>e.stopPropagation()}>
         <button onClick={onClose} style={{position:"absolute",top:14,right:14,width:32,height:32,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,zIndex:10,lineHeight:1,flexShrink:0}}>✕</button>
         {children}
       </div>
@@ -839,22 +841,35 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
 }
 
 function BestellbedarfModal({prods,products,onClose,onExport}){
-  const activeProds=prods.filter(p=>p.status!=="Fertig"&&!p.isCapOrder);
-  const [openSize,setOpenSize]=useState(null); // "blankId-size"
+  const activeProds=prods.filter(p=>p.status!=="Fertig");
+  const [openSize,setOpenSize]=useState(null);
   const bedarfMap={};
-  // Also store per-blank per-size breakdown: which prods contribute
-  const breakdownMap={}; // {blankId: {size: [{prodName, qty}]}}
+  const breakdownMap={};
+  const isCapMap={};
   activeProds.forEach(prod=>{
     if(!bedarfMap[prod.blankId])bedarfMap[prod.blankId]={};
     if(!breakdownMap[prod.blankId])breakdownMap[prod.blankId]={};
-    DEFAULT_SIZES.forEach(s=>{
-      const q=(prod.qty||{})[s]||0;
-      bedarfMap[prod.blankId][s]=(bedarfMap[prod.blankId][s]||0)+q;
-      if(q>0){
-        if(!breakdownMap[prod.blankId][s])breakdownMap[prod.blankId][s]=[];
-        breakdownMap[prod.blankId][s].push({name:prod.name,qty:q,colorHex:prod.colorHex});
-      }
-    });
+    if(prod.isCapOrder){
+      isCapMap[prod.blankId]=true;
+      (prod.capColors||[]).forEach(cc=>{
+        const key="cap_"+cc.id+"_"+cc.name;
+        const q=cc.qty||0;
+        bedarfMap[prod.blankId][key]=(bedarfMap[prod.blankId][key]||0)+q;
+        if(q>0){
+          if(!breakdownMap[prod.blankId][key])breakdownMap[prod.blankId][key]=[];
+          breakdownMap[prod.blankId][key].push({name:prod.name,qty:q,colorHex:cc.hex,colorName:cc.name});
+        }
+      });
+    } else {
+      DEFAULT_SIZES.forEach(s=>{
+        const q=(prod.qty||{})[s]||0;
+        bedarfMap[prod.blankId][s]=(bedarfMap[prod.blankId][s]||0)+q;
+        if(q>0){
+          if(!breakdownMap[prod.blankId][s])breakdownMap[prod.blankId][s]=[];
+          breakdownMap[prod.blankId][s].push({name:prod.name,qty:q,colorHex:prod.colorHex});
+        }
+      });
+    }
   });
   return(
     <ModalWrap onClose={onClose} width={660}>
@@ -862,7 +877,8 @@ function BestellbedarfModal({prods,products,onClose,onExport}){
       {Object.keys(bedarfMap).length===0&&<div style={{color:"#bbb",fontSize:14,textAlign:"center",padding:40}}>Keine aktiven Aufträge</div>}
       {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
         const blank=products.find(p=>p.id===blankId);if(!blank)return null;
-        const relSizes=DEFAULT_SIZES.filter(s=>(sizeNeeds[s]||0)>0);
+        const isCap=isCapMap[blankId]||false;
+        const relKeys=Object.keys(sizeNeeds).filter(k=>(sizeNeeds[k]||0)>0);
         return(
           <div key={blankId} style={{background:"#f8f8f8",borderRadius:14,padding:16}}>
             <div style={S.cardHdr}>
@@ -871,21 +887,24 @@ function BestellbedarfModal({prods,products,onClose,onExport}){
               {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
             </div>
             <div style={S.col6}>
-              {relSizes.map(size=>{
-                const needed=sizeNeeds[size]||0;
-                const avail=(blank.stock||{})[size]||0;
-                const minStock=(blank.minStock||{})[size]||0;
+              {relKeys.map(key=>{
+                const needed=sizeNeeds[key]||0;
+                const isCapKey=key.startsWith("cap_");
+                const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+                const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+                const minStock=isCapKey?0:((blank.minStock||{})[key]||0);
+                const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
                 const toOrder=Math.max(0,needed-avail);
                 const toOrderWithMin=Math.max(0,needed+minStock-avail);
                 const ok=toOrder===0;
                 const okWithMin=toOrderWithMin===0;
                 return(
-                <div key={size} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,overflow:"hidden"}}>
-                  {/* Main row – clickable */}
-                  <div onClick={()=>setOpenSize(o=>o===`${blankId}-${size}`?null:`${blankId}-${size}`)}
+                <div key={key} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,overflow:"hidden"}}>
+                  <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                     style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",cursor:"pointer",userSelect:"none"}}>
-                    <span style={{fontSize:12,color:"#bbb",width:12}}>{openSize===`${blankId}-${size}`?"▾":"▸"}</span>
-                    <span style={S.sizeTag}>{size}</span>
+                    <span style={{fontSize:12,color:"#bbb",width:12}}>{openSize===`${blankId}-${key}`?"▾":"▸"}</span>
+                    {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={16}/>:null}
+                    <span style={S.sizeTag}>{label}</span>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,color:"#888"}}>Produktion: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
                       {minStock>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStock} Stk</div>}
@@ -899,11 +918,10 @@ function BestellbedarfModal({prods,products,onClose,onExport}){
                       <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
                     </div>}
                   </div>
-                  {/* Breakdown dropdown */}
-                  {openSize===`${blankId}-${size}`&&(
+                  {openSize===`${blankId}-${key}`&&(
                     <div style={{borderTop:"1px solid #f0f0f0",padding:"8px 14px 10px 14px",background:"#fafafa",display:"flex",flexDirection:"column",gap:5}}>
                       <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.6,marginBottom:2}}>AUFTRÄGE</div>
-                      {(breakdownMap[blankId]?.[size]||[]).map((item,i)=>(
+                      {(breakdownMap[blankId]?.[key]||[]).map((item,i)=>(
                         <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
                           <ColorDot hex={item.colorHex} size={14}/>
                           <span style={{flex:1,fontSize:12,fontWeight:600,color:"#333"}}>{item.name}</span>
@@ -990,28 +1008,43 @@ function FinanceView({products}){
 
 // ─── Bestellbedarf View (Tab) ─────────────────────────────────────
 function BestellbedarfView({prods,products,onExport}){
-  const activeProds=prods.filter(p=>p.status!=="Fertig"&&!p.isCapOrder);
+  const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [openSize,setOpenSize]=useState(null);
-  const bedarfMap={};
-  const breakdownMap={};
+  const bedarfMap={};   // {blankId: {sizeOrColorId: needed}}
+  const breakdownMap={}; // {blankId: {sizeOrColorId: [{name,qty,colorHex}]}}
+  const isCapMap={};    // {blankId: true/false}
   activeProds.forEach(prod=>{
     if(!bedarfMap[prod.blankId])bedarfMap[prod.blankId]={};
     if(!breakdownMap[prod.blankId])breakdownMap[prod.blankId]={};
-    DEFAULT_SIZES.forEach(s=>{
-      const q=(prod.qty||{})[s]||0;
-      bedarfMap[prod.blankId][s]=(bedarfMap[prod.blankId][s]||0)+q;
-      if(q>0){
-        if(!breakdownMap[prod.blankId][s])breakdownMap[prod.blankId][s]=[];
-        breakdownMap[prod.blankId][s].push({name:prod.name,qty:q,colorHex:prod.colorHex});
-      }
-    });
+    if(prod.isCapOrder){
+      isCapMap[prod.blankId]=true;
+      (prod.capColors||[]).forEach(cc=>{
+        const key="cap_"+cc.id+"_"+cc.name;
+        const q=cc.qty||0;
+        bedarfMap[prod.blankId][key]=(bedarfMap[prod.blankId][key]||0)+q;
+        if(q>0){
+          if(!breakdownMap[prod.blankId][key])breakdownMap[prod.blankId][key]=[];
+          breakdownMap[prod.blankId][key].push({name:prod.name,qty:q,colorHex:cc.hex,colorName:cc.name});
+        }
+      });
+    } else {
+      DEFAULT_SIZES.forEach(s=>{
+        const q=(prod.qty||{})[s]||0;
+        bedarfMap[prod.blankId][s]=(bedarfMap[prod.blankId][s]||0)+q;
+        if(q>0){
+          if(!breakdownMap[prod.blankId][s])breakdownMap[prod.blankId][s]=[];
+          breakdownMap[prod.blankId][s].push({name:prod.name,qty:q,colorHex:prod.colorHex});
+        }
+      });
+    }
   });
   return(
     <div style={S.col12}>
       {Object.keys(bedarfMap).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine aktiven Aufträge</div>}
       {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
         const blank=products.find(p=>p.id===blankId);if(!blank)return null;
-        const relSizes=DEFAULT_SIZES.filter(s=>(sizeNeeds[s]||0)>0);
+        const isCap=isCapMap[blankId]||false;
+        const relKeys=Object.keys(sizeNeeds).filter(k=>(sizeNeeds[k]||0)>0);
         return(
           <div key={blankId} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             <div style={S.cardHdr}>
@@ -1020,34 +1053,40 @@ function BestellbedarfView({prods,products,onExport}){
               {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
             </div>
             <div style={S.col6}>
-              {relSizes.map(size=>{
-                const needed=sizeNeeds[size]||0,avail=(blank.stock||{})[size]||0;
-                const minStock=(blank.minStock||{})[size]||0;
-                const toOrder=Math.max(0,needed-avail),toOrderWithMin=Math.max(0,needed+minStock-avail);
+              {relKeys.map(key=>{
+                const needed=sizeNeeds[key]||0;
+                const isCapKey=key.startsWith("cap_");
+                // For caps: find matching capColor in blank
+                const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+                const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+                const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
+                const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+                const toOrder=Math.max(0,needed-avail),toOrderWithMin=Math.max(0,needed+minStockVal-avail);
                 const ok=toOrder===0,okWithMin=toOrderWithMin===0;
                 return(
-                <div key={size} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,overflow:"hidden"}}>
-                  <div onClick={()=>setOpenSize(o=>o===`${blankId}-${size}`?null:`${blankId}-${size}`)}
+                <div key={key} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,overflow:"hidden"}}>
+                  <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                     style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",cursor:"pointer",userSelect:"none"}}>
-                    <span style={{fontSize:12,color:"#bbb",width:12}}>{openSize===`${blankId}-${size}`?"▾":"▸"}</span>
-                    <span style={S.sizeTag}>{size}</span>
+                    <span style={{fontSize:12,color:"#bbb",width:12}}>{openSize===`${blankId}-${key}`?"▾":"▸"}</span>
+                    {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={16}/>:null}
+                    <span style={S.sizeTag}>{label}</span>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:11,color:"#888"}}>Produktion: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
-                      {minStock>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStock} Stk</div>}
+                      <div style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
+                      {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
                     </div>
                     <div style={S.pill(ok)}>
-                      <div style={S.pillLbl(ok)}>PRODUKTION</div>
+                      <div style={S.pillLbl(ok)}>BESTELLEN</div>
                       <div style={S.pillNum(ok)}>{toOrder}</div>
                     </div>
-                    {minStock>0&&<div style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`}}>
+                    {minStockVal>0&&<div style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`}}>
                       <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>+ SOLL</div>
                       <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
                     </div>}
                   </div>
-                  {openSize===`${blankId}-${size}`&&(
+                  {openSize===`${blankId}-${key}`&&(
                     <div style={{borderTop:"1px solid #f0f0f0",padding:"8px 14px 10px",background:"#fafafa",display:"flex",flexDirection:"column",gap:5}}>
                       <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.6,marginBottom:2}}>AUFTRÄGE</div>
-                      {(breakdownMap[blankId]?.[size]||[]).map((item,i)=>(
+                      {(breakdownMap[blankId]?.[key]||[]).map((item,i)=>(
                         <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
                           <ColorDot hex={item.colorHex} size={14}/>
                           <span style={{flex:1,fontSize:12,fontWeight:600,color:"#333"}}>{item.name}</span>
