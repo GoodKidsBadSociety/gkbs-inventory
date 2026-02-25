@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.51
+// GKBS INVENTORY v1.52
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.51";
+const APP_VERSION = "v1.52";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1705,14 +1705,43 @@ function LoginScreen({onUnlock}){
 
 function AppInner({currentUser,onLogout}){
   const mobile=useIsMobile();
+  // ── All state ──────────────────────────────────────────────────
   const [products,__setProducts]=useState([]);
   const [prods,__setProds]=useState([]);
   const [bestellungen,__setBestellungen]=useState([]);
   const [dtfItems,__setDtfItems]=useState([]);
-  const dtfItemsRef = useRef([]);
-  const bestellungenRef = useRef([]);
+  const [syncStatus,setSyncStatus]=useState("idle");
+  const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
+
+  // ── All refs (must be before triggerSave and setters) ──────────
+  const saveTimeout=useRef(null);
+  const historyRef=useRef([]);
+  const productsRef=useRef([]);
+  const prodsRef=useRef([]);
+  const categoriesRef=useRef(DEFAULT_CATEGORIES);
+  const dtfItemsRef=useRef([]);
+  const bestellungenRef=useRef([]);
+
   const log = (action) => logActivity(currentUser.name, action);
 
+  // ── triggerSave (must be before setters that call it) ──────────
+  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen)=>{
+    if(!SHEETS_URL)return;
+    clearTimeout(saveTimeout.current);
+    setSyncStatus("saving");
+    saveTimeout.current=setTimeout(()=>{
+      sheetsSave(
+        nextProducts||productsRef.current,
+        nextProds||prodsRef.current,
+        nextDtf||dtfItemsRef.current,
+        nextBestellungen||bestellungenRef.current
+      )
+        .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
+        .catch(()=>setSyncStatus("error"));
+    },1500);
+  },[]);
+
+  // ── Setters ────────────────────────────────────────────────────
   const setDtfItems = useCallback((updater) => {
     __setDtfItems(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
@@ -1732,12 +1761,6 @@ function AppInner({currentUser,onLogout}){
       return next;
     });
   }, [triggerSave]);
-  const [syncStatus,setSyncStatus]=useState("idle"); // idle | loading | saving | error | ok
-  const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
-  const saveTimeout=useRef(null);
-  const historyRef=useRef([]);
-  const productsRef=useRef([]);
-  const prodsRef=useRef([]);
 
   // Load from Sheets on mount
   useEffect(()=>{
@@ -1838,21 +1861,6 @@ function AppInner({currentUser,onLogout}){
     setWareneingangModal(null);
   };
 
-  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen)=>{
-    if(!SHEETS_URL)return;
-    clearTimeout(saveTimeout.current);
-    setSyncStatus("saving");
-    saveTimeout.current=setTimeout(()=>{
-      sheetsSave(
-        nextProducts||productsRef.current,
-        nextProds||prodsRef.current,
-        nextDtf||dtfItemsRef.current,
-        nextBestellungen||bestellungenRef.current
-      )
-        .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
-        .catch(()=>setSyncStatus("error"));
-    },1500);
-  },[]);
 
   const setProducts=useCallback((updater)=>{
     __setProducts(prev=>{
@@ -1905,7 +1913,6 @@ function AppInner({currentUser,onLogout}){
   const canUndo=historyRef.current.length>0;
 
   const [categories,__setCategories]=useState(DEFAULT_CATEGORIES);
-  const categoriesRef=useRef(DEFAULT_CATEGORIES);
   const setCategories=useCallback((cats)=>{
     historyRef.current=[{products:productsRef.current,prods:prodsRef.current,categories:categoriesRef.current},...historyRef.current].slice(0,MAX_HISTORY);
     categoriesRef.current=cats;
