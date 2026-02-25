@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.43
+// GKBS INVENTORY v1.44
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.43";
+const APP_VERSION = "v1.44";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1217,14 +1217,14 @@ function FinanceView({products}){
 // ─── Bestellbedarf View (Tab) ─────────────────────────────────────
 
 // ─── Bestellung aufgeben Modal ────────────────────────────────────
-function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, onClose, onConfirm}){
+function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, isDtf, onClose, onConfirm}){
   const [menge, setMenge] = useState(toOrder > 0 ? toOrder : 1);
   const label = isCapKey ? (capColor?.name || sizeKey) : sizeKey;
   const inputRef = useRef(null);
   useEffect(()=>{ setTimeout(()=>inputRef.current?.select(), 50); }, []);
   return(
     <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(menge)}>
-      <div style={{fontSize:17,fontWeight:800}}>{bestellModal?.isDtf?"🖨 DTF bestellen":"📦 Bestellung aufgeben"}</div>
+      <div style={{fontSize:17,fontWeight:800}}>{isDtf?"🖨 DTF bestellen":"📦 Bestellung aufgeben"}</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
         <div style={{fontSize:12,color:"#888",marginTop:2}}>{label}{blank.color?" · "+blank.color:""}</div>
@@ -2047,7 +2047,7 @@ function AppInner({currentUser,onLogout}){
         else{setDtfItems(d=>d.map(x=>x.id===item.id?item:x));log(`DTF bearbeitet: ${item.name}`);}
         setShowDtfModal(false);
       }}/>}
-    {bestellModal&&<BestellungAufgebenModal blank={bestellModal.blank} sizeKey={bestellModal.key} isCapKey={bestellModal.isCapKey} capColor={bestellModal.capColor} toOrder={bestellModal.toOrder} onClose={()=>setBestellModal(null)} onConfirm={handleBestellungConfirm}/>}
+    {bestellModal&&<BestellungAufgebenModal blank={bestellModal.blank} sizeKey={bestellModal.key} isCapKey={bestellModal.isCapKey} capColor={bestellModal.capColor} toOrder={bestellModal.toOrder} isDtf={bestellModal.isDtf||false} onClose={()=>setBestellModal(null)} onConfirm={handleBestellungConfirm}/>}
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
       {/* ── Header ── */}
