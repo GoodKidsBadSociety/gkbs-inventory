@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.44
+// GKBS INVENTORY v1.45
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.44";
+const APP_VERSION = "v1.45";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1045,10 +1045,11 @@ function DtfModal({initial, onClose, onSave}){
   const [name, setName] = useState(initial?.name || "");
   const [stock, setStock] = useState(initial?.stock || 0);
   const [minStock, setMinStock] = useState(initial?.minStock || 0);
+  const [designsPerMeter, setDesignsPerMeter] = useState(initial?.designsPerMeter || 1);
 
   const save = () => {
     if(!name.trim()) return;
-    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock, minStock });
+    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock, minStock, designsPerMeter });
   };
 
   return(
@@ -1072,6 +1073,11 @@ function DtfModal({initial, onClose, onSave}){
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SOLLBESTAND (MIN)</div>
         <DtfStockInput value={minStock} onChange={setMinStock}/>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>DESIGNS PRO METER</div>
+        <div style={{fontSize:11,color:"#bbb",marginBottom:8}}>Wie viele Folien/Designs passen auf 1 Meter?</div>
+        <DtfStockInput value={designsPerMeter} onChange={v=>setDesignsPerMeter(Math.max(1,v))}/>
       </div>
     </ModalWrap>
   );
@@ -1114,6 +1120,7 @@ function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
           {linkedProds.length>0&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:600,marginTop:2}}>
             🔗 {linkedProds.map(p=>p.name).join(", ")}
           </div>}
+          {item.designsPerMeter>1&&<div style={{fontSize:11,color:"#888",marginTop:2}}>📏 {item.designsPerMeter} Designs/m</div>}
         </div>
         <button onClick={onEdit} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",fontSize:12,fontWeight:700,cursor:"pointer"}}>✏️</button>
         <button onClick={onDelete} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #fee2e2",background:"#fff",color:"#ef4444",fontSize:12,fontWeight:700,cursor:"pointer"}}>✕</button>
@@ -1407,6 +1414,11 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
                     <div style={{flex:1}}>
                       <div style={{fontSize:14,fontWeight:800}}>{dtf.name}</div>
                       <div style={{fontSize:11,color:"#aaa"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
+                      {dtf.designsPerMeter>1&&needed>0&&(()=>{
+                        const fehlend=Math.max(0,needed-avail);
+                        const meter=Math.ceil(fehlend/dtf.designsPerMeter);
+                        return fehlend>0?<div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginTop:2}}>📏 {fehlend} Folien → <strong>{meter} Meter</strong> bestellen ({dtf.designsPerMeter} Designs/m)</div>:null;
+                      })()}
                     </div>
                     <button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
                       style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
