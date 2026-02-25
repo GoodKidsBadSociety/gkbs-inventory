@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.60
+// GKBS INVENTORY v1.66
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.60";
+const APP_VERSION = "v1.66";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -41,17 +41,213 @@ async function sheetsLogActivity(user, action){
   }catch(e){}
 }
 
-async function sheetsSave(products, prods, dtfItems, bestellungen) {
+async function sheetsSave(products, prods, dtfItems, bestellungen, categories) {
   const url = SHEETS_URL;
   if (!url) return;
   try {
     await fetch(url, {
       method: "POST",
-      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen }),
+      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories }),
     });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 }
 
+
+
+
+// ─── Stanley/Stella Presets ───────────────────────────────────────
+const STANLEY_STELLA_PRESETS = [
+  {
+    id: "STTU169",
+    name: "Creator 2.0",
+    productId: "STTU169",
+    fit: "Unisex · Medium Fit · 180 GSM",
+    colors: [
+      // Whites
+      { code: "C054", name: "Natural Raw",     hex: "#f5f0dc", price: 3.83 },
+      { code: "C018", name: "Off White",       hex: "#f0ede4", price: 3.83 },
+      { code: "C504", name: "Vintage White",   hex: "#ede8dc", price: 3.83 },
+      { code: "C001", name: "White",           hex: "#ffffff", price: 3.83 },
+      // Colors
+      { code: "C089", name: "Aloe",            hex: "#7d9e8c", price: 4.15 },
+      { code: "C253", name: "Anthracite",      hex: "#4a4a4a", price: 4.15 },
+      { code: "C145", name: "Aqua Blue",       hex: "#6bbfcb", price: 4.15 },
+      { code: "C002", name: "Black",           hex: "#111111", price: 4.15 },
+      { code: "C156", name: "Blue Grey",       hex: "#7a8fa0", price: 4.15 },
+      { code: "C728", name: "Blue Ice",        hex: "#b8d8e4", price: 4.15 },
+      { code: "C149", name: "Blue Soul",       hex: "#3d5a80", price: 4.15 },
+      { code: "C053", name: "Bright Blue",     hex: "#1a6bcc", price: 4.15 },
+      { code: "C129", name: "Bubble Pink",     hex: "#f5a0c0", price: 4.15 },
+      { code: "C244", name: "Burgundy",        hex: "#6e1a2a", price: 4.15 },
+      { code: "C005", name: "Cotton Pink",     hex: "#f2c4c4", price: 4.15 },
+      { code: "C151", name: "Deep Plum",       hex: "#3d1a3a", price: 4.15 },
+      { code: "C136", name: "Deep Teal",       hex: "#1a5a5a", price: 4.15 },
+      { code: "C028", name: "Desert Dust",     hex: "#c8b89a", price: 4.15 },
+      { code: "C150", name: "Earthy Red",      hex: "#8b3a2a", price: 4.15 },
+      { code: "C153", name: "Faded Olive",     hex: "#8a8a5a", price: 4.15 },
+      { code: "C143", name: "Fiesta",          hex: "#e85a2a", price: 4.15 },
+      { code: "C101", name: "Fraiche Peche",   hex: "#f5c4a0", price: 4.15 },
+      { code: "C727", name: "French Navy",     hex: "#1a2a4a", price: 4.15 },
+      { code: "C036", name: "Glazed Green",    hex: "#2a6a4a", price: 4.15 },
+      { code: "C144", name: "Green Bay",       hex: "#5a7a5a", price: 4.15 },
+      { code: "C730", name: "Heritage Brown",  hex: "#7a3a2a", price: 4.15 },
+      { code: "C155", name: "Honey Paper",     hex: "#e8d4a0", price: 4.15 },
+      { code: "C715", name: "India Ink Grey",  hex: "#5a5a6a", price: 4.15 },
+      { code: "C223", name: "Khaki",           hex: "#8a7a5a", price: 4.15 },
+      { code: "C112", name: "Latte",           hex: "#c8a87a", price: 4.15 },
+      { code: "C063", name: "Lavender",        hex: "#b0a0cc", price: 4.15 },
+      { code: "C355", name: "Lilac Dream",     hex: "#c8b4d8", price: 4.15 },
+      { code: "C729", name: "Mindful Blue",    hex: "#4a6a8a", price: 4.15 },
+      { code: "C138", name: "Misty Grey",      hex: "#b0b0b0", price: 4.15 },
+      { code: "C735", name: "Misty Jade",      hex: "#a0c4b8", price: 4.15 },
+      { code: "C135", name: "Mocha",           hex: "#7a5a4a", price: 4.15 },
+      { code: "C142", name: "Nispero",         hex: "#e8a84a", price: 4.15 },
+      { code: "C048", name: "Ochre",           hex: "#c8901a", price: 4.15 },
+      { code: "C357", name: "Pool Blue",       hex: "#4ab4c8", price: 4.15 },
+      { code: "C115", name: "Purple Love",     hex: "#7a3a8a", price: 4.15 },
+      { code: "C004", name: "Red",             hex: "#cc2222", price: 4.15 },
+      { code: "C116", name: "Red Brown",       hex: "#7a2a1a", price: 4.15 },
+      { code: "C204", name: "Spectra Yellow",  hex: "#f5d000", price: 4.15 },
+      { code: "C702", name: "Stargazer",       hex: "#1a3a5a", price: 4.15 },
+      { code: "C358", name: "Stone",           hex: "#a09880", price: 4.15 },
+      { code: "C137", name: "Verdant Green",   hex: "#2a6a2a", price: 4.15 },
+      { code: "C356", name: "Viva Yellow",     hex: "#f5c800", price: 4.15 },
+      { code: "C088", name: "Worker Blue",     hex: "#2a4a6a", price: 4.15 },
+      // Essential Heathers
+      { code: "C146", name: "Cool Heather Grey",    hex: "#b4b8c0", price: 4.15 },
+      { code: "C652", name: "Dark Heather Blue",    hex: "#3a4a6a", price: 4.15 },
+      { code: "C651", name: "Dark Heather Grey",    hex: "#5a5a5a", price: 4.15 },
+      { code: "C250", name: "Heather Grey",         hex: "#c0bcb8", price: 4.15 },
+      { code: "C731", name: "Heather Haze",         hex: "#b0a8c0", price: 4.15 },
+    ]
+  },
+  {
+    id: "STTU788",
+    name: "Freestyler",
+    productId: "STTU788",
+    fit: "Unisex · Relaxed Fit · 240 GSM",
+    colors: [
+      { code: "C054", name: "Natural Raw",        hex: "#f5f0dc", price: 7.88 },
+      { code: "C001", name: "White",               hex: "#ffffff", price: 7.88 },
+      { code: "C089", name: "Aloe",                hex: "#7d9e8c", price: 8.35 },
+      { code: "C002", name: "Black",               hex: "#111111", price: 8.35 },
+      { code: "C244", name: "Burgundy",            hex: "#6e1a2a", price: 8.35 },
+      { code: "C361", name: "Cream",               hex: "#f0ecd4", price: 8.35 },
+      { code: "C028", name: "Desert Dust",         hex: "#c8b89a", price: 8.35 },
+      { code: "C101", name: "Fraiche Peche",       hex: "#f5c4a0", price: 8.35 },
+      { code: "C727", name: "French Navy",         hex: "#1a2a4a", price: 8.35 },
+      { code: "C036", name: "Glazed Green",        hex: "#2a6a4a", price: 8.35 },
+      { code: "C730", name: "Heritage Brown",      hex: "#7a3a2a", price: 8.35 },
+      { code: "C085", name: "Kaffa Coffee",        hex: "#5a3a28", price: 8.35 },
+      { code: "C223", name: "Khaki",               hex: "#8a7a5a", price: 8.35 },
+      { code: "C729", name: "Mindful Blue",        hex: "#4a6a8a", price: 8.35 },
+      { code: "C735", name: "Misty Jade",          hex: "#a0c4b8", price: 8.35 },
+      { code: "C135", name: "Mocha",               hex: "#7a5a4a", price: 8.35 },
+      { code: "C702", name: "Stargazer",           hex: "#1a3a5a", price: 8.35 },
+      { code: "C088", name: "Worker Blue",         hex: "#2a4a6a", price: 8.35 },
+      { code: "C146", name: "Cool Heather Grey",   hex: "#b4b8c0", price: 8.35 },
+      { code: "C651", name: "Dark Heather Grey",   hex: "#5a5a5a", price: 8.35 },
+      { code: "C250", name: "Heather Grey",        hex: "#c0bcb8", price: 8.35 },
+      { code: "C731", name: "Heather Haze",        hex: "#b0a8c0", price: 8.35 },
+    ]
+  },
+  {
+    id: "STTU073",
+    name: "Freestyler Vintage",
+    productId: "STTU073",
+    fit: "Unisex · Relaxed Fit · 240 GSM",
+    colors: [
+      { code: "C162", name: "G. Dyed Anthracite",   hex: "#6a6a6a", price: 9.4 },
+      { code: "C140", name: "G. Dyed Black Rock",   hex: "#1e1e1e", price: 9.4 },
+      { code: "C158", name: "G. Dyed Blue Grey",    hex: "#6a7a9a", price: 9.4 },
+      { code: "C732", name: "G. Dyed Blue Stone",   hex: "#8abcd4", price: 9.4 },
+      { code: "C109", name: "G. Dyed Khaki",        hex: "#6a5a3a", price: 9.4 },
+      { code: "C733", name: "G. Dyed Latte",        hex: "#c8a878", price: 9.4 },
+      { code: "C157", name: "G. Dyed Misty Grey",   hex: "#a0a0a0", price: 9.4 },
+      { code: "C161", name: "G. Dyed Purple Love",  hex: "#7a6aaa", price: 9.4 },
+    ]
+  },
+  {
+    id: "STTU171",
+    name: "Sparker 2.0",
+    productId: "STTU171",
+    fit: "Unisex · Relaxed Fit · 215 GSM",
+    colors: [
+      // Whites
+      { code: "C054", name: "Natural Raw",     hex: "#f5f0dc", price: 5.83 },
+      { code: "C018", name: "Off White",       hex: "#f0ede4", price: 5.83 },
+      { code: "C001", name: "White",           hex: "#ffffff", price: 5.83 },
+      // Colors
+      { code: "C089", name: "Aloe",            hex: "#7d9e8c", price: 6.62 },
+      { code: "C253", name: "Anthracite",      hex: "#4a4a4a", price: 6.62 },
+      { code: "C002", name: "Black",           hex: "#111111", price: 6.62 },
+      { code: "C728", name: "Blue Ice",        hex: "#b8d8e4", price: 6.62 },
+      { code: "C129", name: "Bubble Pink",     hex: "#f5a0c0", price: 6.62 },
+      { code: "C143", name: "Fiesta",          hex: "#e85a2a", price: 6.62 },
+      { code: "C727", name: "French Navy",     hex: "#1a2a4a", price: 6.62 },
+      { code: "C036", name: "Glazed Green",    hex: "#2a6a4a", price: 6.62 },
+      { code: "C144", name: "Green Bay",       hex: "#5a7a5a", price: 6.62 },
+      { code: "C730", name: "Heritage Brown",  hex: "#7a3a2a", price: 6.62 },
+      { code: "C223", name: "Khaki",           hex: "#8a7a5a", price: 6.62 },
+      { code: "C112", name: "Latte",           hex: "#c8a87a", price: 6.62 },
+      { code: "C138", name: "Misty Grey",      hex: "#b0b0b0", price: 6.62 },
+      { code: "C135", name: "Mocha",           hex: "#7a5a4a", price: 6.62 },
+      { code: "C142", name: "Nispero",         hex: "#e8a84a", price: 6.62 },
+      { code: "C357", name: "Pool Blue",       hex: "#4ab4c8", price: 6.62 },
+      { code: "C115", name: "Purple Love",     hex: "#7a3a8a", price: 6.62 },
+      { code: "C702", name: "Stargazer",       hex: "#1a3a5a", price: 6.62 },
+      { code: "C358", name: "Stone",           hex: "#a09880", price: 6.62 },
+      { code: "C134", name: "Violet",          hex: "#6a4a9a", price: 6.62 },
+      { code: "C088", name: "Worker Blue",     hex: "#2a4a6a", price: 6.62 },
+    ]
+  }
+];
+
+// ─── Stanley/Stella CSV Export ────────────────────────────────────
+function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
+  const rows = [];
+  rows.push("ProductId,Quantity,UnitOfMeasureId,VariantId,Project");
+
+  const sizeMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
+
+  Object.entries(bedarfMap).forEach(([blankId, sizeNeeds]) => {
+    const blank = products.find(p => p.id === blankId);
+    if(!blank || !blank.stProductId) return;
+    const isCap = isCapMap[blankId];
+
+    Object.entries(sizeNeeds).forEach(([key, needed]) => {
+      if(!needed || needed <= 0) return;
+      // Calculate avail and toOrder
+      const isCapKey = key.startsWith("cap_");
+      const capColor = isCapKey ? (blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key) : null;
+      const avail = isCapKey ? (capColor?.stock||0) : ((blank.stock||{})[key]||0);
+      const minStockVal = isCapKey ? 0 : ((blank.minStock||{})[key]||0);
+      const toOrder = Math.max(0, needed + minStockVal - avail);
+      if(toOrder <= 0) return;
+
+      let variantId = "";
+      if(isCapKey) {
+        // For caps: stColorCode is per-cap-color or use blank stColorCode
+        const colorCode = capColor?.stColorCode || blank.stColorCode || "";
+        variantId = colorCode;
+      } else {
+        const stSize = sizeMap[key] || key;
+        variantId = (blank.stColorCode || "") + stSize;
+      }
+
+      rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${projectName}`);
+    });
+  });
+
+  const csv = rows.join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `GKBS_StanleyStella_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ─── Shared style constants ───────────────────────────────────────
 const S = {
@@ -847,20 +1043,87 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [colorHex,setColorHex]=useState(initial?.colorHex||"#000000");
   const [buyPrice,setBuyPrice]=useState(initial?.buyPrice!=null?String(initial.buyPrice):"");
   const [supplierUrl,setSupplierUrl]=useState(initial?.supplierUrl||"");
+  const [stProductId,setStProductId]=useState(initial?.stProductId||"");
+  const [stColorCode,setStColorCode]=useState(initial?.stColorCode||"");
   const [stock,setStock]=useState(initial?.stock||mkQty());
   const [minStock,setMinStock]=useState(initial?.minStock||mkQty());
   const [capColors,setCapColors]=useState(initial?.capColors||[{id:mkId(),name:"Black",hex:"#111111",stock:0}]);
   const isCap=category==="Cap";
+  const [showPresets, setShowPresets] = useState(false);
+  const [presetProduct, setPresetProduct] = useState(null);
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
+
+  const applyPreset = (preset, colorObj) => {
+    setName(preset.name + " · " + colorObj.name);
+    setColor(colorObj.name);
+    setColorHex(colorObj.hex);
+    setStProductId(preset.productId);
+    setStColorCode(colorObj.code);
+    if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
+    setShowPresets(false);
+    setPresetProduct(null);
+  };
+
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stock,minStock,capColors});}} width={620}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
+
+      {/* Stanley/Stella Preset Picker */}
+      {!editing&&(
+        <div>
+          <button type="button" onClick={()=>setShowPresets(s=>!s)}
+            style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1.5px dashed #ccc",background:"#fafafa",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+            <span>⚡</span> Stanley/Stella Preset laden…
+            <span style={{marginLeft:"auto",color:"#bbb"}}>{showPresets?"▲":"▼"}</span>
+          </button>
+          {showPresets&&(
+            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,marginTop:6,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
+              {!presetProduct ? (
+                // Step 1: choose product
+                <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                  <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"10px 14px 6px"}}>ARTIKEL WÄHLEN</div>
+                  {STANLEY_STELLA_PRESETS.map(p=>(
+                    <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
+                      style={{padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
+                        <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit}</div>
+                      </div>
+                      <span style={{color:"#bbb"}}>›</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                // Step 2: choose color
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
+                    <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
+                    <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{presetProduct.name}</div>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:12,maxHeight:220,overflowY:"auto"}}>
+                    {presetProduct.colors.map(c=>(
+                      <button key={c.code} type="button" onClick={()=>applyPreset(presetProduct,c)}
+                        title={c.name+" ("+c.code+")"}
+                        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 10px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",cursor:"pointer",minWidth:72,flex:"0 0 auto"}}>
+                        <div style={{width:28,height:28,borderRadius:"50%",background:c.hex,border:"2px solid #e0e0e0",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.15)"}}/>
+                        <div style={{fontSize:9,fontWeight:700,color:"#555",textAlign:"center",lineHeight:1.2}}>{c.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <input style={inp} placeholder="Produktname" value={name} onChange={e=>setName(e.target.value)}/>
       <div style={{display:"flex",gap:10}}>
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
         <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
       </div>
       <input style={inp} placeholder="🔗 Hersteller-Link" value={supplierUrl} onChange={e=>setSupplierUrl(e.target.value)}/>
+
       {!isCap&&(
         <div style={S.col8}>
           <input style={inp} placeholder="Farbname (z.B. Black, Natural)" value={color} onChange={e=>setColor(e.target.value)}/>
@@ -905,7 +1168,7 @@ function ProductModal({categories,initial,onClose,onSave}){
       )}
       <div style={{display:"flex",gap:10,marginTop:4}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stock,minStock,capColors});}}
+        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
           style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
       </div>
     </ModalWrap>
@@ -1562,7 +1825,19 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
             return Math.max(0,needed+minStockVal-avail)>0;
           });
         });
-        return <>{!hasAnyMissing&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>}
+        const [csvProject,setCsvProject]=useState("GKBS");
+        return <>{!hasAnyMissing
+          ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
+          : <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+              <input value={csvProject} onChange={e=>setCsvProject(e.target.value)}
+                style={{flex:1,background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:9,padding:"8px 12px",fontSize:13,outline:"none"}}
+                placeholder="Projektname für CSV"/>
+              <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,csvProject)}
+                style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
+                ⬇ Stanley/Stella CSV
+              </button>
+            </div>
+        }
       {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
         const blank=products.find(p=>p.id===blankId);if(!blank)return null;
         const isCap=isCapMap[blankId]||false;
@@ -1851,7 +2126,7 @@ function AppInner({currentUser,onLogout}){
   const log = (action) => logActivity(currentUser.name, action);
 
   // ── triggerSave (must be before setters that call it) ──────────
-  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen)=>{
+  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories)=>{
     if(!SHEETS_URL)return;
     clearTimeout(saveTimeout.current);
     setSyncStatus("saving");
@@ -1860,7 +2135,8 @@ function AppInner({currentUser,onLogout}){
         nextProducts||productsRef.current,
         nextProds||prodsRef.current,
         nextDtf||dtfItemsRef.current,
-        nextBestellungen||bestellungenRef.current
+        nextBestellungen||bestellungenRef.current,
+        nextCategories||categoriesRef.current
       )
         .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
         .catch(()=>setSyncStatus("error"));
@@ -2054,7 +2330,9 @@ function AppInner({currentUser,onLogout}){
     historyRef.current=[{products:productsRef.current,prods:prodsRef.current,categories:categoriesRef.current},...historyRef.current].slice(0,MAX_HISTORY);
     categoriesRef.current=cats;
     __setCategories(cats);
-  },[]);
+    try{localStorage.setItem("gkbs_categories",JSON.stringify(cats));}catch(e){}
+    triggerSave(null,null,null,null,cats);
+  },[triggerSave]);
   const [catFilter,setCatFilter]=useState("All");
   const [search,setSearch]=useState("");
   const [view,setView]=useState("production");
