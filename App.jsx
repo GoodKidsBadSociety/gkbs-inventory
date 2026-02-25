@@ -1128,8 +1128,6 @@ function DtfModal({initial, onClose, onSave}){
         </div>
         {pricePerPiece!=null&&<div style={{fontSize:11,color:"#3b82f6",marginTop:6,fontWeight:700}}>= €{pricePerPiece.toFixed(2)} pro Folie/Design</div>}
       </div>
-      
-      </div>
     </ModalWrap>
   );
 }
