@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.45
+// GKBS INVENTORY v1.47
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.45";
+const APP_VERSION = "v1.47";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1398,37 +1398,40 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
           const needed = (dtfBedarfMap[dtf.id]?.needed)||0;
           const avail = dtf.stock||0;
           const minStock = dtf.minStock||0;
+          const dpm = dtf.designsPerMeter||1;
           const toOrder = Math.max(0, needed - avail);
           const toOrderWithMin = Math.max(0, needed + minStock - avail);
-          return {dtf, needed, avail, minStock, toOrder, toOrderWithMin};
+          // Convert to meters if designsPerMeter > 1
+          const toOrderM = dpm>1 ? Math.ceil(toOrder/dpm) : toOrder;
+          const toOrderWithMinM = dpm>1 ? Math.ceil(toOrderWithMin/dpm) : toOrderWithMin;
+          const unit = dpm>1 ? "m" : "Stk";
+          return {dtf, needed, avail, minStock, dpm, toOrder, toOrderWithMin, toOrderM, toOrderWithMinM, unit};
         }).filter(e => e.needed > 0 || e.avail < e.dtf.minStock);
         if(dtfEntries.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Kein DTF-Bedarf</div>;
         return(
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {dtfEntries.map(({dtf,needed,avail,minStock,toOrder,toOrderWithMin})=>{
+            {dtfEntries.map(({dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit})=>{
               const ok=toOrder===0, okWithMin=toOrderWithMin===0;
               return(
                 <div key={dtf.id} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                    <div style={{width:32,height:32,borderRadius:8,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🖨</div>
-                    <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:32,height:32,borderRadius:8,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>🖨</div>
+                    <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:14,fontWeight:800}}>{dtf.name}</div>
-                      <div style={{fontSize:11,color:"#aaa"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
-                      {dtf.designsPerMeter>1&&needed>0&&(()=>{
-                        const fehlend=Math.max(0,needed-avail);
-                        const meter=Math.ceil(fehlend/dtf.designsPerMeter);
-                        return fehlend>0?<div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginTop:2}}>📏 {fehlend} Folien → <strong>{meter} Meter</strong> bestellen ({dtf.designsPerMeter} Designs/m)</div>:null;
-                      })()}
+                      <div style={{fontSize:11,color:"#aaa",marginTop:1}}>
+                        Folien: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong>
+                        {dpm>1&&<span style={{color:"#bbb"}}> · {dpm} Designs/m</span>}
+                      </div>
                     </div>
                     <button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
-                      style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
+                      style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
                       <div style={{fontSize:9,color:ok?"#16a34a":"#ef4444",fontWeight:700}}>MIN</div>
-                      <div style={{fontSize:18,fontWeight:900,color:ok?"#16a34a":"#ef4444",lineHeight:1}}>{toOrder}</div>
+                      <div style={{fontSize:18,fontWeight:900,color:ok?"#16a34a":"#ef4444",lineHeight:1}}>{toOrderM}{unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                     </button>
                     {minStock>0&&<button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrderWithMin)}
-                      style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:"pointer",flexShrink:0}}>
+                      style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:"pointer",flexShrink:0}}>
                       <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>MAX</div>
-                      <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
+                      <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMinM}{unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                     </button>}
                   </div>
                 </div>
