@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.47
+// GKBS INVENTORY v1.50
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.47";
+const APP_VERSION = "v1.50";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -41,13 +41,13 @@ async function sheetsLogActivity(user, action){
   }catch(e){}
 }
 
-async function sheetsSave(products, prods) {
+async function sheetsSave(products, prods, dtfItems, bestellungen) {
   const url = SHEETS_URL;
   if (!url) return;
   try {
     await fetch(url, {
       method: "POST",
-      body: JSON.stringify({ action: "save", products, prods }),
+      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen }),
     });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 }
@@ -749,16 +749,20 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
       </div>
       <div>
         <div style={S.secLabel}>BLANK VERKNÜPFEN</div>
-        <div style={S.col6}>
-          {products.map(p=><label key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:11,border:`1px solid ${blankId===p.id?"#111":"#e8e8e8"}`,background:blankId===p.id?"#f8f8f8":"#fff",cursor:"pointer"}}>
-            <input type="radio" name="blank" checked={blankId===p.id} onChange={()=>{
-              setBlankId(p.id);
-              if(p.category==="Cap") setCapColors(getCapColorsFromBlank(p, capColors));
-            }} style={{accentColor:"#111"}}/>
-            <SmartDot item={p} size={20}/>
-            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{p.name}</div><div style={{fontSize:11,color:"#aaa"}}>{p.color||""} · {p.category}</div></div>
-          </label>)}
-        </div>
+        <select value={blankId} onChange={e=>{
+          const p=products.find(x=>x.id===e.target.value);
+          setBlankId(e.target.value);
+          if(p?.category==="Cap") setCapColors(getCapColorsFromBlank(p, capColors));
+        }} style={{width:"100%",padding:"12px 14px",borderRadius:10,border:"1.5px solid #e8e8e8",fontSize:14,fontWeight:600,outline:"none",background:"#fff",appearance:"none",cursor:"pointer"}}>
+          <option value="">— Blank auswählen —</option>
+          {products.map(p=>(
+            <option key={p.id} value={p.id}>{p.name}{p.color?" · "+p.color:""} · {p.category}</option>
+          ))}
+        </select>
+        {blank&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"#f8f8f8",border:"1px solid #e8e8e8"}}>
+          <SmartDot item={blank} size={20}/>
+          <div><div style={{fontSize:13,fontWeight:700}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color||""} · {blank.category}</div></div>
+        </div>}
       </div>
       {isCap?(
         <div>
@@ -1711,18 +1715,21 @@ function AppInner({currentUser,onLogout}){
     __setDtfItems(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       try { localStorage.setItem("gkbs_dtf", JSON.stringify(next)); } catch(e){}
+      dtfItemsRef.current = next;
+      triggerSave(null, null, next);
       return next;
     });
-  }, []);
+  }, [triggerSave]);
 
   const setBestellungen = useCallback((updater) => {
     __setBestellungen(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      // Save to localStorage
       try { localStorage.setItem("gkbs_bestellungen", JSON.stringify(next)); } catch(e){}
+      bestellungenRef.current = next;
+      triggerSave(null, null, null, next);
       return next;
     });
-  }, []);
+  }, [triggerSave]);
   const [syncStatus,setSyncStatus]=useState("idle"); // idle | loading | saving | error | ok
   const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
   const saveTimeout=useRef(null);
@@ -1751,15 +1758,27 @@ function AppInner({currentUser,onLogout}){
           localStorage.setItem(LOG_KEY,JSON.stringify(filtered.slice(0,1000)));
         }catch(e){}
       }
-      // Load bestellungen from localStorage
+      // Load bestellungen – prefer sheets, fallback localStorage
       try{
-        const raw=localStorage.getItem("gkbs_bestellungen");
-        if(raw){const b=JSON.parse(raw);__setBestellungen(b);}
+        if(data?.bestellungen && Array.isArray(data.bestellungen) && data.bestellungen.length>0){
+          __setBestellungen(data.bestellungen);
+          bestellungenRef.current=data.bestellungen;
+          localStorage.setItem("gkbs_bestellungen", JSON.stringify(data.bestellungen));
+        } else {
+          const raw=localStorage.getItem("gkbs_bestellungen");
+          if(raw){const b=JSON.parse(raw);__setBestellungen(b);bestellungenRef.current=b;}
+        }
       }catch(e){}
-      // Load DTF from localStorage
+      // Load DTF – prefer sheets data, fallback to localStorage
       try{
-        const rawDtf=localStorage.getItem("gkbs_dtf");
-        if(rawDtf){const d=JSON.parse(rawDtf);__setDtfItems(d);}
+        if(data?.dtfItems && Array.isArray(data.dtfItems) && data.dtfItems.length>0){
+          __setDtfItems(data.dtfItems);
+          dtfItemsRef.current=data.dtfItems;
+          localStorage.setItem("gkbs_dtf", JSON.stringify(data.dtfItems));
+        } else {
+          const rawDtf=localStorage.getItem("gkbs_dtf");
+          if(rawDtf){const d=JSON.parse(rawDtf);__setDtfItems(d);dtfItemsRef.current=d;}
+        }
       }catch(e){}
       setSyncStatus(data?"ok":"error");
       setTimeout(()=>setSyncStatus("idle"),2000);
@@ -1817,12 +1836,19 @@ function AppInner({currentUser,onLogout}){
     setWareneingangModal(null);
   };
 
-  const triggerSave=useCallback((nextProducts, nextProds)=>{
+  const dtfItemsRef = useRef([]);
+  const bestellungenRef = useRef([]);
+  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen)=>{
     if(!SHEETS_URL)return;
     clearTimeout(saveTimeout.current);
     setSyncStatus("saving");
     saveTimeout.current=setTimeout(()=>{
-      sheetsSave(nextProducts||productsRef.current, nextProds||prodsRef.current)
+      sheetsSave(
+        nextProducts||productsRef.current,
+        nextProds||prodsRef.current,
+        nextDtf||dtfItemsRef.current,
+        nextBestellungen||bestellungenRef.current
+      )
         .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
         .catch(()=>setSyncStatus("error"));
     },1500);
