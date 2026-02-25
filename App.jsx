@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.50
+// GKBS INVENTORY v1.51
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.50";
+const APP_VERSION = "v1.51";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1709,6 +1709,8 @@ function AppInner({currentUser,onLogout}){
   const [prods,__setProds]=useState([]);
   const [bestellungen,__setBestellungen]=useState([]);
   const [dtfItems,__setDtfItems]=useState([]);
+  const dtfItemsRef = useRef([]);
+  const bestellungenRef = useRef([]);
   const log = (action) => logActivity(currentUser.name, action);
 
   const setDtfItems = useCallback((updater) => {
@@ -1836,8 +1838,6 @@ function AppInner({currentUser,onLogout}){
     setWareneingangModal(null);
   };
 
-  const dtfItemsRef = useRef([]);
-  const bestellungenRef = useRef([]);
   const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen)=>{
     if(!SHEETS_URL)return;
     clearTimeout(saveTimeout.current);
