@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.52
+// GKBS INVENTORY v1.54
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.52";
+const APP_VERSION = "v1.54";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1258,21 +1258,32 @@ function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, i
 
 // ─── Wareneingang Modal ────────────────────────────────────────────
 function WareneingangModal({bestellung, onClose, onConfirm}){
-  const [menge, setMenge] = useState(bestellung.menge);
+  const dpm = bestellung.designsPerMeter||1;
+  const isMeter = bestellung.isDtf && dpm>1;
+  const defaultVal = isMeter ? (bestellung.meterAnzahl||Math.ceil(bestellung.menge/dpm)) : bestellung.menge;
+  const [menge, setMenge] = useState(defaultVal);
+  const stueckVorschau = isMeter ? menge*dpm : menge;
   return(
     <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(menge)}>
       <div style={{fontSize:17,fontWeight:800}}>✅ Wareneingang</div>
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"14px 16px",borderLeft:"3px solid #16a34a"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{bestellung.produktName}</div>
-        <div style={{fontSize:12,color:"#888",marginTop:2}}>{bestellung.label}</div>
-        <div style={{fontSize:11,color:"#16a34a",fontWeight:700,marginTop:4}}>Bestellt: {bestellung.menge} Stk</div>
+        <div style={{fontSize:12,color:"#888",marginTop:2}}>{isMeter?"DTF Transfer":bestellung.label}</div>
+        <div style={{fontSize:11,color:"#16a34a",fontWeight:700,marginTop:4}}>
+          Bestellt: {isMeter?`${bestellung.meterAnzahl||"?"} m (${bestellung.menge} Stk)`:`${bestellung.menge} Stk`}
+        </div>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>EINGEHENDE MENGE</div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>
+          EINGEHENDE MENGE {isMeter?"(IN METER)":""}
+        </div>
         <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
           <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
-          <input type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
-            style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
+          <div style={{textAlign:"center"}}>
+            <input type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
+              style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
+            {isMeter&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginTop:4}}>= {stueckVorschau} Stk werden ins Lager gebucht</div>}
+          </div>
           <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
         </div>
       </div>
@@ -1285,8 +1296,13 @@ function WareneingangModal({bestellung, onClose, onConfirm}){
 
 // ─── Bestellte Ware View ───────────────────────────────────────────
 function BestellteWareView({bestellungen, onWareneingang, onDelete}){
-  const offene = bestellungen.filter(b => b.status === "offen");
-  const erledigt = bestellungen.filter(b => b.status === "erledigt").slice(0,5);
+  const [subTab, setSubTab] = useState("textilien");
+  const filtered = bestellungen.filter(b => subTab==="dtf" ? b.isDtf : !b.isDtf);
+  const offene = filtered.filter(b => b.status === "offen");
+  const erledigt = filtered.filter(b => b.status === "erledigt").slice(0,5);
+  const offenAll = bestellungen.filter(b=>b.status==="offen");
+  const offenTextilien = offenAll.filter(b=>!b.isDtf).length;
+  const offenDtf = offenAll.filter(b=>b.isDtf).length;
   const fmtDate = (iso) => {
     const d = new Date(iso);
     const pad = n => String(n).padStart(2,"0");
@@ -1294,9 +1310,17 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   };
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {/* Sub-tabs */}
+      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
+        {[["textilien","🧵 Textilien",offenTextilien],["dtf","🖨 DTF",offenDtf]].map(([v,lbl,count])=>(
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
+          </button>
+        ))}
+      </div>
       {offene.length === 0 && (
         <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>📦</div>
+          <div style={{fontSize:40,marginBottom:12}}>{subTab==="dtf"?"🖨":"📦"}</div>
           Keine offenen Bestellungen
         </div>
       )}
@@ -1307,12 +1331,20 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
             <div key={b.id} style={{background:"#fff",borderRadius:14,padding:"14px 16px",border:"1px solid #fecaca",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",alignItems:"center",gap:12}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{b.produktName}</div>
-                <div style={{fontSize:12,color:"#888",marginTop:2}}>{b.label}</div>
+                <div style={{fontSize:12,color:"#888",marginTop:2}}>{b.isDtf?"DTF Transfer":b.label}</div>
                 <div style={{fontSize:11,color:"#bbb",marginTop:4}}>Bestellt am {fmtDate(b.bestelltAm)}</div>
               </div>
               <div style={{textAlign:"center",marginRight:8}}>
-                <div style={{fontSize:24,fontWeight:900,color:"#111",lineHeight:1}}>{b.menge}</div>
-                <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>Stk</div>
+                {b.isDtf&&b.meterAnzahl
+                  ?<>
+                    <div style={{fontSize:24,fontWeight:900,color:"#111",lineHeight:1}}>{b.meterAnzahl} m</div>
+                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>{b.menge} Stk</div>
+                  </>
+                  :<>
+                    <div style={{fontSize:24,fontWeight:900,color:"#111",lineHeight:1}}>{b.menge}</div>
+                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>Stk</div>
+                  </>
+                }
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 <button onClick={()=>onWareneingang(b)} style={{padding:"8px 14px",borderRadius:10,border:"none",background:"#16a34a",color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>✓ Eingang</button>
@@ -1332,8 +1364,16 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
                 <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{b.label}</div>
               </div>
               <div style={{textAlign:"center"}}>
-                <div style={{fontSize:18,fontWeight:900,color:"#16a34a",lineHeight:1}}>{b.menge}</div>
-                <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>Stk</div>
+                {b.isDtf&&b.meterAnzahl
+                  ?<>
+                    <div style={{fontSize:18,fontWeight:900,color:"#16a34a",lineHeight:1}}>{b.meterAnzahl} m</div>
+                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>{b.menge} Stk</div>
+                  </>
+                  :<>
+                    <div style={{fontSize:18,fontWeight:900,color:"#16a34a",lineHeight:1}}>{b.menge}</div>
+                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>Stk</div>
+                  </>
+                }
               </div>
               <div style={{fontSize:10,color:"#16a34a",fontWeight:800}}>✓ Erhalten</div>
             </div>
@@ -1377,14 +1417,15 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
     }
   });
   // ── DTF bedarf berechnen ──
-  const dtfBedarfMap = {}; // {dtfId: {needed, avail, minStock, name}}
+  const dtfBedarfMap = {}; // {dtfId: {needed, auftraege:[{name,qty,colorHex}]}}
   activeProds.forEach(prod => {
     if(!prod.dtfId) return;
     const totalQty = prod.isCapOrder
       ? (prod.capColors||[]).reduce((a,c)=>a+c.qty,0)
       : DEFAULT_SIZES.reduce((a,s)=>a+((prod.qty||{})[s]||0),0);
-    if(!dtfBedarfMap[prod.dtfId]) dtfBedarfMap[prod.dtfId] = {needed:0};
+    if(!dtfBedarfMap[prod.dtfId]) dtfBedarfMap[prod.dtfId] = {needed:0, auftraege:[]};
     dtfBedarfMap[prod.dtfId].needed += totalQty;
+    dtfBedarfMap[prod.dtfId].auftraege.push({name:prod.name, qty:totalQty, colorHex:prod.colorHex||"#888"});
   });
 
   return(
@@ -1426,6 +1467,16 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
                         Folien: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong>
                         {dpm>1&&<span style={{color:"#bbb"}}> · {dpm} Designs/m</span>}
                       </div>
+                      {(dtfBedarfMap[dtf.id]?.auftraege||[]).length>0&&(
+                        <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:6}}>
+                          {(dtfBedarfMap[dtf.id].auftraege).map((a,i)=>(
+                            <span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:20,fontSize:10,fontWeight:700,background:"#f0f0f0",color:"#555"}}>
+                              <span style={{width:7,height:7,borderRadius:"50%",background:a.colorHex,display:"inline-block",flexShrink:0}}/>
+                              {a.name} · {a.qty} Stk
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
                       style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
@@ -1818,6 +1869,8 @@ function AppInner({currentUser,onLogout}){
   const handleBestellungConfirm = (menge) => {
     const {blank, key, isCapKey, capColor, isDtf, dtfName} = bestellModal;
     const label = isDtf ? "DTF Transfer" : (isCapKey ? (capColor?.name || key) : key);
+    const dpm = bestellModal?.designsPerMeter||1;
+    const meter = isDtf && dpm>1 ? Math.ceil(menge/dpm) : null;
     const neu = {
       id: Date.now().toString(),
       produktId: blank.id,
@@ -1827,6 +1880,9 @@ function AppInner({currentUser,onLogout}){
       isCapKey,
       capColorId: capColor?.id || null,
       isDtf: isDtf||false,
+      dtfId: isDtf ? blank.id : null,
+      designsPerMeter: isDtf ? dpm : null,
+      meterAnzahl: meter,
       menge,
       bestelltAm: new Date().toISOString(),
       status: "offen"
@@ -1838,8 +1894,14 @@ function AppInner({currentUser,onLogout}){
 
   const handleWareneingang = (bestellung, mengeEingang) => {
     if(bestellung.isDtf && bestellung.dtfId) {
-      // Add to DTF stock
-      setDtfItems(d=>d.map(x=>x.id===bestellung.dtfId?{...x,stock:(x.stock||0)+mengeEingang}:x));
+      // mengeEingang is in Meter if designsPerMeter>1, convert back to Stück
+      const dpm = bestellung.designsPerMeter||1;
+      const stueck = dpm>1 ? mengeEingang*dpm : mengeEingang;
+      setDtfItems(d=>d.map(x=>x.id===bestellung.dtfId?{...x,stock:(x.stock||0)+stueck}:x));
+      setBestellungen(b=>b.map(x=>x.id===bestellung.id?{...x,status:"erledigt",mengeErhalten:mengeEingang,stueckErhalten:stueck,erhaltenAm:new Date().toISOString()}:x));
+      log(`Wareneingang DTF – ${bestellung.produktName}: ${mengeEingang}${dpm>1?" m ("+stueck+" Stk)":""} zum Bestand addiert`);
+      setWareneingangModal(null);
+      return;
     } else {
       // Add to product stock
       setProducts(ps => ps.map(p => {
@@ -1855,7 +1917,7 @@ function AppInner({currentUser,onLogout}){
         }
       }));
     }
-    // Mark as erledigt
+    // Mark as erledigt (Textil path)
     setBestellungen(b => b.map(x => x.id === bestellung.id ? {...x, status:"erledigt", mengeErhalten: mengeEingang, erhaltenAm: new Date().toISOString()} : x));
     log(`Wareneingang – ${bestellung.produktName} | ${bestellung.label}: ${mengeEingang} Stk zum Bestand addiert`);
     setWareneingangModal(null);
@@ -2183,7 +2245,11 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} onBestellen={handleBestellen} onBestellenDtf={(dtf,menge)=>setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id})}/>}
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} onBestellen={handleBestellen} onBestellenDtf={(dtf,menge)=>{
+  const dpm=dtf.designsPerMeter||1;
+  const meter=dpm>1?Math.ceil(menge/dpm):null;
+  setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
+}}/>}
 
         {/* Production */}
         {view==="production"&&(
