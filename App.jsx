@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.66
+// GKBS INVENTORY v1.70
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.66";
+const APP_VERSION = "v1.70";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -244,7 +244,10 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `GKBS_StanleyStella_${new Date().toISOString().slice(0,10)}.csv`;
+  const now = new Date();
+  const date = now.toISOString().slice(0,10).replace(/-/g,"");
+  const time = now.toTimeString().slice(0,8).replace(/:/g,"");
+  a.download = `GKBS_${projectName}_${date}_${time}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -1278,6 +1281,21 @@ function BestellbedarfModal({prods,products,onClose}){
               <SmartDot item={blank} size={22}/>
               <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
               {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
+              <button type="button" disabled={allOrdered}
+                style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
+                onClick={()=>{
+                  if(allOrdered)return;
+                  relKeys.forEach(key=>{
+                    if(alreadyOrdered(key))return;
+                    const needed=sizeNeeds[key]||0;
+                    const isCapKey=key.startsWith("cap_");
+                    const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+                    const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+                    const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
+                    const toOrderWithMin=Math.max(0,needed+minStockVal-avail);
+                    if(toOrderWithMin>0) onBestellen(blank,key,isCapKey,capColor,toOrderWithMin);
+                  });
+                }}>{allOrdered?"✓ bestellt":"ALL"}</button>
             </div>
             <div style={S.col6}>
               {relKeys.map(key=>{
@@ -1700,7 +1718,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf}){
+function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf,currentUser}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien"); // "textilien" | "dtf"
   const [openSize,setOpenSize]=useState(null);
@@ -1825,14 +1843,10 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
             return Math.max(0,needed+minStockVal-avail)>0;
           });
         });
-        const [csvProject,setCsvProject]=useState("GKBS");
         return <>{!hasAnyMissing
           ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
-          : <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-              <input value={csvProject} onChange={e=>setCsvProject(e.target.value)}
-                style={{flex:1,background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:9,padding:"8px 12px",fontSize:13,outline:"none"}}
-                placeholder="Projektname für CSV"/>
-              <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,csvProject)}
+          : <div style={{display:"flex",justifyContent:"flex-end",marginBottom:4}}>
+              <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS")}
                 style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
                 ⬇ Stanley/Stella CSV
               </button>
@@ -1853,12 +1867,30 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
         });
         // Skip entire product if nothing is missing
         if(relKeys.length===0)return null;
+        // Check which keys already have an open order
+        const alreadyOrdered=(key)=>bestellungen.some(b=>!b.isDtf&&b.status==="offen"&&b.produktId===blankId&&b.sizeKey===key);
+        const allOrdered=relKeys.every(k=>alreadyOrdered(k));
         return(
           <div key={blankId} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             <div style={S.cardHdr}>
               <SmartDot item={blank} size={22}/>
               <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
               {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
+              <button type="button" disabled={allOrdered}
+                style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
+                onClick={()=>{
+                  if(allOrdered)return;
+                  relKeys.forEach(key=>{
+                    if(alreadyOrdered(key))return;
+                    const needed=sizeNeeds[key]||0;
+                    const isCapKey=key.startsWith("cap_");
+                    const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+                    const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+                    const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
+                    const toOrderWithMin=Math.max(0,needed+minStockVal-avail);
+                    if(toOrderWithMin>0) onBestellen(blank,key,isCapKey,capColor,toOrderWithMin);
+                  });
+                }}>{allOrdered?"✓ bestellt":"ALL"}</button>
             </div>
             <div style={S.col6}>
               {relKeys.map(key=>{
@@ -1962,7 +1994,7 @@ function PrintPie({colors,r=10,vk="stock"}){
 // ─── Users (passwords stored as SHA-256 hashes) ───────────────────
 const USERS = [
   {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#3b82f6"},
-  {name:"GKBS",   hash:"62936c7f995c57dee05ec9666e6600fa1318448bd8b6373a99e7129e2106e14b", avatar:"G", color:"#ef4444"},
+  {name:"Merlin", hash:"62936c7f995c57dee05ec9666e6600fa1318448bd8b6373a99e7129e2106e14b", avatar:"M", color:"#ef4444"},
   {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#a855f7"},
 ];
 
