@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.54
+// GKBS INVENTORY v1.55
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.54";
+const APP_VERSION = "v1.55";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -279,7 +279,42 @@ function SmartDot({item,size=28}){
 }
 
 // ─── Prod Cell – same look as StockCell ──────────────────────────
-function ProdCell({size,soll,done,avail,onInc,onDec,disabled,mobile}){
+// ─── Inline editable number for Cap stock/done ───────────────────
+function CapStockNum({value, soll, color, onSet, fontSize=28}){
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const ref = useRef(null);
+  const start = () => { if(!onSet) return; setDraft(String(value)); setEditing(true); setTimeout(()=>ref.current?.select(),30); };
+  const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onSet&&onSet(n); setEditing(false); };
+  const display = editing
+    ? <input ref={ref} type="number" inputMode="numeric" value={draft}
+        onChange={e=>setDraft(e.target.value)} onBlur={commit}
+        onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+        style={{width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/>
+    : <span onDoubleClick={start} style={{fontSize,fontWeight:900,color,lineHeight:1,cursor:onSet?"text":"default"}} title={onSet?"Doppelklick zum Bearbeiten":""}>{value}</span>;
+  return soll!==undefined
+    ? <span style={{lineHeight:1}}>{display}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>
+    : display;
+}
+
+// ─── Inline editable number for ProdCell ─────────────────────────
+function ProdCellNum({value, soll, color, onSet, fontSize=28}){
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const ref = useRef(null);
+  const start = () => { setDraft(String(value)); setEditing(true); setTimeout(()=>ref.current?.select(),30); };
+  const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onSet&&onSet(n); setEditing(false); };
+  if(!onSet) return <span style={{fontSize,fontWeight:900,color,lineHeight:1}}>{value}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>;
+  return editing
+    ? <><input ref={ref} type="number" inputMode="numeric" value={draft}
+        onChange={e=>setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+        style={{width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/><span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></>
+    : <span onDoubleClick={start} style={{fontSize,fontWeight:900,color,lineHeight:1,cursor:"text"}} title="Doppelklick zum Bearbeiten">{value}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>;
+}
+
+function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   const complete=soll>0&&done>=soll;
   const atLimit=disabled&&!complete;
   const color=complete?GR:atLimit?OR:"#111";
@@ -287,10 +322,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,disabled,mobile}){
     return(
       <div style={{display:"flex",alignItems:"center",background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:10,padding:"10px 12px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
         <span style={{fontSize:14,color:"#555",fontWeight:800,width:36}}>{size}</span>
-        <span style={{flex:1,textAlign:"center",lineHeight:1}}>
-          <span style={{fontSize:28,fontWeight:900,color}}>{done}</span>
-          <span style={{fontSize:20,color:"#bbb",fontWeight:700}}>/{soll}</span>
-        </span>
+        <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
         <span style={{fontSize:11,color:sCol(avail),fontWeight:700,marginRight:8}}>↓{avail}</span>
         <div style={{display:"flex",gap:6}}>
           <button onClick={onDec} style={btn(36,true)}>−</button>
@@ -304,8 +336,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,disabled,mobile}){
       <span style={{fontSize:14,color:"#666",fontWeight:900}}>{size}</span>
       <span style={{position:"absolute",top:5,right:6,fontSize:9,color:sCol(avail),fontWeight:700}}>{avail}</span>
       <div style={{textAlign:"center",lineHeight:1}}>
-        <span style={{fontSize:28,fontWeight:900,color}}>{done}</span>
-        <span style={{fontSize:18,color:"#bbb",fontWeight:700}}>/{soll}</span>
+        <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
       </div>
       <div style={{display:"flex",gap:4}}>
         <button onClick={onDec} style={btn(28,true)}>−</button>
@@ -362,7 +393,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
               <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
-                <span style={{fontSize:mobile?24:28,fontWeight:900,color:sCol(c.stock),lineHeight:1}}>{c.stock}</span>
+                <CapStockNum value={c.stock} color={sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
                 <div style={{display:"flex",gap:4}}>
                   <button onClick={()=>adjCap(c.id,-1)} style={btn(30,true)}>−</button>
                   <button onClick={()=>adjCap(c.id,1)} style={btn(30)}>+</button>
@@ -501,8 +532,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <div style={{lineHeight:1,textAlign:"center"}}>
-                  <span style={{fontSize:mobile?24:28,fontWeight:900,color:complete?"#16a34a":atLimit?"#f97316":"#111"}}>{c.done}</span>
-                  <span style={{fontSize:mobile?16:18,color:"#bbb",fontWeight:700}}>/{c.qty}</span>
+                  <CapStockNum value={c.done} soll={c.qty} color={complete?"#16a34a":atLimit?"#f97316":"#111"} fontSize={mobile?24:28} onSet={prod.status!=="Fertig"?v=>onUpdate({...prod,capColors:(prod.capColors||[]).map(x=>x.id===c.id?{...x,done:Math.min(max,Math.max(0,v))}:x)})  :null}/>
                 </div>
                 <div style={{fontSize:9,color:sCol(avail,3),fontWeight:700}}>↓{avail}</div>
                 {prod.status!=="Fertig"&&(
@@ -524,7 +554,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             if(soll===0&&done===0)return null;
             const lim=done>=maxDone(size);
             return <ProdCell key={size} mobile size={size} soll={soll} done={done} avail={avail}
-              disabled={lim} onDec={()=>adjDone(size,-1)} onInc={()=>adjDone(size,1)}/>;
+              disabled={lim} onDec={()=>adjDone(size,-1)} onInc={()=>adjDone(size,1)} onSet={v=>onUpdate({...prod,done:{...(prod.done||{}),[size]:Math.min(maxDone(size),Math.max(0,v))}})}/>;
           })}
         </div>
       ):(
@@ -539,7 +569,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             );
             const lim=done>=maxDone(size);
             return <ProdCell key={size} size={size} soll={soll} done={done} avail={avail}
-              disabled={lim} onDec={()=>adjDone(size,-1)} onInc={()=>adjDone(size,1)}/>;
+              disabled={lim} onDec={()=>adjDone(size,-1)} onInc={()=>adjDone(size,1)} onSet={v=>onUpdate({...prod,done:{...(prod.done||{}),[size]:Math.min(maxDone(size),Math.max(0,v))}})}/>;
           })}
         </div>
       )}
@@ -1229,27 +1259,35 @@ function FinanceView({products}){
 
 // ─── Bestellung aufgeben Modal ────────────────────────────────────
 function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, isDtf, onClose, onConfirm}){
-  const [menge, setMenge] = useState(toOrder > 0 ? toOrder : 1);
+  const dpm = blank?.designsPerMeter||1;
+  const isMeter = isDtf && dpm>1;
+  // toOrder is in Stück; show meters if applicable
+  const defaultMeter = isMeter ? Math.ceil(toOrder/dpm) : toOrder;
+  const [menge, setMenge] = useState(defaultMeter > 0 ? defaultMeter : 1);
+  const stueckVorschau = isMeter ? menge*dpm : menge;
   const label = isCapKey ? (capColor?.name || sizeKey) : sizeKey;
   const inputRef = useRef(null);
   useEffect(()=>{ setTimeout(()=>inputRef.current?.select(), 50); }, []);
   return(
-    <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(menge)}>
+    <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(stueckVorschau)}>
       <div style={{fontSize:17,fontWeight:800}}>{isDtf?"🖨 DTF bestellen":"📦 Bestellung aufgeben"}</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
         <div style={{fontSize:12,color:"#888",marginTop:2}}>{label}{blank.color?" · "+blank.color:""}</div>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>MENGE</div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>{isMeter?"MENGE (IN METER)":"MENGE"}</div>
         <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
           <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
-          <input ref={inputRef} type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
-            style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
+          <div style={{textAlign:"center"}}>
+            <input ref={inputRef} type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
+              style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
+            {isMeter&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginTop:4}}>= {stueckVorschau} Stk ins Lager</div>}
+          </div>
           <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
         </div>
       </div>
-      <button onClick={()=>onConfirm(menge)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+      <button onClick={()=>onConfirm(stueckVorschau)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
         Zur Bestellliste hinzufügen →
       </button>
     </ModalWrap>
@@ -1497,12 +1535,34 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
       })()}
 
       {/* Textilien Tab */}
-      {subTab==="textilien"&&<>
-      {Object.keys(bedarfMap).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine aktiven Aufträge</div>}
+      {subTab==="textilien"&&(()=>{
+        const hasAnyMissing = Object.entries(bedarfMap).some(([blankId,sizeNeeds])=>{
+          const blank=products.find(p=>p.id===blankId);if(!blank)return false;
+          return Object.keys(sizeNeeds).some(k=>{
+            const needed=sizeNeeds[k]||0;if(needed===0)return false;
+            const isCapKey=k.startsWith("cap_");
+            const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===k):null;
+            const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[k]||0);
+            const minStockVal=isCapKey?0:((blank.minStock||{})[k]||0);
+            return Math.max(0,needed+minStockVal-avail)>0;
+          });
+        });
+        return <>{!hasAnyMissing&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>}
       {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
         const blank=products.find(p=>p.id===blankId);if(!blank)return null;
         const isCap=isCapMap[blankId]||false;
-        const relKeys=Object.keys(sizeNeeds).filter(k=>(sizeNeeds[k]||0)>0);
+        // Only show keys where stock is actually missing
+        const relKeys=Object.keys(sizeNeeds).filter(k=>{
+          const needed=sizeNeeds[k]||0;
+          if(needed===0)return false;
+          const isCapKey=k.startsWith("cap_");
+          const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===k):null;
+          const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[k]||0);
+          const minStockVal=isCapKey?0:((blank.minStock||{})[k]||0);
+          return Math.max(0,needed+minStockVal-avail)>0;
+        });
+        // Skip entire product if nothing is missing
+        if(relKeys.length===0)return null;
         return(
           <div key={blankId} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             <div style={S.cardHdr}>
@@ -1561,7 +1621,7 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
           </div>
         );
       })}
-      </>}
+      </>;})()}
     </div>
   );
 }
