@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.57
+// GKBS INVENTORY v1.58
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.57";
+const APP_VERSION = "v1.58";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -212,7 +212,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:0,position:"relative"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:0,position:"relative",height:110}}>
       <div style={{width:20,height:20,borderRadius:"50%",background:"transparent",flexShrink:0}}/>
       <span style={{fontSize:10,color:"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
       {editing?(
@@ -391,7 +391,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           {(product.capColors||[]).map(c=>{
             const isOut=c.stock===0,isLow=!isOut&&c.stock<=LOW_STOCK;
             return(
-              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70}}>
+              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <CapStockNum value={c.stock} color={sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
