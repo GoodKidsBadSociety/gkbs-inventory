@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.36
+// GKBS INVENTORY v1.37
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.36";
+const APP_VERSION = "v1.37";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -657,7 +657,7 @@ function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
   );
 }
 
-function ProductionModal({products,initial,onClose,onSave}){
+function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const editing=!!initial;
   const [modalLightbox,setModalLightbox]=useState(null);
   const [name,setName]=useState(initial?.name||"");
@@ -665,6 +665,7 @@ function ProductionModal({products,initial,onClose,onSave}){
   const [notes,setNotes]=useState(initial?.notes||"");
   const [priority,setPriority]=useState(initial?.priority||"Mittel");
   const [veredelung,setVeredelung]=useState(initial?.veredelung||["Drucken"]);
+  const [dtfId,setDtfId]=useState(initial?.dtfId||"");
   const [designUrl,setDesignUrl]=useState(initial?.designUrl||"");
   const [colorHex,setColorHex]=useState(initial?.colorHex||"#000000");
   const [photos,setPhotos]=useState(initial?.photos||[]);
@@ -689,7 +690,7 @@ function ProductionModal({products,initial,onClose,onSave}){
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,isCapOrder:isCap,qty,done,capColors});}} width={640}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});}} width={640}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
       <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
@@ -703,6 +704,15 @@ function ProductionModal({products,initial,onClose,onSave}){
         <div style={S.secLabel}>VEREDELUNG</div>
         <div style={{display:"flex",gap:8}}>
           {VEREDELUNG_TYPES.map(v=>{const active=veredelung.includes(v);const sc={"Drucken":{ac:"#3b82f6",bg:"#eff6ff"},"Sticken":{ac:"#a855f7",bg:"#fdf4ff"}}[v];return <button key={v} type="button" onClick={()=>toggleV(v)} style={{flex:1,padding:"11px",borderRadius:10,border:`1.5px solid ${active?sc.ac:"#e8e8e8"}`,background:active?sc.bg:"#fff",color:active?sc.ac:"#999",cursor:"pointer",fontWeight:700,fontSize:13}}>{v==="Drucken"?"🖨 Drucken":"🪡 Sticken"}</button>;})}
+
+        {veredelung.includes("Drucken")&&dtfItems.length>0&&<div>
+          <div style={S.secLabel}>DTF TRANSFER VERKNÜPFEN</div>
+          <select value={dtfId} onChange={e=>setDtfId(e.target.value)}
+            style={{width:"100%",padding:"12px 14px",borderRadius:10,border:"1.5px solid #e8e8e8",fontSize:14,fontWeight:600,outline:"none",background:"#fff",appearance:"none"}}>
+            <option value="">— Kein DTF —</option>
+            {dtfItems.map(d=><option key={d.id} value={d.id}>{d.name} ({d.stock} Stk)</option>)}
+          </select>
+        </div>}
         </div>
       </div>
       <input style={inp} placeholder="🔗 Design-Link" value={designUrl} onChange={e=>setDesignUrl(e.target.value)}/>
@@ -768,7 +778,7 @@ function ProductionModal({products,initial,onClose,onSave}){
       )}
       <div style={{display:"flex",gap:10,marginTop:4}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,isCapOrder:isCap,qty,done,capColors});}}
+        <button type="button" onClick={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});}}
           style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Anlegen"}</button>
       </div>
     </ModalWrap>
@@ -1007,6 +1017,98 @@ function BestellbedarfModal({prods,products,onClose}){
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Schließen</button>
       </div>
     </ModalWrap>
+  );
+}
+
+
+// ─── DTF Modal ────────────────────────────────────────────────────
+function DtfModal({initial, onClose, onSave}){
+  const [name, setName] = useState(initial?.name || "");
+  const [stock, setStock] = useState(initial?.stock || 0);
+  const inputRef = useRef(null);
+
+  const save = () => {
+    if(!name.trim()) return;
+    onSave({
+      id: initial?.id || Date.now().toString(),
+      name: name.trim(),
+      stock,
+    });
+  };
+
+  return(
+    <ModalWrap onClose={onClose} width={360} onSave={save}>
+      <div style={{fontSize:17,fontWeight:800}}>{initial ? "DTF bearbeiten" : "DTF anlegen"}</div>
+      <div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
+        <input ref={inputRef} style={{...inp,width:"100%",boxSizing:"border-box"}} placeholder="z.B. Gemeindebau Front Print"
+          value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()}/>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STÜCKZAHL</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
+          <button type="button" onClick={()=>setStock(s=>Math.max(0,s-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
+          <input type="number" inputMode="numeric" value={stock} onChange={e=>setStock(Math.max(0,parseInt(e.target.value)||0))}
+            style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
+          <button type="button" onClick={()=>setStock(s=>s+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
+        </div>
+      </div>
+      <button onClick={save} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+        {initial ? "Speichern" : "Anlegen"} →
+      </button>
+    </ModalWrap>
+  );
+}
+
+// ─── DTF Card ─────────────────────────────────────────────────────
+function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
+  const mobile = useIsMobile();
+  const adj = (d) => onUpdate({...item, stock: Math.max(0, item.stock + d)});
+
+  return(
+    <div style={{background:"#fff",borderRadius:14,padding:mobile?"14px 14px":"16px 20px",border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+        <div style={{width:36,height:36,borderRadius:10,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🖨</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{item.name}</div>
+          {linkedProds.length>0&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:600,marginTop:2}}>
+            🔗 {linkedProds.map(p=>p.name).join(", ")}
+          </div>}
+        </div>
+        <button onClick={onEdit} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",fontSize:12,fontWeight:700,cursor:"pointer"}}>✏️</button>
+        <button onClick={onDelete} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #fee2e2",background:"#fff",color:"#ef4444",fontSize:12,fontWeight:700,cursor:"pointer"}}>✕</button>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:16,background:"#f8f8f8",borderRadius:12,padding:"12px 16px"}}>
+        <button onClick={()=>adj(-1)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:20,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+        <div style={{flex:1,textAlign:"center"}}>
+          <div style={{fontSize:36,fontWeight:900,color:item.stock===0?"#ef4444":item.stock<5?"#f97316":"#111",lineHeight:1}}>{item.stock}</div>
+          <div style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:2}}>STÜCK AUF LAGER</div>
+        </div>
+        <button onClick={()=>adj(1)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:20,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── DTF View ─────────────────────────────────────────────────────
+function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {dtfItems.length===0&&(
+        <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:12}}>🖨</div>
+          Noch keine DTF-Transfers angelegt
+        </div>
+      )}
+      {dtfItems.map(item=>{
+        const linkedProds = prods.filter(p=>p.dtfId===item.id && p.status!=="Fertig");
+        return <DtfCard key={item.id} item={item}
+          onUpdate={onUpdate}
+          onDelete={()=>onDelete(item.id)}
+          onEdit={()=>onEdit(item)}
+          linkedProds={linkedProds}/>;
+      })}
+    </div>
   );
 }
 
@@ -1484,7 +1586,16 @@ function AppInner({currentUser,onLogout}){
   const [products,__setProducts]=useState([]);
   const [prods,__setProds]=useState([]);
   const [bestellungen,__setBestellungen]=useState([]);
+  const [dtfItems,__setDtfItems]=useState([]);
   const log = (action) => logActivity(currentUser.name, action);
+
+  const setDtfItems = useCallback((updater) => {
+    __setDtfItems(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      try { localStorage.setItem("gkbs_dtf", JSON.stringify(next)); } catch(e){}
+      return next;
+    });
+  }, []);
 
   const setBestellungen = useCallback((updater) => {
     __setBestellungen(prev => {
@@ -1526,6 +1637,11 @@ function AppInner({currentUser,onLogout}){
       try{
         const raw=localStorage.getItem("gkbs_bestellungen");
         if(raw){const b=JSON.parse(raw);__setBestellungen(b);}
+      }catch(e){}
+      // Load DTF from localStorage
+      try{
+        const rawDtf=localStorage.getItem("gkbs_dtf");
+        if(rawDtf){const d=JSON.parse(rawDtf);__setDtfItems(d);}
       }catch(e){}
       setSyncStatus(data?"ok":"error");
       setTimeout(()=>setSyncStatus("idle"),2000);
@@ -1749,6 +1865,17 @@ function AppInner({currentUser,onLogout}){
         return [...updated,archiveEntry];
       }
     );
+    // Deduct from DTF stock if linked
+    if(prod.dtfId){
+      const totalProduced = isCap
+        ? (prod.capColors||[]).reduce((a,c)=>a+c.done,0)
+        : DEFAULT_SIZES.reduce((a,s)=>a+((prod.done||{})[s]||0),0);
+      if(totalProduced>0){
+        setDtfItems(d=>d.map(x=>x.id===prod.dtfId?{...x,stock:Math.max(0,x.stock-totalProduced)}:x));
+        const dtfName=dtfItems.find(x=>x.id===prod.dtfId)?.name||prod.dtfId;
+        log(`DTF Abzug – ${dtfName}: −${totalProduced} Stk (Auftrag: ${prod.name})`);
+      }
+    }
     setConfirmProduce(null);
   };
 
@@ -1757,9 +1884,10 @@ function AppInner({currentUser,onLogout}){
 
   // ─── PDF Export ───────────────────────────────────────────────
 
-  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
+  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
   const [showActivityLog,setShowActivityLog]=useState(false);
-  const [bestellModal,setBestellModal]=useState(null); // {blank,key,isCapKey,capColor,toOrder}
+  const [bestellModal,setBestellModal]=useState(null);
+  const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
   const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
   return(
@@ -1779,7 +1907,7 @@ function AppInner({currentUser,onLogout}){
   SIZES.forEach(s=>{const ov=(old?.stock||{})[s]||0,nv=(p.stock||{})[s]||0;if(ov!==nv)parts.push(`${s}: ${ov}→${nv}`);});
   log(parts.length>0?`Produkt bearbeitet – ${p.name} | ${parts.join(", ")}`:`Produkt gespeichert – ${p.name}`);
 })();}setShowProdModal(false);}}/>}
-      {showPAModal&&<ProductionModal products={products} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add"){setProds(ps=>[...ps,p]);(() => {
+      {showPAModal&&<ProductionModal products={products} dtfItems={dtfItems} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add"){setProds(ps=>[...ps,p]);(() => {
   const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
   let qtyStr="";
   if(p.isCapOrder){
@@ -1802,6 +1930,14 @@ function AppInner({currentUser,onLogout}){
       {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)}/>}
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
     {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
+    {showDtfModal&&<DtfModal
+      initial={showDtfModal==="add"?null:showDtfModal}
+      onClose={()=>setShowDtfModal(false)}
+      onSave={item=>{
+        if(showDtfModal==="add"){setDtfItems(d=>[item,...d]);log(`DTF angelegt: ${item.name} | ${item.stock} Stk`);}
+        else{setDtfItems(d=>d.map(x=>x.id===item.id?item:x));log(`DTF bearbeitet: ${item.name}`);}
+        setShowDtfModal(false);
+      }}/>}
     {bestellModal&&<BestellungAufgebenModal blank={bestellModal.blank} sizeKey={bestellModal.key} isCapKey={bestellModal.isCapKey} capColor={bestellModal.capColor} toOrder={bestellModal.toOrder} onClose={()=>setBestellModal(null)} onConfirm={handleBestellungConfirm}/>}
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
@@ -1878,6 +2014,11 @@ function AppInner({currentUser,onLogout}){
 
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products}/>}
+        {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
+          onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
+          onDelete={id=>{const item=dtfItems.find(x=>x.id===id);setDtfItems(d=>d.filter(x=>x.id!==id));if(item)log(`DTF gelöscht: ${item.name}`);}}
+          onEdit={item=>setShowDtfModal(item)}
+          onAdd={()=>setShowDtfModal("add")}/>}
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
 
         {/* Bestellbedarf as tab */}
