@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.56
+// GKBS INVENTORY v1.57
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.56";
+const APP_VERSION = "v1.57";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -212,19 +212,20 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,background:"#f8f8f8",borderRadius:12,padding:"10px 4px",flex:1,minWidth:0,position:"relative"}}>
-      <span style={{fontSize:14,color:"#666",fontWeight:900}}>{size}</span>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:0,position:"relative"}}>
+      <div style={{width:20,height:20,borderRadius:"50%",background:"transparent",flexShrink:0}}/>
+      <span style={{fontSize:10,color:"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
-          style={{fontSize:32,fontWeight:900,color:sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
+          style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
       ):(
-        <span onDoubleClick={startEdit} style={{fontSize:32,fontWeight:900,color:sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
+        <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
       )}
       {minVal>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:belowMin?"#ef4444":"#bbb",fontWeight:700}}>/{minVal}</span>}
       <div style={{display:"flex",gap:4}}>
-        <button onClick={onDec} style={btn(28,true)}>−</button>
-        <button onClick={onInc} style={btn(28)}>+</button>
+        <button onClick={onDec} style={btn(30,true)}>−</button>
+        <button onClick={onInc} style={btn(30)}>+</button>
       </div>
     </div>
   );
