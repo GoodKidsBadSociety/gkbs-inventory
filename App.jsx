@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.39
+// GKBS INVENTORY v1.41
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.39";
+const APP_VERSION = "v1.41";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1025,38 +1025,54 @@ function BestellbedarfModal({prods,products,onClose}){
 function DtfModal({initial, onClose, onSave}){
   const [name, setName] = useState(initial?.name || "");
   const [stock, setStock] = useState(initial?.stock || 0);
-  const inputRef = useRef(null);
 
   const save = () => {
     if(!name.trim()) return;
-    onSave({
-      id: initial?.id || Date.now().toString(),
-      name: name.trim(),
-      stock,
-    });
+    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock });
   };
 
   return(
-    <ModalWrap onClose={onClose} width={360} onSave={save}>
+    <ModalWrap onClose={onClose} width={400} onSave={save}>
       <div style={{fontSize:17,fontWeight:800}}>{initial ? "DTF bearbeiten" : "DTF anlegen"}</div>
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
-        <input ref={inputRef} style={{...inp,width:"100%",boxSizing:"border-box"}} placeholder="z.B. Gemeindebau Front Print"
-          value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()}/>
+        <input
+          style={{background:"#f8f8f8",border:"1.5px solid #e8e8e8",borderRadius:10,color:"#111",padding:"12px 14px",fontSize:15,width:"100%",outline:"none",boxSizing:"border-box"}}
+          placeholder="z.B. Gemeindebau Front Print"
+          value={name}
+          onChange={e=>setName(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&save()}
+          autoFocus={false}
+        />
       </div>
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STÜCKZAHL</div>
-        <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
-          <button type="button" onClick={()=>setStock(s=>Math.max(0,s-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
-          <input type="number" inputMode="numeric" value={stock} onChange={e=>setStock(Math.max(0,parseInt(e.target.value)||0))}
-            style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
-          <button type="button" onClick={()=>setStock(s=>s+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
-        </div>
+        <DtfStockInput value={stock} onChange={setStock}/>
       </div>
-      <button onClick={save} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-        {initial ? "Speichern" : "Anlegen"} →
-      </button>
     </ModalWrap>
+  );
+}
+
+function DtfStockInput({value, onChange}){
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef(null);
+  const startEdit = () => { setDraft(String(value)); setEditing(true); setTimeout(()=>inputRef.current?.select(),30); };
+  const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onChange(n); setEditing(false); };
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center",background:"#f8f8f8",borderRadius:12,padding:"16px"}}>
+      <button type="button" onClick={()=>onChange(Math.max(0,value-1))} style={{width:44,height:44,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+      {editing
+        ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
+            onChange={e=>setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+            style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,border:"2px solid #3b82f6",borderRadius:12,padding:"10px 8px",outline:"none",background:"#fff"}}/>
+        : <span onDoubleClick={startEdit} style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,color:"#111",cursor:"text",padding:"10px 8px",borderRadius:12,border:"2px solid transparent",display:"inline-block"}}
+            title="Doppelklick zum Bearbeiten">{value}</span>
+      }
+      <button type="button" onClick={()=>onChange(value+1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+    </div>
   );
 }
 
