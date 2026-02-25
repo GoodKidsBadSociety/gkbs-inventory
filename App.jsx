@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.55
+// GKBS INVENTORY v1.56
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.55";
+const APP_VERSION = "v1.56";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1162,7 +1162,7 @@ function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
       <div style={{display:"flex",alignItems:"center",gap:16,background:"#f8f8f8",borderRadius:12,padding:"12px 16px"}}>
         <button onClick={()=>adj(-1)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:20,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
         <div style={{flex:1,textAlign:"center"}}>
-          <div style={{fontSize:36,fontWeight:900,color:item.stock===0?"#ef4444":item.stock<5?"#f97316":"#111",lineHeight:1}}>{item.stock}</div>
+          <DtfStockInput value={item.stock} onChange={v=>onUpdate({...item,stock:Math.max(0,v)})}/>
           <div style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:2}}>STÜCK AUF LAGER</div>
         </div>
         <button onClick={()=>adj(1)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:20,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
