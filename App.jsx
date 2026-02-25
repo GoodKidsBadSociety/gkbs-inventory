@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.41
+// GKBS INVENTORY v1.43
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.41";
+const APP_VERSION = "v1.43";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -389,7 +389,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
 }
 
 // ─── Production Card ──────────────────────────────────────────────
-function ProductionCard({prod,blank,onDelete,onEdit,onUpdate,onConfirmProduce}){
+function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmProduce}){
   const mobile=useIsMobile();
   const [lightbox,setLightbox]=useState(null);
   const isCap=prod.isCapOrder;
@@ -414,8 +414,14 @@ function ProductionCard({prod,blank,onDelete,onEdit,onUpdate,onConfirmProduce}){
     if(none===activeSizes.length)return "none";if(ok===activeSizes.length)return "ok";return "partial";
   };
   const feasibility=getFeasibility();
-  const fColor={"ok":"#16a34a","partial":"#f97316","none":"#ef4444","unknown":"#bbb"}[feasibility];
-  const fLabel={"ok":"✅ Blanks ok","partial":"⚠ Teilweise","none":"❌ Nicht genug","unknown":"— Kein Blank"}[feasibility];
+  // Calculate total blank stock available vs needed
+  const blankNeeded = totalQty;
+  const blankAvail = blank ? (isCap
+    ? (prod.capColors||[]).filter(cc=>cc.qty>0).reduce((a,cc)=>{const bs=(blank.capColors||[]).find(bc=>bc.id===cc.id||bc.name===cc.name);return a+(bs?.stock||0);},0)
+    : DEFAULT_SIZES.reduce((a,s)=>a+Math.min(((blank.stock||{})[s]||0),(prod.qty||{})[s]||0),0)
+  ) : 0;
+  const fOk = feasibility==="ok";
+  const fUnknown = feasibility==="unknown";
 
   const maxDone=(size)=>{const mQ=(prod.qty||{})[size]||0;const mS=(blank?.stock||{})[size]??mQ;return Math.min(mQ,mS);};
   const adjDone=(size,d)=>onUpdate({...prod,done:{...(prod.done||{}),[size]:Math.min(maxDone(size),Math.max(0,((prod.done||{})[size]||0)+d))}});
@@ -540,7 +546,20 @@ function ProductionCard({prod,blank,onDelete,onEdit,onUpdate,onConfirmProduce}){
 
       {/* ── Actions ── */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap",paddingTop:4,borderTop:"1px solid #f0f0f0"}}>
-        <span style={{fontSize:11,fontWeight:700,color:fColor}}>{fLabel}</span>
+        <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+          {!fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:fOk?"#dcfce7":"#fee2e2",color:fOk?"#16a34a":"#ef4444",border:`1px solid ${fOk?"#bbf7d0":"#fecaca"}`}}>
+            {fOk?"✅":"⛔️"} Blanks ({blankNeeded}/{blankAvail})
+          </span>}
+          {fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:"#f5f5f5",color:"#bbb",border:"1px solid #e8e8e8"}}>— Kein Blank</span>}
+          {dtfItem&&(()=>{
+            const needed=totalQty;
+            const avail=dtfItem.stock||0;
+            const ok=avail>=needed;
+            return <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:ok?"#dcfce7":"#fee2e2",color:ok?"#16a34a":"#ef4444",border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`}}>
+              {ok?"✅":"⛔️"} DTF ({needed}/{avail})
+            </span>;
+          })()}
+        </div>
         <div style={{display:"flex",gap:6}}>
           {prod.status!=="Fertig"&&<button onClick={onConfirmProduce} style={{padding:"9px 18px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14,display:"flex",alignItems:"center",gap:6}}><CHECK/>Bestätigen</button>}
           {prod.status==="Fertig"&&<span style={{fontSize:12,color:"#16a34a",fontWeight:700}}>✓ Abgeschlossen</span>}
@@ -1025,10 +1044,11 @@ function BestellbedarfModal({prods,products,onClose}){
 function DtfModal({initial, onClose, onSave}){
   const [name, setName] = useState(initial?.name || "");
   const [stock, setStock] = useState(initial?.stock || 0);
+  const [minStock, setMinStock] = useState(initial?.minStock || 0);
 
   const save = () => {
     if(!name.trim()) return;
-    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock });
+    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock, minStock });
   };
 
   return(
@@ -1048,6 +1068,10 @@ function DtfModal({initial, onClose, onSave}){
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STÜCKZAHL</div>
         <DtfStockInput value={stock} onChange={setStock}/>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SOLLBESTAND (MIN)</div>
+        <DtfStockInput value={minStock} onChange={setMinStock}/>
       </div>
     </ModalWrap>
   );
@@ -1200,7 +1224,7 @@ function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, o
   useEffect(()=>{ setTimeout(()=>inputRef.current?.select(), 50); }, []);
   return(
     <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(menge)}>
-      <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
+      <div style={{fontSize:17,fontWeight:800}}>{bestellModal?.isDtf?"🖨 DTF bestellen":"📦 Bestellung aufgeben"}</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
         <div style={{fontSize:12,color:"#888",marginTop:2}}>{label}{blank.color?" · "+blank.color:""}</div>
@@ -1309,8 +1333,9 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
-function BestellbedarfView({prods,products,onBestellen}){
+function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
+  const [subTab,setSubTab]=useState("textilien"); // "textilien" | "dtf"
   const [openSize,setOpenSize]=useState(null);
   const bedarfMap={};   // {blankId: {sizeOrColorId: needed}}
   const breakdownMap={}; // {blankId: {sizeOrColorId: [{name,qty,colorHex}]}}
@@ -1340,8 +1365,69 @@ function BestellbedarfView({prods,products,onBestellen}){
       });
     }
   });
+  // ── DTF bedarf berechnen ──
+  const dtfBedarfMap = {}; // {dtfId: {needed, avail, minStock, name}}
+  activeProds.forEach(prod => {
+    if(!prod.dtfId) return;
+    const totalQty = prod.isCapOrder
+      ? (prod.capColors||[]).reduce((a,c)=>a+c.qty,0)
+      : DEFAULT_SIZES.reduce((a,s)=>a+((prod.qty||{})[s]||0),0);
+    if(!dtfBedarfMap[prod.dtfId]) dtfBedarfMap[prod.dtfId] = {needed:0};
+    dtfBedarfMap[prod.dtfId].needed += totalQty;
+  });
+
   return(
     <div style={S.col12}>
+      {/* Sub-tabs */}
+      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
+        {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        ))}
+      </div>
+
+      {/* DTF Tab */}
+      {subTab==="dtf"&&(()=>{
+        const dtfEntries = (dtfItems||[]).map(dtf => {
+          const needed = (dtfBedarfMap[dtf.id]?.needed)||0;
+          const avail = dtf.stock||0;
+          const minStock = dtf.minStock||0;
+          const toOrder = Math.max(0, needed - avail);
+          const toOrderWithMin = Math.max(0, needed + minStock - avail);
+          return {dtf, needed, avail, minStock, toOrder, toOrderWithMin};
+        }).filter(e => e.needed > 0 || e.avail < e.dtf.minStock);
+        if(dtfEntries.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Kein DTF-Bedarf</div>;
+        return(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {dtfEntries.map(({dtf,needed,avail,minStock,toOrder,toOrderWithMin})=>{
+              const ok=toOrder===0, okWithMin=toOrderWithMin===0;
+              return(
+                <div key={dtf.id} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                    <div style={{width:32,height:32,borderRadius:8,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🖨</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:800}}>{dtf.name}</div>
+                      <div style={{fontSize:11,color:"#aaa"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
+                    </div>
+                    <button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
+                      style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
+                      <div style={{fontSize:9,color:ok?"#16a34a":"#ef4444",fontWeight:700}}>MIN</div>
+                      <div style={{fontSize:18,fontWeight:900,color:ok?"#16a34a":"#ef4444",lineHeight:1}}>{toOrder}</div>
+                    </button>
+                    {minStock>0&&<button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrderWithMin)}
+                      style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:"pointer",flexShrink:0}}>
+                      <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>MAX</div>
+                      <div style={{fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
+                    </button>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Textilien Tab */}
+      {subTab==="textilien"&&<>
       {Object.keys(bedarfMap).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine aktiven Aufträge</div>}
       {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
         const blank=products.find(p=>p.id===blankId);if(!blank)return null;
@@ -1405,6 +1491,7 @@ function BestellbedarfView({prods,products,onBestellen}){
           </div>
         );
       })}
+      </>}
     </div>
   );
 }
@@ -1670,39 +1757,45 @@ function AppInner({currentUser,onLogout}){
   };
 
   const handleBestellungConfirm = (menge) => {
-    const {blank, key, isCapKey, capColor} = bestellModal;
-    const label = isCapKey ? (capColor?.name || key) : key;
+    const {blank, key, isCapKey, capColor, isDtf, dtfName} = bestellModal;
+    const label = isDtf ? "DTF Transfer" : (isCapKey ? (capColor?.name || key) : key);
     const neu = {
       id: Date.now().toString(),
       produktId: blank.id,
-      produktName: blank.name,
+      produktName: isDtf ? (dtfName || blank.name) : blank.name,
       label,
       sizeKey: key,
       isCapKey,
       capColorId: capColor?.id || null,
+      isDtf: isDtf||false,
       menge,
       bestelltAm: new Date().toISOString(),
       status: "offen"
     };
     setBestellungen(b => [neu, ...b]);
-    log(`Bestellung aufgegeben – ${blank.name} | ${label}: ${menge} Stk`);
+    log(`Bestellung aufgegeben – ${neu.produktName}${isDtf?" (DTF)":" | "+label}: ${menge} Stk`);
     setBestellModal(null);
   };
 
   const handleWareneingang = (bestellung, mengeEingang) => {
-    // Add to product stock
-    setProducts(ps => ps.map(p => {
-      if(p.id !== bestellung.produktId) return p;
-      if(bestellung.isCapKey) {
-        const newCaps = (p.capColors||[]).map(c =>
-          c.id === bestellung.capColorId ? {...c, stock: (c.stock||0) + mengeEingang} : c
-        );
-        return {...p, capColors: newCaps};
-      } else {
-        const newStock = {...(p.stock||{}), [bestellung.sizeKey]: ((p.stock||{})[bestellung.sizeKey]||0) + mengeEingang};
-        return {...p, stock: newStock};
-      }
-    }));
+    if(bestellung.isDtf && bestellung.dtfId) {
+      // Add to DTF stock
+      setDtfItems(d=>d.map(x=>x.id===bestellung.dtfId?{...x,stock:(x.stock||0)+mengeEingang}:x));
+    } else {
+      // Add to product stock
+      setProducts(ps => ps.map(p => {
+        if(p.id !== bestellung.produktId) return p;
+        if(bestellung.isCapKey) {
+          const newCaps = (p.capColors||[]).map(c =>
+            c.id === bestellung.capColorId ? {...c, stock: (c.stock||0) + mengeEingang} : c
+          );
+          return {...p, capColors: newCaps};
+        } else {
+          const newStock = {...(p.stock||{}), [bestellung.sizeKey]: ((p.stock||{})[bestellung.sizeKey]||0) + mengeEingang};
+          return {...p, stock: newStock};
+        }
+      }));
+    }
     // Mark as erledigt
     setBestellungen(b => b.map(x => x.id === bestellung.id ? {...x, status:"erledigt", mengeErhalten: mengeEingang, erhaltenAm: new Date().toISOString()} : x));
     log(`Wareneingang – ${bestellung.produktName} | ${bestellung.label}: ${mengeEingang} Stk zum Bestand addiert`);
@@ -2042,7 +2135,7 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} onBestellen={handleBestellen}/>}
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} onBestellen={handleBestellen} onBestellenDtf={(dtf,menge)=>setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id})}/>}
 
         {/* Production */}
         {view==="production"&&(
@@ -2061,7 +2154,7 @@ function AppInner({currentUser,onLogout}){
             <div style={S.col10}>
               {filteredProds.map(prod=>(
                 <div key={prod.id} draggable onDragStart={e=>onDragStart(e,prod.id)} onDragEnter={()=>onDragEnter(null,prod.id)} onDragEnd={onDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===prod.id?0.45:1,transition:"opacity 0.15s",cursor:"grab"}}>
-                  <ProductionCard prod={prod} blank={products.find(p=>p.id===prod.blankId)}
+                  <ProductionCard prod={prod} blank={products.find(p=>p.id===prod.blankId)} dtfItem={prod.dtfId?dtfItems.find(d=>d.id===prod.dtfId):null}
                     onDelete={()=>setConfirmDelete({name:prod.name,onConfirm:()=>setProds(ps=>ps.filter(x=>x.id!==prod.id))})}
                     onEdit={()=>setShowPAModal(prod)}
                     onUpdate={u=>{
