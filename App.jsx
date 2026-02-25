@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.58
+// GKBS INVENTORY v1.60
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.58";
+const APP_VERSION = "v1.60";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1081,10 +1081,15 @@ function DtfModal({initial, onClose, onSave}){
   const [stock, setStock] = useState(initial?.stock || 0);
   const [minStock, setMinStock] = useState(initial?.minStock || 0);
   const [designsPerMeter, setDesignsPerMeter] = useState(initial?.designsPerMeter || 1);
+  const [pricePerMeter, setPricePerMeter] = useState(initial?.pricePerMeter!=null?String(initial.pricePerMeter):"");
+
+  const dpm = Math.max(1, designsPerMeter);
+  const ppm = parseFloat(pricePerMeter)||null;
+  const pricePerPiece = ppm!=null ? ppm/dpm : null;
 
   const save = () => {
     if(!name.trim()) return;
-    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock, minStock, designsPerMeter });
+    onSave({ id: initial?.id || Date.now().toString(), name: name.trim(), stock, minStock, designsPerMeter, pricePerMeter: ppm });
   };
 
   return(
@@ -1113,6 +1118,17 @@ function DtfModal({initial, onClose, onSave}){
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>DESIGNS PRO METER</div>
         <div style={{fontSize:11,color:"#bbb",marginBottom:8}}>Wie viele Folien/Designs passen auf 1 Meter?</div>
         <DtfStockInput value={designsPerMeter} onChange={v=>setDesignsPerMeter(Math.max(1,v))}/>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>PREIS PRO METER (€)</div>
+        <div style={{position:"relative"}}>
+          <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span>
+          <input type="number" min="0" step="0.01" placeholder="z.B. 10.00" value={pricePerMeter} onChange={e=>setPricePerMeter(e.target.value)}
+            style={{background:"#f8f8f8",border:"1.5px solid #e8e8e8",borderRadius:10,color:"#111",padding:"12px 14px",paddingLeft:28,fontSize:15,width:"100%",outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        {pricePerPiece!=null&&<div style={{fontSize:11,color:"#3b82f6",marginTop:6,fontWeight:700}}>= €{pricePerPiece.toFixed(2)} pro Folie/Design</div>}
+      </div>
+      
       </div>
     </ModalWrap>
   );
@@ -1490,7 +1506,7 @@ function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf})
           const toOrderWithMinM = dpm>1 ? Math.ceil(toOrderWithMin/dpm) : toOrderWithMin;
           const unit = dpm>1 ? "m" : "Stk";
           return {dtf, needed, avail, minStock, dpm, toOrder, toOrderWithMin, toOrderM, toOrderWithMinM, unit};
-        }).filter(e => e.needed > 0 || e.avail < e.dtf.minStock);
+        }).filter(e => e.toOrder > 0 || e.toOrderWithMin > 0);
         if(dtfEntries.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Kein DTF-Bedarf</div>;
         return(
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -2058,7 +2074,9 @@ function AppInner({currentUser,onLogout}){
 
   const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(!search||p.name.toLowerCase().includes(search.toLowerCase())));
   const totalQty=products.reduce((a,p)=>a+(totalStock(p)),0);
-  const totalVal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
+  const textilVal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
+  const dtfVal=dtfItems.reduce((a,d)=>{if(d.pricePerMeter==null)return a;const ppp=d.pricePerMeter/Math.max(1,d.designsPerMeter||1);return a+ppp*d.stock;},0);
+  const totalVal=textilVal+dtfVal;
   const lowCount=products.filter(p=>p.category==="Cap"?(p.capColors||[]).some(c=>c.stock>0&&c.stock<=LOW_STOCK):Object.values(p.stock||{}).some(v=>v>0&&v<=LOW_STOCK)).length;
   const outCount=products.filter(p=>p.category==="Cap"?(p.capColors||[]).every(c=>c.stock===0):Object.values(p.stock||{}).every(v=>v===0)).length;
   const activeProdsArr=prods.filter(p=>p.status!=="Fertig");
@@ -2297,7 +2315,7 @@ function AppInner({currentUser,onLogout}){
         </div>
 
         {/* Finance */}
-        {view==="finance"&&<FinanceView products={products}/>}
+        {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
           onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
           onDelete={id=>{const item=dtfItems.find(x=>x.id===id);setDtfItems(d=>d.filter(x=>x.id!==id));if(item)log(`DTF gelöscht: ${item.name}`);}}
