@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.2.4";
+const APP_VERSION = "v2.2.5";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -634,14 +634,14 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
 
   if(mobile){
     return(
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#f8f8f8",borderRadius:10,padding:"10px 12px",position:"relative"}}>
-        <span style={{fontSize:14,color:"#555",fontWeight:800,width:36}}>{size}</span>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:10,padding:"10px 12px",position:"relative",opacity:isOut?0.6:1}}>
+        <span style={{fontSize:14,color:isOut?"#bbb":"#555",fontWeight:800,width:36}}>{size}</span>
         {editing?(
           <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
-            style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
+            style={{fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
         ):(
-          <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
+          <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
             {value}
             {minVal>0&&<span style={{fontSize:10,color:belowMin?"#ef4444":"#bbb",fontWeight:700,marginLeft:3}}>/{minVal}</span>}
           </span>
@@ -654,15 +654,15 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:0,position:"relative",height:110}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:0,position:"relative",height:110,opacity:isOut?0.6:1}}>
       <div style={{width:20,height:20,borderRadius:"50%",background:"transparent",flexShrink:0}}/>
-      <span style={{fontSize:14,color:"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
+      <span style={{fontSize:14,color:isOut?"#bbb":"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
-          style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
+          style={{fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
       ):(
-        <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
+        <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
       )}
       {minVal>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:belowMin?"#ef4444":"#bbb",fontWeight:700}}>/{minVal}</span>}
       <div style={{display:"flex",gap:4}}>
@@ -796,7 +796,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
 // ─── Product Card ─────────────────────────────────────────────────
 function ProductCard({product,onUpdate,onDelete,onEdit}){
   const mobile=useIsMobile();
-  const isCap=product.category==="Cap";
+  const isCap=product.category==="Cap"||product.category==="Bag";
   const total=totalStock(product);
   const vals=isCap?(product.capColors||[]).map(c=>c.stock):Object.values(product.stock||{});
   const allOut=vals.every(v=>v===0),someOut=!allOut&&vals.some(v=>v===0),hasLow=!allOut&&!someOut&&vals.some(v=>v>0&&v<=LOW_STOCK);
@@ -832,8 +832,8 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
       {/* Stock grid */}
       {isCap?(
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {(product.capColors||[]).map(c=>{
-            const isOut=c.stock===0,isLow=!isOut&&c.stock<=LOW_STOCK;
+          {(product.capColors||[]).filter(c=>c.stock>0).map(c=>{
+            const isLow=c.stock<=LOW_STOCK;
             return(
               <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
