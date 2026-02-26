@@ -230,7 +230,7 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
         ? (capColor?.stColorCode || blank.stColorCode || "")
         : (blank.stColorCode || "") + (sizeMap[key] || key);
 
-      rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${projectName}`);
+      rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${fullName}`);
     });
   });
 
@@ -242,9 +242,12 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
   const a = document.createElement("a");
   a.href = url;
   const now = new Date();
-  const date = now.toISOString().slice(0,10).replace(/-/g,"");
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const yyyy = now.getFullYear();
   const time = now.toTimeString().slice(0,8).replace(/:/g,"");
-  a.download = `GKBS_${projectName}_${date}_${time}.csv`;
+  const fullName = `GKBS_${projectName}_${dd}${mm}${yyyy}_${time}`;
+  a.download = fullName+".csv";
   a.click();
   URL.revokeObjectURL(url);
 }
