@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.4.6";
+const APP_VERSION = "v2.4.7";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -2389,19 +2389,14 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
         <div style={{width:36,height:36,borderRadius:10,background:"#96bf48",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🛍</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:15,fontWeight:800}}>Shopify Sync</div>
-          <div style={{fontSize:11,color:"#aaa"}}>goodkidsbadsociety.myshopify.com · {shopifyProds.length} Produkte</div>
+          <div style={{fontSize:11,color:"#aaa",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:connected===true?"#16a34a":connected===false?"#ef4444":"#d1d5db",display:"inline-block",flexShrink:0}}/>
+            <span>{connected===true?"Verbunden · ":connected===false?"Nicht verbunden · ":""}</span>
+            <span>goodkidsbadsociety.myshopify.com · {shopifyProds.length} Produkte</span>
+          </div>
         </div>
         {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
-        <button onClick={loadAll} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
-      </div>
-
-      {/* Connection status */}
-      <div style={{background:connected===true?"#f0fdf4":connected===false?"#fef2f2":"#f8f8f8",borderRadius:12,padding:"10px 16px",border:`1px solid ${connected===true?"#bbf7d0":connected===false?"#fecaca":"#e8e8e8"}`,display:"flex",gap:10,alignItems:"center"}}>
-        <span style={{fontSize:18}}>{connected===true?"🟢":connected===false?"🔴":"⚪"}</span>
-        <div style={{flex:1,fontSize:13,fontWeight:700,color:connected===true?"#16a34a":connected===false?"#ef4444":"#888"}}>
-          {connected===true?"Shopify verbunden – Token wird automatisch verwaltet":connected===false?"Verbindung fehlgeschlagen — Apps Script prüfen":"Verbindung wird geprüft..."}
-        </div>
-        <button onClick={()=>checkConnection().then(()=>loadAll())} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>⟳ Testen</button>
+        <button onClick={()=>{checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
       </div>
 
       {/* Sub-tabs */}
