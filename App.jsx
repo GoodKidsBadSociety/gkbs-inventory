@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.79
+// GKBS INVENTORY v1.80
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.79";
+const APP_VERSION = "v1.80";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1568,10 +1568,10 @@ function AllBestellungModal({blank, sizes, onClose, onConfirm}){
   const setM=(key,val)=>setMengen(m=>({...m,[key]:Math.max(1,val)}));
   const startEdit=(key)=>{setDraft(String(mengen[key]));setEditing(key);setTimeout(()=>inputRefs.current[key]?.select(),30);};
   const commitEdit=(key)=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)setM(key,n);setEditing(null);};
-  const handleConfirm=()=>onConfirm(mengen);
+  const handleConfirm=()=>onConfirm(mengen, blank, sizes);
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={handleConfirm} footer={<button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>Zur Bestellliste hinzufügen →</button>}>
+    <ModalWrap onClose={onClose} width={400} footer={<button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>Zur Bestellliste hinzufügen →</button>}>
       <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"12px 14px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
@@ -1781,6 +1781,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const [openSize,setOpenSize]=useState(null);
   const [allModal,setAllModal]=useState(null);
   const allModalRef=useRef(null);
+  // allModal managed locally, rendered via portal pattern at top of return
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -1840,8 +1841,11 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const handleAllConfirm=(mengen)=>{
     const modal=allModalRef.current;
     if(!modal)return;
+    // If called from green checkmark (no mengen arg), use confirmFn which has latest state
+    if(!mengen && allModalRef.confirmFn){ allModalRef.confirmFn(); return; }
+    const data=mengen||{};
     modal.sizes.forEach(s=>{
-      const menge=(mengen&&mengen[s.key])||s.toOrder;
+      const menge=data[s.key]||s.toOrder;
       if(!menge||menge<=0)return;
       const isCapKey=s.key.startsWith("cap_");
       const capColor=isCapKey?(modal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
@@ -1852,7 +1856,17 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   };
   return(
     <div style={S.col12}>
-      {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>{allModalRef.current=null;setAllModal(null);}} onConfirm={handleAllConfirm}/>}
+      {allModal&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={()=>{allModalRef.current=null;setAllModal(null);}}>
+          <div style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:480,maxHeight:"90dvh",display:"flex",flexDirection:"column",boxShadow:"0 -4px 40px rgba(0,0,0,0.18)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
+              <button onClick={handleAllConfirm} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✓</button>
+              <button onClick={()=>{allModalRef.current=null;setAllModal(null);}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✕</button>
+            </div>
+            <AllBestellungModalInner sizes={allModal.sizes} blank={allModal.blank} onConfirm={handleAllConfirm} allModalRef={allModalRef}/>
+          </div>
+        </div>
+      )}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
