@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.75
+// GKBS INVENTORY v1.76
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.75";
+const APP_VERSION = "v1.76";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1556,22 +1556,24 @@ function FinanceView({products}){
 // ─── Bestellung aufgeben Modal ────────────────────────────────────
 
 function AllBestellungModal({blank, sizes, onClose, onConfirm}){
-  // mengen: {key: menge}
   const [mengen, setMengen] = useState(()=>{
     const m={};
     sizes.forEach(s=>{m[s.key]=s.toOrder>0?s.toOrder:1;});
     return m;
   });
-  const [editing, setEditing] = useState(null); // key being edited
+  const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState("");
   const inputRefs = useRef({});
+  const mengenRef = useRef(mengen);
+  useEffect(()=>{mengenRef.current=mengen;},[mengen]);
 
   const setM=(key,val)=>setMengen(m=>({...m,[key]:Math.max(1,val)}));
   const startEdit=(key)=>{setDraft(String(mengen[key]));setEditing(key);setTimeout(()=>inputRefs.current[key]?.select(),30);};
   const commitEdit=(key)=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)setM(key,n);setEditing(null);};
+  const handleConfirm=()=>onConfirm(mengenRef.current);
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={()=>onConfirm(mengen)}>
+    <ModalWrap onClose={onClose} width={400} onSave={handleConfirm}>
       <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"12px 14px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
@@ -1602,7 +1604,7 @@ function AllBestellungModal({blank, sizes, onClose, onConfirm}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 2px"}}>
         <span style={{fontSize:12,color:"#aaa",fontWeight:600}}>Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong></span>
       </div>
-      <button onClick={()=>onConfirm(mengen)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+      <button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
         Zur Bestellliste hinzufügen →
       </button>
     </ModalWrap>
