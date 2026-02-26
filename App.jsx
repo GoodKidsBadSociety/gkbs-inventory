@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.81";
+const APP_VERSION = "v1.95";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1751,7 +1751,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
         );
       })}
       <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{grandQty} Stück total</div></div>
+        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>BLANKS LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{grandQty} Stück total</div></div>
         <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{grandTotal.toFixed(2)}</div>
       </div>
       </>}
@@ -1769,6 +1769,11 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
         };
         return <VerlustTab products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerluste} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>;
       })()}
+      {/* Combined total */}
+      <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:4}}>
+        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Blanks + DTF</div></div>
+        <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{(grandTotal+dtfTotal).toFixed(2)}</div>
+      </div>
     </div>
   );
 }
@@ -2937,15 +2942,7 @@ function AppInner({currentUser,onLogout}){
       </div>
 
       <div style={{padding:mobile?"12px 12px 100px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
-        {/* Stats row */}
-        <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:10,marginBottom:mobile?14:20}}>
-          {[{label:"Blanks",value:products.length},{label:"Stück",value:totalQty},{label:"Lagerwert",value:`€${totalVal.toFixed(2)}`},{label:"Aufträge",value:activeProdsArr.length,color:activeProdsArr.length>0?"#a16207":"#111"}].map(s=>(
-            <div key={s.label} style={{background:"#fff",borderRadius:12,padding:mobile?"10px 12px":"14px 18px",border:"1px solid #ebebeb"}}>
-              <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.7,marginBottom:2}}>{s.label.toUpperCase()}</div>
-              <div style={{fontSize:mobile?20:24,fontWeight:900,color:s.color||"#111",lineHeight:1}}>{s.value}</div>
-            </div>
-          ))}
-        </div>
+
 
         {/* Tab bar */}
         <div style={{display:"flex",gap:3,marginBottom:mobile?14:18,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
