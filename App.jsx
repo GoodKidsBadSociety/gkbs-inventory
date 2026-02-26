@@ -2496,9 +2496,26 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                 </div>
                 {expanded&&variants.length>0&&(()=>{
                   // Group variants by color – extract from "Size / Color" format
+                  const ALL_SIZES_SET = new Set(["XXS","XS","S","M","L","XL","XXL","XXXL","OS","ONE SIZE","O/S"]);
                   const getColor = (v) => {
                     const parts = (v.title||"").split("/").map(p=>p.trim());
-                    return parts.length > 1 ? parts.slice(1).join(" / ") : parts[0] || "Default";
+                    if(parts.length <= 1) return parts[0] || "Default";
+                    // Check which part is a size – the other is the color
+                    const firstIsSize = ALL_SIZES_SET.has(parts[0].toUpperCase());
+                    const lastIsSize = ALL_SIZES_SET.has(parts[parts.length-1].toUpperCase());
+                    if(firstIsSize && !lastIsSize) return parts.slice(1).join(" / ");
+                    if(!firstIsSize && lastIsSize) return parts.slice(0, -1).join(" / ");
+                    // Default: first part = color
+                    return parts[0];
+                  };
+                  const getSize = (v) => {
+                    const parts = (v.title||"").split("/").map(p=>p.trim());
+                    if(parts.length <= 1) return parts[0] || "";
+                    const firstIsSize = ALL_SIZES_SET.has(parts[0].toUpperCase());
+                    if(firstIsSize) return parts[0];
+                    const lastIsSize = ALL_SIZES_SET.has(parts[parts.length-1].toUpperCase());
+                    if(lastIsSize) return parts[parts.length-1];
+                    return parts[parts.length-1];
                   };
                   const colorMap = {};
                   variants.forEach(v=>{
@@ -2534,7 +2551,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                           {/* Individual variants */}
                           {cvars.map(v=>{
                             const qty = v.inventory_quantity||0;
-                            const sizePart = (v.title||"").split("/")[0].trim();
+                            const sizePart = getSize(v);
                             return(
                               <div key={v.id} style={{display:"flex",alignItems:"center",padding:hasMultipleColors?"6px 16px 6px 32px":"8px 16px",borderTop:"1px solid #f8f8f8",fontSize:13}}>
                                 <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{hasMultipleColors?sizePart:(v.title||"Default")}</div>
