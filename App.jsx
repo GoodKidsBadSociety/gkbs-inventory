@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.84
+// GKBS INVENTORY v1.85
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.84";
+const APP_VERSION = "v1.85";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1822,25 +1822,24 @@ function AllButtons({blank, relKeys, sizeNeeds, alreadyOrdered, allOrdered, onOp
       <button type="button"
         disabled={allOrdered||minSizes.length===0}
         style={{padding:"6px 12px",borderRadius:9,border:"1px solid #fecaca",background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1}}
-        onClick={()=>{ if(!allOrdered&&minSizes.length>0) onOpen({blank,sizes:minSizes}); }}>
+        onClick={()=>{ if(!allOrdered&&minSizes.length>0) onOpenAllModal({blank,sizes:minSizes}); }}>
         ALL MIN
       </button>
       <button type="button"
         disabled={allOrdered||maxSizes.length===0}
         style={{padding:"6px 12px",borderRadius:9,border:"1px solid #fed7aa",background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1}}
-        onClick={()=>{ if(!allOrdered&&maxSizes.length>0) onOpen({blank,sizes:maxSizes}); }}>
+        onClick={()=>{ if(!allOrdered&&maxSizes.length>0) onOpenAllModal({blank,sizes:maxSizes}); }}>
         ALL MAX
       </button>
     </div>
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,onOpenAllModal}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
-  const [allModal,setAllModal]=useState(null);
-  const allModalRef=useRef(null);
+
   // allModal managed locally, rendered via portal pattern at top of return
   const bedarfMap={};
   const breakdownMap={};
@@ -1900,7 +1899,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 
   return(
     <div style={S.col12}>
-      {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
@@ -2001,12 +1999,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allOrdered||minSizes.length===0}
                       style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
-                      onClick={()=>{if(!allOrdered&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
+                      onClick={()=>{if(!allOrdered&&minSizes.length>0)onOpenAllModal({blank,sizes:minSizes});}}>
                       ALL MIN
                     </button>
                     <button type="button" disabled={allOrdered||maxSizes.length===0}
                       style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
-                      onClick={()=>{if(!allOrdered&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
+                      onClick={()=>{if(!allOrdered&&maxSizes.length>0)onOpenAllModal({blank,sizes:maxSizes});}}>
                       ALL MAX
                     </button>
                   </div>
@@ -2635,6 +2633,7 @@ function AppInner({currentUser,onLogout}){
   const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
+  const [allModal,setAllModal]=useState(null);
   const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
   const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
@@ -2686,6 +2685,7 @@ function AppInner({currentUser,onLogout}){
         else{setDtfItems(d=>d.map(x=>x.id===item.id?item:x));log(`DTF bearbeitet: ${item.name}`);}
         setShowDtfModal(false);
       }}/>}
+    {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={directAddBestellung}/>}
     {bestellModal&&<BestellungAufgebenModal blank={bestellModal.blank} sizeKey={bestellModal.key} isCapKey={bestellModal.isCapKey} capColor={bestellModal.capColor} toOrder={bestellModal.toOrder} isDtf={bestellModal.isDtf||false} onClose={()=>setBestellModal(null)} onConfirm={handleBestellungConfirm}/>}
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
