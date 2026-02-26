@@ -524,7 +524,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
     return(
       <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"12px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
         <span style={{fontSize:14,color:"#555",fontWeight:800,width:40,flexShrink:0}}>{size}</span>
-        <div style={{flex:1}}>
+        <div style={{flex:1,textAlign:"center"}}>
           <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
         </div>
         <span style={{fontSize:12,color:sCol(avail),fontWeight:700,marginRight:4,flexShrink:0}}>↓{avail}</span>
@@ -862,7 +862,7 @@ function ArchivedCard({prod,blank,onDelete}){
 function ModalWrap({onClose,onSave,children,footer,width=600}){
   const mobile=useIsMobile();
   return(
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:100,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:300,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{
         background:"#fff",
         borderRadius:mobile?"20px 20px 0 0":18,
@@ -1828,7 +1828,7 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
   };
 
   return (
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"}}
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center"}}
       onClick={onClose}>
       <div style={{background:"#fff",borderRadius:18,width:400,maxWidth:"95vw",maxHeight:"85vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}}
         onClick={e=>e.stopPropagation()}>
@@ -2928,7 +2928,7 @@ function AppInner({currentUser,onLogout}){
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
       {/* ── Header ── */}
-      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
+      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
@@ -2979,8 +2979,8 @@ function AppInner({currentUser,onLogout}){
           </div>
         </div>
         </div>
-        {/* Tab bar */}
-        <div style={{overflowX:"auto",padding:mobile?"4px 14px 10px":"4px 24px 12px",marginTop:4}}>
+        {/* Tab bar – desktop only, mobile uses bottom bar */}
+        {!mobile&&<div style={{overflowX:"auto",padding:"4px 24px 12px",marginTop:4}}>
           <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
             {TABS.map(([v,lbl])=>(
               <button key={v} onClick={()=>setView(v)}
@@ -2991,7 +2991,7 @@ function AppInner({currentUser,onLogout}){
               </button>
             ))}
           </div>
-        </div>
+        </div>}
       </div>
 
       <div style={{padding:mobile?"12px 12px 100px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
