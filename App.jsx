@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.95";
+const APP_VERSION = "v1.96";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -204,7 +204,7 @@ const STANLEY_STELLA_PRESETS = [
 ];
 
 // ─── Stanley/Stella CSV Export ────────────────────────────────────
-function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
+function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvSelected) {
   const rows = [];
   rows.push("ProductId,Quantity,UnitOfMeasureId,VariantId,Project");
 
@@ -217,6 +217,7 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
 
     Object.entries(sizeNeeds).forEach(([key, needed]) => {
       if(!needed || needed <= 0) return;
+      if(csvSelected && Object.keys(csvSelected).length>0 && !csvSelected[blankId+"__"+key]) return;
       // Calculate avail and toOrder
       const isCapKey = key.startsWith("cap_");
       const capColor = isCapKey ? (blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key) : null;
@@ -1784,62 +1785,75 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
 
 // ─── Bestellbedarf View (Tab) ─────────────────────────────────────
 
-// ─── Bestellung aufgeben Modal ────────────────────────────────────
-
-function AllBestellungModal({blank, sizes, onClose, onConfirm}){
-  const [mengen, setMengen] = useState(()=>{
-    const m={};
-    sizes.forEach(s=>{m[s.key]=s.toOrder>0?s.toOrder:1;});
-    return m;
-  });
+// ─── ALL MIN/MAX Modal ────────────────────────────────────────────
+function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
+  const init = {};
+  sizes.forEach(s=>{ init[s.key] = s.toOrder > 0 ? s.toOrder : 1; });
+  const [mengen, setMengen] = useState(init);
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState("");
-  const inputRefs = useRef({});
-  const setM=(key,val)=>setMengen(m=>({...m,[key]:Math.max(1,val)}));
-  const startEdit=(key)=>{setDraft(String(mengen[key]));setEditing(key);setTimeout(()=>inputRefs.current[key]?.select(),30);};
-  const commitEdit=(key)=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)setM(key,n);setEditing(null);};
-  const handleConfirm=()=>onConfirm(mengen, blank, sizes);
+  const refs = useRef({});
 
-  return(
-    <ModalWrap onClose={onClose} width={400} footer={<button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>Zur Bestellliste hinzufügen →</button>}>
-      <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
-      <div style={{background:"#f8f8f8",borderRadius:12,padding:"12px 14px"}}>
-        <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
-        <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{blank.color||blank.category}</div>
-      </div>
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {sizes.map(s=>(
-          <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"10px 14px"}}>
-            <span style={{fontSize:13,fontWeight:800,color:"#444",flex:1}}>{s.label}</span>
-            <button type="button" onClick={()=>setM(s.key,mengen[s.key]-1)}
-              style={{width:34,height:34,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
-            {editing===s.key
-              ? <input ref={el=>inputRefs.current[s.key]=el} type="number" inputMode="numeric" value={draft}
-                  onChange={e=>setDraft(e.target.value)}
-                  onBlur={()=>commitEdit(s.key)}
-                  onKeyDown={e=>{if(e.key==="Enter")commitEdit(s.key);if(e.key==="Escape")setEditing(null);}}
-                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
-              : <span onDoubleClick={()=>startEdit(s.key)}
-                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"text"}}>
-                  {mengen[s.key]}
-                </span>
-            }
-            <button type="button" onClick={()=>setM(s.key,mengen[s.key]+1)}
-              style={{width:34,height:34,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
+  const setM = (key, val) => setMengen(m => ({...m, [key]: Math.max(1, val)}));
+  const startEdit = (key) => { setDraft(String(mengen[key])); setEditing(key); setTimeout(()=>refs.current[key]?.select(), 30); };
+  const commit = (key) => { const n = parseInt(draft); if (!isNaN(n) && n >= 1) setM(key, n); setEditing(null); };
+
+  const doConfirm = () => {
+    sizes.forEach(s => {
+      const menge = mengen[s.key] || s.toOrder;
+      if (menge <= 0) return;
+      const isCapKey = s.key.startsWith("cap_");
+      const capColor = isCapKey ? (blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key) : null;
+      onDirectAdd(blank, s.key, isCapKey, capColor, menge);
+    });
+    onClose();
+  };
+
+  return (
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"}}
+      onClick={onClose}>
+      <div style={{background:"#fff",borderRadius:18,width:400,maxWidth:"95vw",maxHeight:"85vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}}
+        onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
+          <div style={{fontSize:16,fontWeight:800}}>📦 {blank.name}</div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+        </div>
+        <div style={{overflowY:"auto",padding:"12px 20px",display:"flex",flexDirection:"column",gap:8,flex:1}}>
+          {sizes.map(s => (
+            <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"10px 14px"}}>
+              <span style={{fontSize:13,fontWeight:800,color:"#444",flex:1}}>{s.label}</span>
+              <button onClick={()=>setM(s.key, mengen[s.key]-1)}
+                style={{width:34,height:34,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
+              {editing===s.key
+                ? <input ref={el=>refs.current[s.key]=el} type="number" value={draft}
+                    onChange={e=>setDraft(e.target.value)}
+                    onBlur={()=>commit(s.key)}
+                    onKeyDown={e=>{if(e.key==="Enter")commit(s.key);if(e.key==="Escape")setEditing(null);}}
+                    style={{width:60,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
+                : <span onDoubleClick={()=>startEdit(s.key)}
+                    style={{width:60,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"pointer",userSelect:"none"}}>
+                    {mengen[s.key]}
+                  </span>
+              }
+              <button onClick={()=>setM(s.key, mengen[s.key]+1)}
+                style={{width:34,height:34,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0}}>
+          <div style={{fontSize:12,color:"#aaa",marginBottom:8,textAlign:"right"}}>
+            Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
           </div>
-        ))}
+          <button onClick={doConfirm}
+            style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+            Zur Bestellliste hinzufügen →
+          </button>
+        </div>
       </div>
-      <div style={{fontSize:12,color:"#aaa",fontWeight:600,textAlign:"right"}}>
-        Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
-      </div>
-      <div style={{position:"sticky",bottom:0,background:"#fff",paddingTop:8}}>
-        <button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-          Zur Bestellliste hinzufügen →
-        </button>
-      </div>
-    </ModalWrap>
+    </div>
   );
 }
+
 
 function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, isDtf, onClose, onConfirm}){
   const dpm = blank?.designsPerMeter||1;
@@ -2010,8 +2024,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
   const [allModal,setAllModal]=useState(null);
-  const allModalRef=useRef(null);
-  // allModal managed locally, rendered via portal pattern at top of return
+  const [csvSelected,setCsvSelected]=useState({});
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -2068,35 +2081,9 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     return {dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit};
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
-  const handleAllConfirm=(mengen)=>{
-    const modal=allModalRef.current;
-    if(!modal)return;
-    // If called from green checkmark (no mengen arg), use confirmFn which has latest state
-    if(!mengen && allModalRef.confirmFn){ allModalRef.confirmFn(); return; }
-    const data=mengen||{};
-    modal.sizes.forEach(s=>{
-      const menge=data[s.key]||s.toOrder;
-      if(!menge||menge<=0)return;
-      const isCapKey=s.key.startsWith("cap_");
-      const capColor=isCapKey?(modal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
-      onDirectAdd(modal.blank,s.key,isCapKey,capColor,menge);
-    });
-    allModalRef.current=null;
-    setAllModal(null);
-  };
   return(
     <div style={S.col12}>
-      {allModal&&(
-        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={()=>{allModalRef.current=null;setAllModal(null);}}>
-          <div style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:480,maxHeight:"90dvh",display:"flex",flexDirection:"column",boxShadow:"0 -4px 40px rgba(0,0,0,0.18)"}} onClick={e=>e.stopPropagation()}>
-            <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
-              <button onClick={handleAllConfirm} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✓</button>
-              <button onClick={()=>{allModalRef.current=null;setAllModal(null);}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✕</button>
-            </div>
-            <AllBestellungModalInner sizes={allModal.sizes} blank={allModal.blank} onConfirm={handleAllConfirm} allModalRef={allModalRef}/>
-          </div>
-        </div>
-      )}
+      {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
@@ -2151,7 +2138,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           {!hasAnyMissing
             ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
-                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS")}
+                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS",csvSelected)}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
                   ⬇ Stanley/Stella CSV
                 </button>
@@ -2171,6 +2158,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             const alreadyOrdered=(key)=>(bestellungen||[]).some(b=>!b.isDtf&&b.status==="offen"&&b.produktId===blankId&&b.sizeKey===key);
             const allOrdered=relKeys.every(k=>alreadyOrdered(k));
             const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
+            const hasStCode=!!blank.stProductId;
+            const productKeys=relKeys.map(k=>blankId+"__"+k);
+            const allCsvSelected=hasStCode&&productKeys.every(k=>csvSelected[k]);
+            const someCsvSelected=hasStCode&&productKeys.some(k=>csvSelected[k]);
+            const toggleProduct=()=>{const next=!allCsvSelected;setCsvSelected(s=>{const n={...s};productKeys.forEach(k=>{if(next)n[k]=true;else delete n[k];});return n;});};
+            const toggleKey=(key)=>{const ck=blankId+"__"+key;setCsvSelected(s=>{const n={...s};if(n[ck])delete n[ck];else n[ck]=true;return n;});};
             const minSizes=openKeys.map(key=>{
               const needed=sizeNeeds[key]||0;
               const isCapKey=key.startsWith("cap_");
@@ -2193,6 +2186,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
+                  {hasStCode&&<button type="button" onClick={toggleProduct}
+                    style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
+                    CSV
+                  </button>}
                   {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allOrdered||minSizes.length===0}
@@ -2229,6 +2226,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                             <div style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
                             {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
                           </div>
+                          {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
+                            style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
+                            CSV
+                          </button>}
                           <button type="button" disabled={ordered} onClick={(e)=>{e.stopPropagation();if(!ordered)onBestellen(blank,key,isCapKey,capColor,toOrder);}}
                             style={{background:ordered?"#f0f0f0":ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ordered?"#ddd":ok?"#bbf7d0":"#fecaca"}`,cursor:ordered?"not-allowed":"pointer",flexShrink:0,opacity:ordered?0.5:1}}>
                             <div style={{fontSize:9,color:ordered?"#bbb":ok?"#16a34a":"#ef4444",fontWeight:700}}>{ordered?"✓":"MIN"}</div>
