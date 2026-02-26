@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.83
+// GKBS INVENTORY v1.84
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.83";
+const APP_VERSION = "v1.84";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1586,7 +1586,10 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
           <div style={{fontSize:16,fontWeight:800}}>📦 {blank.name}</div>
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={(e)=>{e.stopPropagation();doConfirm();}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✓</button>
+            <button onClick={(e)=>{e.stopPropagation();onClose();}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+          </div>
         </div>
         {/* Sizes */}
         <div style={{overflowY:"auto",padding:"12px 20px",display:"flex",flexDirection:"column",gap:8,flex:1}}>
@@ -1616,7 +1619,7 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
           <div style={{fontSize:12,color:"#aaa",marginBottom:8,textAlign:"right"}}>
             Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
           </div>
-          <button onClick={doConfirm}
+          <button onClick={(e)=>{e.stopPropagation();doConfirm();}}
             style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
             Zur Bestellliste hinzufügen →
           </button>
