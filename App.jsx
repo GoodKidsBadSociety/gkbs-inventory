@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.1.3";
+const APP_VERSION = "v2.1.4";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1081,9 +1081,11 @@ function ModalWrap({onClose,onSave,children,footer,width=600}){
         width:mobile?"100%":width,
         maxWidth:"100vw",
         maxHeight:mobile?"92dvh":"90vh",
+        height:mobile?"92dvh":"auto",
         display:"flex",
         flexDirection:"column",
         boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
+        overflow:"hidden",
       }} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
           {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
