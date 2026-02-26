@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.2.5";
+const APP_VERSION = "v2.3.1";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -812,10 +812,10 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{fontSize:mobile?15:16,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{product.name}</div>
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#aaa"}}>{product.color}</span>}
-            {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>CAP</span>}
-            {allOut&&<span style={{fontSize:10,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"2px 7px",fontWeight:700}}>OUT</span>}
-            {someOut&&<span style={{fontSize:10,background:"#fff0f0",color:"#dc2626",borderRadius:6,padding:"2px 7px",fontWeight:700}}>VERY LOW</span>}
-            {hasLow&&<span style={{fontSize:10,background:"#fff7ed",color:"#f97316",borderRadius:6,padding:"2px 7px",fontWeight:700}}>LOW</span>}
+            {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category==="Bag"?"BAG":"CAP"}</span>}
+            {allOut&&<span style={{fontSize:10,background:"#ef4444",color:"#fff",borderRadius:6,padding:"2px 7px",fontWeight:800,letterSpacing:0.3}}>OUT</span>}
+            {someOut&&<span style={{fontSize:10,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"2px 7px",fontWeight:800,border:"1px solid #fecaca"}}>KRIT</span>}
+            {hasLow&&<span style={{fontSize:10,background:"#fff7ed",color:"#f97316",borderRadius:6,padding:"2px 7px",fontWeight:800,border:"1px solid #fed7aa"}}>LOW</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
@@ -1212,7 +1212,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
     onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});
   };
   return(
-    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640}>
+    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSaveProd()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{editing?"✓ Speichern":"✓ Anlegen"}</button></div>}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
       <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
@@ -1356,14 +1356,15 @@ function ProductModal({categories,initial,onClose,onSave}){
         <div style={{display:"flex",flexDirection:"column",gap:6}}>
           {/* Category buttons */}
           {!presetProduct&&(
-            <div style={{display:"flex",gap:6}}>
+            <div style={{display:"flex",gap:0,borderBottom:"2px solid #f0f0f0"}}>
               {["T-Shirt","Hoodie","Crewneck","Cap","Bag"].map(cat=>(
                 <button key={cat} type="button"
                   onClick={()=>{setPresetCat(cat);setShowPresets(true);}}
-                  style={{flex:1,padding:"8px 4px",borderRadius:10,border:"none",
-                    background:showPresets&&presetCat===cat?"#111":"#f0f0f0",
-                    color:showPresets&&presetCat===cat?"#fff":"#555",
-                    fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                  style={{flex:1,padding:"8px 4px",border:"none",background:"transparent",
+                    borderBottom:showPresets&&presetCat===cat?"2px solid #111":"2px solid transparent",
+                    marginBottom:-2,
+                    color:showPresets&&presetCat===cat?"#111":"#aaa",
+                    fontWeight:showPresets&&presetCat===cat?800:600,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>
                   {cat}
                 </button>
               ))}
@@ -1643,7 +1644,7 @@ function DtfModal({initial, onClose, onSave}){
   const [stock, setStock] = useState(initial?.stock || 0);
   const [minStock, setMinStock] = useState(initial?.minStock || 0);
   const [designsPerMeter, setDesignsPerMeter] = useState(initial?.designsPerMeter || 1);
-  const [pricePerMeter, setPricePerMeter] = useState(initial?.pricePerMeter!=null?String(initial.pricePerMeter):"");
+  const [pricePerMeter, setPricePerMeter] = useState(initial?.pricePerMeter!=null?String(initial.pricePerMeter):"9");
 
   const dpm = Math.max(1, designsPerMeter);
   const ppm = parseFloat(pricePerMeter)||null;
@@ -1655,7 +1656,7 @@ function DtfModal({initial, onClose, onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={save}>
+    <ModalWrap onClose={onClose} width={400} onSave={save} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>save()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{initial?"✓ Speichern":"✓ Anlegen"}</button></div>}>
       <div style={{fontSize:17,fontWeight:800}}>{initial ? "DTF bearbeiten" : "DTF anlegen"}</div>
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
@@ -2078,6 +2079,24 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
         <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{(grandTotal+dtfTotal).toFixed(2)}</div>
       </div>
     </div>
+  );
+}
+
+
+// ─── Scroll To Top Button ─────────────────────────────────────────
+function ScrollTopButton(){
+  const [show,setShow]=useState(false);
+  useEffect(()=>{
+    const onScroll=()=>setShow(window.scrollY>300);
+    window.addEventListener("scroll",onScroll,{passive:true});
+    return()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+  if(!show)return null;
+  return(
+    <button onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}
+      style={{position:"fixed",bottom:80,right:16,width:42,height:42,borderRadius:"50%",background:"#111",color:"#fff",border:"none",fontSize:18,cursor:"pointer",zIndex:200,boxShadow:"0 2px 12px rgba(0,0,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      ↑
+    </button>
   );
 }
 
@@ -2508,7 +2527,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     </button>
                   </div>
                 </div>
-                <div style={S.col6}>
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
                   {relKeys.map(key=>{
                     const needed=sizeNeeds[key]||0;
                     const isCapKey=key.startsWith("cap_");
@@ -3053,6 +3072,7 @@ function AppInner({currentUser,onLogout}){
   const [catFilter,setCatFilter]=useState("All");
   const [search,setSearch]=useState("");
   const [view,setView]=useState("production");
+  const [inventoryTab,setInventoryTab]=useState("textil");
   const [prodSubView,setProdSubView]=useState("Alle");
   const [showProdModal,setShowProdModal]=useState(false);
   const [showPAModal,setShowPAModal]=useState(false);
@@ -3175,7 +3195,7 @@ function AppInner({currentUser,onLogout}){
 
   // ─── PDF Export ───────────────────────────────────────────────
 
-  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
+  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
@@ -3239,7 +3259,7 @@ function AppInner({currentUser,onLogout}){
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div>{mobile&&syncStatus==="saving"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#f97316",animation:"pulse 1s infinite",flexShrink:0,alignSelf:"center"}}/>}{mobile&&syncStatus==="ok"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#16a34a",flexShrink:0,alignSelf:"center"}}/>}</div>
               <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:30,height:30,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:12,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                 {currentUser.avatar}
               </button>
@@ -3265,8 +3285,9 @@ function AppInner({currentUser,onLogout}){
             </button>
 {view==="inventory"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
-              <button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🗂{!mobile&&" Kategorien"}</button>
-              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button>
+              {inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🗂{!mobile&&" Kategorien"}</button>
+              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
+              {inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
             </>}
             {view==="production"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
@@ -3277,10 +3298,6 @@ function AppInner({currentUser,onLogout}){
             </>}
             {view==="finance"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
-            </>}
-            {view==="dtf"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
-              <button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>
             </>}
           </div>
         </div>
@@ -3375,6 +3392,18 @@ function AppInner({currentUser,onLogout}){
         {/* Inventory */}
         {view==="inventory"&&(
           <>
+            {/* Sub-tabs: Textil / DTF */}
+            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12,width:"fit-content"}}>
+              {[["textil","👕 Textil"],["dtf","🖨 DTF"]].map(([t,lbl])=>(
+                <button key={t} onClick={()=>setInventoryTab(t)} style={{padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+              ))}
+            </div>
+            {inventoryTab==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
+              onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
+              onDelete={id=>{const item=dtfItems.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name,onConfirm:()=>{setDtfItems(d=>d.filter(x=>x.id!==id));log(`DTF gelöscht: ${item.name}`);setConfirmDelete(null);}});}}
+              onEdit={item=>setShowDtfModal(item)}
+              onAdd={()=>setShowDtfModal("add")}/>}
+            {inventoryTab==="textil"&&<>
             {/* Search + filters – scrollable */}
             <div style={{display:"flex",gap:8,marginBottom:14,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
               <input placeholder="🔍 Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
@@ -3405,15 +3434,19 @@ function AppInner({currentUser,onLogout}){
                   </div>
                 ))}
             </div>
+            </>}
           </>
         )}
       </div>
 
+      {/* Scroll to top button */}
+      <ScrollTopButton/>
+
       {/* Mobile bottom tab bar */}
       {mobile&&(
-        <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"6px 0 env(safe-area-inset-bottom,8px)",zIndex:50}}>
+        <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"10px 0 env(safe-area-inset-bottom,12px)",zIndex:50}}>
           {TABS.map(([v,lbl])=>(
-            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 0",color:view===v?"#111":"#bbb"}}>
+            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#bbb"}}>
               <span style={{fontSize:18}}>{lbl.split(" ")[0]}</span>
               <span style={{fontSize:9,fontWeight:700}}>{lbl.split(" ").slice(1).join(" ")}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:6,background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
