@@ -2490,8 +2490,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                   </div>
                   <span style={{fontSize:14,color:"#bbb",flexShrink:0,transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
                   <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true});}}
-                    style={{padding:"6px 12px",borderRadius:8,border:"1px solid",borderColor:link?"#bbf7d0":varLinkCount>0?"#93c5fd":"#e8e8e8",background:link?"#f0fdf4":varLinkCount>0?"#eff6ff":"#f8f8f8",color:link?"#16a34a":varLinkCount>0?"#3b82f6":"#555",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
-                    {link?"✓ Verknüpft":varLinkCount>0?`🔗 ${varLinkCount}`:"🔗 Verknüpfen"}
+                    style={{width:40,height:40,borderRadius:10,border:"1px solid",borderColor:link?"#bbf7d0":varLinkCount>0?"#93c5fd":"#e8e8e8",background:link?"#f0fdf4":varLinkCount>0?"#eff6ff":"#f8f8f8",color:link?"#16a34a":varLinkCount>0?"#3b82f6":"#999",cursor:"pointer",fontWeight:700,fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
+                    {link?"🔗":varLinkCount>0?"🔗":"🔗"}
                   </button>
                 </div>
                 {expanded&&variants.length>0&&(()=>{
@@ -2547,8 +2547,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                             <div style={{fontSize:11,color:"#888",fontWeight:700}}>{cvars.length} Var.</div>
                             <div style={{fontSize:15,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#111",minWidth:30,textAlign:"right"}}>{groupInv}</div>
                             <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
-                              style={{padding:"5px 10px",borderRadius:8,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",color:colorLink?"#3b82f6":"#555",cursor:"pointer",fontWeight:700,fontSize:11}}>
-                              {colorLink?"✓ Verknüpft":"🔗 Verknüpfen"}
+                              style={{width:36,height:36,borderRadius:9,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",color:colorLink?"#3b82f6":"#999",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
+                              🔗
                             </button>
                           </div>}
                           {/* Individual variants */}
@@ -4119,7 +4119,7 @@ function AppInner({currentUser,onLogout}){
 
         {/* Shopify */}
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={SHEETS_URL}/>}
-        {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={(links)=>{setShopifyLinks(links);setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
+        {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);try{await fetch(SHEETS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
