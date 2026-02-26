@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.2";
+const APP_VERSION = "v2.0.3";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -25,9 +25,12 @@ async function sheetsLoad() {
   const url = SHEETS_URL;
   if (!url) return null;
   try {
-    const r = await fetch(url + "?action=load");
-    if (!r.ok) return null;
-    return await r.json();
+    const r = await fetch(url + "?action=load", {
+      redirect: "follow",
+      method: "GET",
+    });
+    const text = await r.text();
+    try { return JSON.parse(text); } catch { return null; }
   } catch { return null; }
 }
 
@@ -35,19 +38,22 @@ async function sheetsLogActivity(user, action){
   try{
     await fetch(SHEETS_URL,{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      redirect:"follow",
+      headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({action:"log",user,actionText:action,ts:new Date().toISOString()})
     });
   }catch(e){}
 }
 
-async function sheetsSave(products, prods, dtfItems, bestellungen, categories) {
+async function sheetsSave(products, prods, dtfItems, bestellungen, categories, verluste, promoGifts) {
   const url = SHEETS_URL;
   if (!url) return;
   try {
     await fetch(url, {
       method: "POST",
-      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories }),
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories, verluste, promoGifts }),
     });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 }
@@ -323,7 +329,7 @@ function useIsMobile() {
     window.addEventListener("resize",h);
     return ()=>window.removeEventListener("resize",h);
   },[]);
-  return w < 640;
+  return w < 900;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -524,7 +530,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
     return(
       <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"12px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
         <span style={{fontSize:14,color:"#555",fontWeight:800,width:40,flexShrink:0}}>{size}</span>
-        <div style={{flex:1}}>
+        <div style={{flex:1,textAlign:"center"}}>
           <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
         </div>
         <span style={{fontSize:12,color:sCol(avail),fontWeight:700,marginRight:4,flexShrink:0}}>↓{avail}</span>
@@ -862,7 +868,7 @@ function ArchivedCard({prod,blank,onDelete}){
 function ModalWrap({onClose,onSave,children,footer,width=600}){
   const mobile=useIsMobile();
   return(
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:100,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:300,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{
         background:"#fff",
         borderRadius:mobile?"20px 20px 0 0":18,
@@ -1828,7 +1834,7 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
   };
 
   return (
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"}}
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center"}}
       onClick={onClose}>
       <div style={{background:"#fff",borderRadius:18,width:400,maxWidth:"95vw",maxHeight:"85vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}}
         onClick={e=>e.stopPropagation()}>
@@ -2491,11 +2497,13 @@ function AppInner({currentUser,onLogout}){
   const categoriesRef=useRef(DEFAULT_CATEGORIES);
   const dtfItemsRef=useRef([]);
   const bestellungenRef=useRef([]);
+  const verlusteRef=useRef([]);
+  const promoRef=useRef([]);
 
   const log = (action) => logActivity(currentUser.name, action);
 
   // ── triggerSave (must be before setters that call it) ──────────
-  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories)=>{
+  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories, nextVerluste, nextPromo)=>{
     if(!SHEETS_URL)return;
     clearTimeout(saveTimeout.current);
     setSyncStatus("saving");
@@ -2505,7 +2513,9 @@ function AppInner({currentUser,onLogout}){
         nextProds||prodsRef.current,
         nextDtf||dtfItemsRef.current,
         nextBestellungen||bestellungenRef.current,
-        nextCategories||categoriesRef.current
+        nextCategories||categoriesRef.current,
+        nextVerluste||verlusteRef.current,
+        nextPromo||promoRef.current
       )
         .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
         .catch(()=>setSyncStatus("error"));
@@ -2574,6 +2584,26 @@ function AppInner({currentUser,onLogout}){
         } else {
           const rawDtf=localStorage.getItem("gkbs_dtf");
           if(rawDtf){const d=JSON.parse(rawDtf);__setDtfItems(d);dtfItemsRef.current=d;}
+        }
+      }catch(e){}
+      // Load verluste – prefer sheets, fallback localStorage
+      try{
+        if(data?.verluste && Array.isArray(data.verluste) && data.verluste.length>0){
+          setVerluste(data.verluste); verlusteRef.current=data.verluste;
+          localStorage.setItem("gkbs_verluste", JSON.stringify(data.verluste));
+        } else {
+          const raw=localStorage.getItem("gkbs_verluste");
+          if(raw){const v=JSON.parse(raw);setVerluste(v);verlusteRef.current=v;}
+        }
+      }catch(e){}
+      // Load promoGifts – prefer sheets, fallback localStorage
+      try{
+        if(data?.promoGifts && Array.isArray(data.promoGifts) && data.promoGifts.length>0){
+          setPromoGiftsRaw(data.promoGifts); promoRef.current=data.promoGifts;
+          localStorage.setItem("gkbs_promo", JSON.stringify(data.promoGifts));
+        } else {
+          const raw=localStorage.getItem("gkbs_promo");
+          if(raw){const p=JSON.parse(raw);setPromoGiftsRaw(p);promoRef.current=p;}
         }
       }catch(e){}
       setSyncStatus(data?"ok":"error");
@@ -2870,9 +2900,9 @@ function AppInner({currentUser,onLogout}){
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
-  const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}return next;});
+  const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}verlusteRef.current=next;triggerSave(null,null,null,null,null,next,null);return next;});
   const [promoGifts,setPromoGiftsRaw]=useState(()=>{try{const r=localStorage.getItem("gkbs_promo");return r?JSON.parse(r):[];}catch(e){return [];}});
-  const setPromoGifts=(fn)=>setPromoGiftsRaw(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_promo",JSON.stringify(next));}catch(e){}return next;});
+  const setPromoGifts=(fn)=>setPromoGiftsRaw(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_promo",JSON.stringify(next));}catch(e){}promoRef.current=next;triggerSave(null,null,null,null,null,null,next);return next;});
   const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
   const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
@@ -2928,7 +2958,7 @@ function AppInner({currentUser,onLogout}){
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
       {/* ── Header ── */}
-      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
+      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
@@ -2979,8 +3009,8 @@ function AppInner({currentUser,onLogout}){
           </div>
         </div>
         </div>
-        {/* Tab bar */}
-        <div style={{overflowX:"auto",padding:mobile?"4px 14px 10px":"4px 24px 12px",marginTop:4}}>
+        {/* Tab bar – desktop only, mobile uses bottom bar */}
+        {!mobile&&<div style={{overflowX:"auto",padding:"4px 24px 12px",marginTop:4}}>
           <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
             {TABS.map(([v,lbl])=>(
               <button key={v} onClick={()=>setView(v)}
@@ -2991,7 +3021,7 @@ function AppInner({currentUser,onLogout}){
               </button>
             ))}
           </div>
-        </div>
+        </div>}
       </div>
 
       <div style={{padding:mobile?"12px 12px 100px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
