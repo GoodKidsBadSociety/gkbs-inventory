@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.71
+// GKBS INVENTORY v1.72
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.71";
+const APP_VERSION = "v1.72";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1942,8 +1942,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onB
             </div>
           </div>
         );
-      })}
-      </>;})()}
+          })}
+        </div>
+      );
+    })()}
     </div>
   );
 }
