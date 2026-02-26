@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.6.1";
+const APP_VERSION = "v2.6.2";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2528,7 +2528,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                 );
               })}
             </div>
-          ))}
+          )));})()}
         </div>
       )}
 
