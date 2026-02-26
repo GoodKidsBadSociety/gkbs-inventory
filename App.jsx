@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.1.7";
+const APP_VERSION = "v2.2.1";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1096,7 +1096,8 @@ function ModalWrap({onClose,onSave,children,footer,width=600}){
         <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px 8px":"16px 26px 16px",display:"flex",flexDirection:"column",gap:14,flex:1,minHeight:0}}>
           {children}
         </div>
-        {footer&&<div style={{padding:mobile?"12px 16px env(safe-area-inset-bottom,16px)":"12px 26px 20px",flexShrink:0,borderTop:"1px solid #f0f0f0"}}>
+
+        {footer&&<div style={{padding:"12px 16px 20px",flexShrink:0,borderTop:"1px solid #f0f0f0",background:"#fff"}}>
           {footer}
         </div>}
       </div>
@@ -1164,12 +1165,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
     onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});
   };
   return(
-    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640} footer={
-      <div style={{display:"flex",gap:10}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={doSaveProd} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Anlegen"}</button>
-      </div>
-    }>
+    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
       <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
@@ -1275,7 +1271,9 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [stock,setStock]=useState(initial?.stock||mkQty());
   const [minStock,setMinStock]=useState(initial?.minStock||mkQty());
   const [capColors,setCapColors]=useState(initial?.capColors||[{id:mkId(),name:"Black",hex:"#111111",stock:0}]);
-  const isCap=category==="Cap";
+  // Cap-style (color variants, no sizes): Cap and Tasche categories
+  const CAP_STYLE_CATS=["Cap","Tasche"];
+  const isCap=CAP_STYLE_CATS.includes(category);
   const [showPresets, setShowPresets] = useState(false);
   const [presetProduct, setPresetProduct] = useState(null);
   const [presetCat, setPresetCat] = useState("T-Shirt");
@@ -1297,7 +1295,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={doSave} width={620}>
+    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSave()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>✓ Hinzufügen</button></div>}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
@@ -1401,10 +1399,6 @@ function ProductModal({categories,initial,onClose,onSave}){
           </div>
         </div>
       )}
-      <div style={{position:"sticky",bottom:0,background:"#fff",paddingTop:10,marginTop:4,display:"flex",gap:10,zIndex:10}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={doSave} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
-      </div>
     </ModalWrap>
   );
 }
@@ -1605,12 +1599,7 @@ function DtfModal({initial, onClose, onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={save} footer={
-      <div style={{display:"flex",gap:10}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={save} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{initial?"Speichern":"Anlegen"}</button>
-      </div>
-    }>
+    <ModalWrap onClose={onClose} width={400} onSave={save}>
       <div style={{fontSize:17,fontWeight:800}}>{initial ? "DTF bearbeiten" : "DTF anlegen"}</div>
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
@@ -3142,21 +3131,18 @@ function AppInner({currentUser,onLogout}){
 
   return(
     <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
-      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{if(showProdModal==="add"){setProducts(ps=>[...ps,p]);(() => {
-  const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
-  const stockParts=SIZES.filter(s=>(p.stock||{})[s]>0).map(s=>`${s}: ${p.stock[s]}`);
-  const stockStr=stockParts.length>0?` | Bestand: ${stockParts.join(", ")}`:"";
-  const priceStr=p.buyPrice?` | EK: €${p.buyPrice}`:"";
-  log(`Produkt angelegt – ${p.name}${stockStr}${priceStr}`);
-})();}else{setProducts(ps=>ps.map(x=>x.id===p.id?p:x));(() => {
-  const old=products.find(x=>x.id===p.id);
-  const parts=[];
-  if(old?.name!==p.name) parts.push(`Name: ${old?.name}→${p.name}`);
-  if(old?.buyPrice!==p.buyPrice) parts.push(`EK: €${old?.buyPrice||0}→€${p.buyPrice||0}`);
-  const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
-  SIZES.forEach(s=>{const ov=(old?.stock||{})[s]||0,nv=(p.stock||{})[s]||0;if(ov!==nv)parts.push(`${s}: ${ov}→${nv}`);});
-  log(parts.length>0?`Produkt bearbeitet – ${p.name} | ${parts.join(", ")}`:`Produkt gespeichert – ${p.name}`);
-})();}setShowProdModal(false);}}/>}
+      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{
+        try{
+          if(showProdModal==="add"){
+            setProducts(ps=>[...ps,p]);
+            try{log(`Produkt angelegt – ${p.name}`);}catch(e){}
+          }else{
+            setProducts(ps=>ps.map(x=>x.id===p.id?p:x));
+            try{log(`Produkt gespeichert – ${p.name}`);}catch(e){}
+          }
+        }catch(e){console.warn("save error",e);}
+        setShowProdModal(false);
+      }}/>}
       {showPAModal&&<ProductionModal products={products} dtfItems={dtfItems} initial={showPAModal==="add"?null:showPAModal} onClose={()=>setShowPAModal(false)} onSave={p=>{if(showPAModal==="add"){setProds(ps=>[...ps,p]);(() => {
   const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
   let qtyStr="";
