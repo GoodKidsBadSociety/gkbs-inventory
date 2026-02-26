@@ -2132,7 +2132,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
   );
 }
 
-function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGifts=[], setPromoGifts}){
+function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGifts=[], setPromoGifts, sheetsUrl}){
   const [open,setOpen]=useState({});
   const [finTab,setFinTab]=useState("blanks");
   const toggle=(id)=>setOpen(o=>({...o,[id]:!o[id]}));
@@ -2142,10 +2142,29 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
     if(!d.pricePerMeter) return a;
     return a+(d.pricePerMeter/Math.max(1,d.designsPerMeter||1))*(d.stock||0);
   },0);
+  // Shopify finance state
+  const [shopProds,setShopProds]=useState([]);
+  const [shopLoading,setShopLoading]=useState(false);
+  const [shopOpen,setShopOpen]=useState({});
+  const loadShopify=async()=>{
+    if(!sheetsUrl)return;
+    setShopLoading(true);
+    try{
+      const r=await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"});
+      const d=JSON.parse(await r.text());
+      if(d.products) setShopProds(d.products);
+    }catch(e){}
+    setShopLoading(false);
+  };
+  useEffect(()=>{if(finTab==="shopify"&&shopProds.length===0)loadShopify();},[finTab]);
+  // Filter out Online Exclusives
+  const shopFiltered=shopProds.filter(sp=>!ONLINE_EXCLUSIVE_PRODUCTS.some(oe=>sp.title.toUpperCase().includes(oe.toUpperCase())));
+  const shopGrandQty=shopFiltered.reduce((a,sp)=>(sp.variants||[]).reduce((b,v)=>b+(v.inventory_quantity||0),0)+a,0);
+  const shopGrandValue=shopFiltered.reduce((a,sp)=>(sp.variants||[]).reduce((b,v)=>b+(v.inventory_quantity||0)*parseFloat(v.price||0),0)+a,0);
   return(
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["blanks","👕 Textilien"],["dtf","🖨 DTF"],["verluste","📉 Verluste"]].map(([v,lbl])=>(
+        {[["blanks","👕 Textilien"],["dtf","🖨 DTF"],["verluste","📉 Verluste"],["shopify","🛍 Shopify"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -2239,6 +2258,56 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
         };
         return <VerlustTab products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerluste} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>;
       })()}
+      {finTab==="shopify"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {shopLoading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Lade Shopify Produkte...</div>}
+          {!shopLoading&&shopFiltered.map(sp=>{
+            const variants=sp.variants||[];
+            const totalQty=variants.reduce((a,v)=>a+(v.inventory_quantity||0),0);
+            const totalValue=variants.reduce((a,v)=>a+(v.inventory_quantity||0)*parseFloat(v.price||0),0);
+            const isOpen=shopOpen[sp.id];
+            return(
+              <div key={sp.id} style={{background:"#fff",borderRadius:14,border:"1px solid #ebebeb",overflow:"hidden"}}>
+                <div onClick={()=>setShopOpen(o=>({...o,[sp.id]:!o[sp.id]}))} style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",userSelect:"none"}}>
+                  <span style={{fontSize:12,color:"#bbb"}}>{isOpen?"▾":"▸"}</span>
+                  {sp.images?.[0]?.src
+                    ?<img src={sp.images[0].src} style={{width:28,height:28,borderRadius:6,objectFit:"cover",flexShrink:0}} alt=""/>
+                    :<div style={{width:28,height:28,borderRadius:6,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>👕</div>}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sp.title}</div>
+                    <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten</div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{fontSize:14,fontWeight:800,color:"#111"}}>€{totalValue.toFixed(2)}</div>
+                    <div style={{fontSize:11,color:"#bbb"}}>{totalQty} Stk</div>
+                  </div>
+                </div>
+                {isOpen&&(
+                  <div style={{background:"#fafafa",borderTop:"1px solid #f0f0f0"}}>
+                    {variants.map(v=>{
+                      const qty=v.inventory_quantity||0;
+                      const price=parseFloat(v.price||0);
+                      const lineTotal=qty*price;
+                      return(
+                        <div key={v.id} style={{display:"flex",alignItems:"center",padding:"8px 16px",borderTop:"1px solid #f0f0f0",fontSize:13}}>
+                          <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{v.title||"Default"}</div>
+                          <div style={{width:50,textAlign:"right",fontSize:12,color:"#888"}}>{qty} Stk</div>
+                          <div style={{width:60,textAlign:"right",fontSize:12,color:"#888"}}>€{price.toFixed(2)}</div>
+                          <div style={{width:80,textAlign:"right",fontSize:13,fontWeight:800,color:"#111"}}>€{lineTotal.toFixed(2)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {!shopLoading&&<div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>SHOPIFY WARENWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{shopGrandQty} Stück · {shopFiltered.length} Produkte</div></div>
+            <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{shopGrandValue.toFixed(2)}</div>
+          </div>}
+        </div>
+      )}
       {/* Combined total */}
       <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:4}}>
         <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Textilien + DTF</div></div>
@@ -4121,7 +4190,7 @@ function AppInner({currentUser,onLogout}){
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={SHEETS_URL}/>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);try{await fetch(SHEETS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
-        {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
+        {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={SHEETS_URL}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
           onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
           onDelete={id=>{const item=dtfItems.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name,onConfirm:()=>{setDtfItems(d=>d.filter(x=>x.id!==id));log(`DTF gelöscht: ${item.name}`);setConfirmDelete(null);}});}}
