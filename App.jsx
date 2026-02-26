@@ -2528,7 +2528,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                 );
               })}
             </div>
-          )));})()}
+          ));})()}
         </div>
       )}
 
