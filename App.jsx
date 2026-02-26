@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.4.8";
+const APP_VERSION = "v2.5.0";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -928,6 +928,13 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           </div>
           {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic",marginTop:2}}>{prod.notes}</div>}
           {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-block",marginTop:2}}>🔗 Design</a>}
+          <div style={{fontSize:11,marginTop:2,display:"flex",alignItems:"center",gap:5}}>
+            <span style={{color:"#aaa"}}>Shopify:</span>
+            <span style={{width:7,height:7,borderRadius:"50%",background:prod.shopifyProductLink?"#16a34a":"#ef4444",display:"inline-block",flexShrink:0}}/>
+            <span style={{fontWeight:700,color:prod.shopifyProductLink?"#16a34a":"#ef4444"}}>
+              {prod.shopifyProductLink?prod.shopifyProductLink.title:"nicht verknüpft"}
+            </span>
+          </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
