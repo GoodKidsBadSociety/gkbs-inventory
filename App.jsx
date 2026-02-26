@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.2";
+const APP_VERSION = "v2.0.3";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -41,13 +41,13 @@ async function sheetsLogActivity(user, action){
   }catch(e){}
 }
 
-async function sheetsSave(products, prods, dtfItems, bestellungen, categories) {
+async function sheetsSave(products, prods, dtfItems, bestellungen, categories, verluste, promoGifts) {
   const url = SHEETS_URL;
   if (!url) return;
   try {
     await fetch(url, {
       method: "POST",
-      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories }),
+      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories, verluste, promoGifts }),
     });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 }
@@ -2491,11 +2491,13 @@ function AppInner({currentUser,onLogout}){
   const categoriesRef=useRef(DEFAULT_CATEGORIES);
   const dtfItemsRef=useRef([]);
   const bestellungenRef=useRef([]);
+  const verlusteRef=useRef([]);
+  const promoRef=useRef([]);
 
   const log = (action) => logActivity(currentUser.name, action);
 
   // ── triggerSave (must be before setters that call it) ──────────
-  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories)=>{
+  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories, nextVerluste, nextPromo)=>{
     if(!SHEETS_URL)return;
     clearTimeout(saveTimeout.current);
     setSyncStatus("saving");
@@ -2505,7 +2507,9 @@ function AppInner({currentUser,onLogout}){
         nextProds||prodsRef.current,
         nextDtf||dtfItemsRef.current,
         nextBestellungen||bestellungenRef.current,
-        nextCategories||categoriesRef.current
+        nextCategories||categoriesRef.current,
+        nextVerluste||verlusteRef.current,
+        nextPromo||promoRef.current
       )
         .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
         .catch(()=>setSyncStatus("error"));
@@ -2574,6 +2578,26 @@ function AppInner({currentUser,onLogout}){
         } else {
           const rawDtf=localStorage.getItem("gkbs_dtf");
           if(rawDtf){const d=JSON.parse(rawDtf);__setDtfItems(d);dtfItemsRef.current=d;}
+        }
+      }catch(e){}
+      // Load verluste – prefer sheets, fallback localStorage
+      try{
+        if(data?.verluste && Array.isArray(data.verluste) && data.verluste.length>0){
+          setVerluste(data.verluste); verlusteRef.current=data.verluste;
+          localStorage.setItem("gkbs_verluste", JSON.stringify(data.verluste));
+        } else {
+          const raw=localStorage.getItem("gkbs_verluste");
+          if(raw){const v=JSON.parse(raw);setVerluste(v);verlusteRef.current=v;}
+        }
+      }catch(e){}
+      // Load promoGifts – prefer sheets, fallback localStorage
+      try{
+        if(data?.promoGifts && Array.isArray(data.promoGifts) && data.promoGifts.length>0){
+          setPromoGiftsRaw(data.promoGifts); promoRef.current=data.promoGifts;
+          localStorage.setItem("gkbs_promo", JSON.stringify(data.promoGifts));
+        } else {
+          const raw=localStorage.getItem("gkbs_promo");
+          if(raw){const p=JSON.parse(raw);setPromoGiftsRaw(p);promoRef.current=p;}
         }
       }catch(e){}
       setSyncStatus(data?"ok":"error");
@@ -2870,9 +2894,9 @@ function AppInner({currentUser,onLogout}){
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
-  const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}return next;});
+  const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}verlusteRef.current=next;triggerSave(null,null,null,null,null,next,null);return next;});
   const [promoGifts,setPromoGiftsRaw]=useState(()=>{try{const r=localStorage.getItem("gkbs_promo");return r?JSON.parse(r):[];}catch(e){return [];}});
-  const setPromoGifts=(fn)=>setPromoGiftsRaw(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_promo",JSON.stringify(next));}catch(e){}return next;});
+  const setPromoGifts=(fn)=>setPromoGiftsRaw(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_promo",JSON.stringify(next));}catch(e){}promoRef.current=next;triggerSave(null,null,null,null,null,null,next);return next;});
   const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
   const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
