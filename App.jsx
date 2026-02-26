@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.1";
+const APP_VERSION = "v2.5.3";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1192,7 +1192,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
   const [search, setSearch] = useState("");
   const [selProd, setSelProd] = useState(value?.shopifyProductId ? {id:value.shopifyProductId, title:value.title, variants:value.variants||[]} : null);
   const [selLoc, setSelLoc] = useState(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
-  const selLocRef = React.useRef(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
+  const selLocRef = useRef(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
 
   const load = async () => {
     if(shopifyProds.length>0) { setOpen(true); return; }
@@ -2414,6 +2414,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
         </div>
         {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
         <button onClick={()=>{checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
+        <button onClick={async()=>{await apiPost({action:"clear_cache"});checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontWeight:700,fontSize:13}}>🗑 Cache</button>
       </div>
 
       {/* Sub-tabs */}
