@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.4.0";
+const APP_VERSION = "v2.4.1";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -2110,7 +2110,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [tokenInput, setTokenInput] = useState("");
+  const [connected, setConnected] = useState(null); // null=unknown, true, false
   const [syncMsg, setSyncMsg] = useState(null);
   const [linkModal, setLinkModal] = useState(null);
 
@@ -2149,12 +2149,13 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
     setLoading(false);
   };
 
-  const saveToken = async () => {
-    if(!tokenInput.trim()) return;
-    await apiPost({action:"shopify_set_token", token:tokenInput.trim()});
-    setSyncMsg("✓ Token gespeichert!");
-    setTimeout(()=>setSyncMsg(null),3000);
-    setTokenInput("");
+  const checkConnection = async () => {
+    try {
+      const r = await fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"});
+      const d = JSON.parse(await r.text());
+      setConnected(d.ok===true);
+      if(!d.ok) setError("Verbindung fehlgeschlagen: " + (d.error||"Unbekannt"));
+    } catch(e) { setConnected(false); setError(String(e)); }
   };
 
   const saveLinks = async (links) => {
@@ -2185,7 +2186,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
     setTimeout(()=>setSyncMsg(null),4000);
   };
 
-  useEffect(()=>{ loadAll(); },[]);
+  useEffect(()=>{ checkConnection().then(()=>loadAll()); },[]);
   useEffect(()=>{ if(tab==="orders") loadOrders(); },[tab]);
 
   return(
@@ -2203,13 +2204,13 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
         <button onClick={loadAll} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
       </div>
 
-      {/* Token */}
-      <div style={{background:"#fffbeb",borderRadius:12,padding:"12px 16px",border:"1px solid #fde68a",display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-        <span style={{fontSize:12,color:"#92400e",fontWeight:700,flexShrink:0}}>🔑 API Token:</span>
-        <input value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="shpat_... (einmalig eintragen)" type="password"
-          style={{flex:1,minWidth:180,padding:"7px 12px",borderRadius:8,border:"1px solid #fde68a",background:"#fff",fontSize:13,outline:"none"}}/>
-        <button onClick={saveToken} style={{padding:"7px 14px",borderRadius:8,border:"none",background:"#92400e",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:13}}>Speichern</button>
-        <span style={{fontSize:10,color:"#aaa"}}>Wird im Apps Script sicher gespeichert</span>
+      {/* Connection status */}
+      <div style={{background:connected===true?"#f0fdf4":connected===false?"#fef2f2":"#f8f8f8",borderRadius:12,padding:"10px 16px",border:`1px solid ${connected===true?"#bbf7d0":connected===false?"#fecaca":"#e8e8e8"}`,display:"flex",gap:10,alignItems:"center"}}>
+        <span style={{fontSize:18}}>{connected===true?"🟢":connected===false?"🔴":"⚪"}</span>
+        <div style={{flex:1,fontSize:13,fontWeight:700,color:connected===true?"#16a34a":connected===false?"#ef4444":"#888"}}>
+          {connected===true?"Shopify verbunden – Token wird automatisch verwaltet":connected===false?"Verbindung fehlgeschlagen — Apps Script prüfen":"Verbindung wird geprüft..."}
+        </div>
+        <button onClick={()=>checkConnection().then(()=>loadAll())} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>⟳ Testen</button>
       </div>
 
       {/* Sub-tabs */}
