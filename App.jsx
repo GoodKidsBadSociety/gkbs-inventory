@@ -1544,7 +1544,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div style={{display:"flex",gap:6,background:"#111",borderRadius:12,padding:4}}>
-        {[["fehler","Produktionsfehler"],["promo","Promo Gifts"]].map(([v,lbl])=>(
+        {[["fehler","🔴 Produktionsfehler"],["promo","🎁 Promo Gifts"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#fff",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -1675,7 +1675,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   return(
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#111",borderRadius:12,padding:4}}>
-        {[["blanks","Blanks"],["dtf","DTF"],["verluste","Verluste"]].map(([v,lbl])=>(
+        {[["blanks","🧵 Blanks"],["dtf","🖨 DTF"],["verluste","📉 Verluste"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#fff",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
