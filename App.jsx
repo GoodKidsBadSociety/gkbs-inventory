@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.80
+// GKBS INVENTORY v1.82
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.80";
+const APP_VERSION = "v1.82";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1775,6 +1775,47 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
+
+function AllButtons({blank, relKeys, sizeNeeds, alreadyOrdered, allOrdered, onOpen}){
+  const openKeys = relKeys.filter(k=>!alreadyOrdered(k));
+
+  const minSizes = openKeys.map(key=>{
+    const needed = sizeNeeds[key]||0;
+    const isCapKey = key.startsWith("cap_");
+    const capColor = isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+    const avail = isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+    const label = isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+    return {key, label, toOrder: Math.max(0, needed-avail)};
+  }).filter(s=>s.toOrder>0);
+
+  const maxSizes = openKeys.map(key=>{
+    const needed = sizeNeeds[key]||0;
+    const isCapKey = key.startsWith("cap_");
+    const capColor = isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+    const avail = isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+    const minStockVal = isCapKey?0:((blank.minStock||{})[key]||0);
+    const label = isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+    return {key, label, toOrder: Math.max(0, needed+minStockVal-avail)};
+  }).filter(s=>s.toOrder>0);
+
+  return(
+    <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
+      <button type="button"
+        disabled={allOrdered||minSizes.length===0}
+        style={{padding:"6px 12px",borderRadius:9,border:"1px solid #fecaca",background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1}}
+        onClick={()=>{ if(!allOrdered&&minSizes.length>0) onOpen({blank,sizes:minSizes}); }}>
+        ALL MIN
+      </button>
+      <button type="button"
+        disabled={allOrdered||maxSizes.length===0}
+        style={{padding:"6px 12px",borderRadius:9,border:"1px solid #fed7aa",background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1}}
+        onClick={()=>{ if(!allOrdered&&maxSizes.length>0) onOpen({blank,sizes:maxSizes}); }}>
+        ALL MAX
+      </button>
+    </div>
+  );
+}
+
 function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
@@ -1940,6 +1981,24 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             if(relKeys.length===0)return null;
             const alreadyOrdered=(key)=>(bestellungen||[]).some(b=>!b.isDtf&&b.status==="offen"&&b.produktId===blankId&&b.sizeKey===key);
             const allOrdered=relKeys.every(k=>alreadyOrdered(k));
+            const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
+            const minSizes=openKeys.map(key=>{
+              const needed=sizeNeeds[key]||0;
+              const isCapKey=key.startsWith("cap_");
+              const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+              const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+              const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+              return {key,label,toOrder:Math.max(0,needed-avail)};
+            }).filter(s=>s.toOrder>0);
+            const maxSizes=openKeys.map(key=>{
+              const needed=sizeNeeds[key]||0;
+              const isCapKey=key.startsWith("cap_");
+              const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+              const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+              const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
+              const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+              return {key,label,toOrder:Math.max(0,needed+minStockVal-avail)};
+            }).filter(s=>s.toOrder>0);
             return(
               <div key={blankId} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
                 <div style={S.cardHdr}>
@@ -1947,38 +2006,16 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
                   {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
-                    {(()=>{
-                      const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
-                      const minSizes=openKeys.map(key=>{
-                        const needed=sizeNeeds[key]||0;
-                        const isCapKey=key.startsWith("cap_");
-                        const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
-                        const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
-                        const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
-                        return {key,label,toOrder:Math.max(0,needed-avail)};
-                      }).filter(s=>s.toOrder>0);
-                      const maxSizes=openKeys.map(key=>{
-                        const needed=sizeNeeds[key]||0;
-                        const isCapKey=key.startsWith("cap_");
-                        const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
-                        const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
-                        const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
-                        const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
-                        return {key,label,toOrder:Math.max(0,needed+minStockVal-avail)};
-                      }).filter(s=>s.toOrder>0);
-                      return(<>
-                        <button type="button" disabled={allOrdered||minSizes.length===0}
-                          style={{padding:"6px 12px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
-                          onClick={()=>{if(!allOrdered&&minSizes.length>0){const v={blank,sizes:minSizes};allModalRef.current=v;setAllModal(v);}}}>
-                          ALL MIN
-                        </button>
-                        <button type="button" disabled={allOrdered||maxSizes.length===0}
-                          style={{padding:"6px 12px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
-                          onClick={()=>{if(!allOrdered&&maxSizes.length>0){const v={blank,sizes:maxSizes};allModalRef.current=v;setAllModal(v);}}}>
-                          ALL MAX
-                        </button>
-                      </>);
-                    })()}
+                    <button type="button" disabled={allOrdered||minSizes.length===0}
+                      style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
+                      onClick={()=>{if(!allOrdered&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
+                      ALL MIN
+                    </button>
+                    <button type="button" disabled={allOrdered||maxSizes.length===0}
+                      style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
+                      onClick={()=>{if(!allOrdered&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
+                      ALL MAX
+                    </button>
                   </div>
                 </div>
                 <div style={S.col6}>
