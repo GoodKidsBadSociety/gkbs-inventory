@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.6.2";
+const APP_VERSION = "v2.6.3";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2280,6 +2280,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
   const [syncMsg, setSyncMsg] = useState(null);
   const [linkModal, setLinkModal] = useState(null);
   const [prodSearch, setProdSearch] = useState("");
+  const [expandedProds, setExpandedProds] = useState({});
+  const toggleExpand = (id) => setExpandedProds(prev=>({...prev,[id]:!prev[id]}));
 
   const apiFetch = async (action, params="") => {
     const r = await fetch(`${sheetsUrl}?action=${action}${params}`, {redirect:"follow"});
@@ -2466,20 +2468,59 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
           {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).map(sp=>{
             const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id);
             const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
+            const expanded = !!expandedProds[sp.id];
+            const variants = sp.variants||[];
+            const totalInv = variants.reduce((a,v)=>a+(v.inventory_quantity||0),0);
             return(
-              <div key={sp.id} style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:"1px solid #ebebeb",display:"flex",gap:12,alignItems:"center"}}>
-                {sp.images?.[0]?.src
-                  ?<img src={sp.images[0].src} style={{width:48,height:48,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
-                  :<div style={{width:48,height:48,borderRadius:8,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>👕</div>}
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:800}}>{sp.title}</div>
-                  <div style={{fontSize:11,color:"#aaa"}}>{sp.variants?.length||0} Varianten · {sp.status}</div>
-                  {gkbs&&<div style={{fontSize:11,color:"#16a34a",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
+              <div key={sp.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
+                <div onClick={()=>toggleExpand(sp.id)} style={{padding:"14px 16px",display:"flex",gap:12,alignItems:"center",cursor:"pointer",userSelect:"none"}}>
+                  {sp.images?.[0]?.src
+                    ?<img src={sp.images[0].src} style={{width:48,height:48,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
+                    :<div style={{width:48,height:48,borderRadius:8,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>👕</div>}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:800}}>{sp.title}</div>
+                    <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten · {sp.status}</div>
+                    {gkbs&&<div style={{fontSize:11,color:"#16a34a",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
+                    <div style={{fontSize:10,color:"#aaa"}}>Gesamt</div>
+                    <div style={{fontSize:20,fontWeight:900,color:totalInv===0?"#ef4444":totalInv<10?"#f97316":"#111",lineHeight:1}}>{totalInv}</div>
+                  </div>
+                  <span style={{fontSize:14,color:"#bbb",flexShrink:0,transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
+                  <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true});}}
+                    style={{padding:"6px 12px",borderRadius:8,border:"1px solid",borderColor:link?"#bbf7d0":"#e8e8e8",background:link?"#f0fdf4":"#f8f8f8",color:link?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
+                    {link?"✓ Verknüpft":"🔗 Verknüpfen"}
+                  </button>
                 </div>
-                <button onClick={()=>setLinkModal({...sp,_shopifyProd:true})}
-                  style={{padding:"6px 12px",borderRadius:8,border:"1px solid",borderColor:link?"#bbf7d0":"#e8e8e8",background:link?"#f0fdf4":"#f8f8f8",color:link?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
-                  {link?"✓ Verknüpft":"🔗 Verknüpfen"}
-                </button>
+                {expanded&&variants.length>0&&(
+                  <div style={{borderTop:"1px solid #f0f0f0",padding:"6px 0"}}>
+                    {/* Table header */}
+                    <div style={{display:"flex",padding:"6px 16px",fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5,textTransform:"uppercase"}}>
+                      <div style={{flex:1}}>Variante</div>
+                      {!mobile&&<div style={{width:80,textAlign:"right"}}>SKU</div>}
+                      <div style={{width:60,textAlign:"right"}}>Preis</div>
+                      <div style={{width:60,textAlign:"right"}}>Bestand</div>
+                    </div>
+                    {variants.map(v=>{
+                      const qty = v.inventory_quantity||0;
+                      return(
+                        <div key={v.id} style={{display:"flex",alignItems:"center",padding:"8px 16px",borderTop:"1px solid #f8f8f8",fontSize:13}}>
+                          <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{v.title||"Default"}</div>
+                          {!mobile&&<div style={{width:80,textAlign:"right",fontSize:11,color:"#aaa",fontFamily:"monospace"}}>{v.sku||"–"}</div>}
+                          <div style={{width:60,textAlign:"right",fontSize:12,color:"#666"}}>€{Number(v.price||0).toFixed(0)}</div>
+                          <div style={{width:60,textAlign:"right"}}>
+                            <span style={{fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {/* Variant summary footer */}
+                    <div style={{display:"flex",padding:"8px 16px",borderTop:"1px solid #f0f0f0",background:"#fafafa",fontSize:12,fontWeight:700}}>
+                      <div style={{flex:1,color:"#888"}}>{variants.length} Varianten</div>
+                      <div style={{width:60,textAlign:"right",color:"#111"}}>{totalInv} Stk</div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
