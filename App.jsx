@@ -2499,13 +2499,16 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                   const ALL_SIZES_SET = new Set(["XXS","XS","S","M","L","XL","XXL","XXXL","OS","ONE SIZE","O/S"]);
                   const getColor = (v) => {
                     const parts = (v.title||"").split("/").map(p=>p.trim());
-                    if(parts.length <= 1) return parts[0] || "Default";
+                    if(parts.length <= 1) {
+                      // No slash – if it's just a size, group together
+                      if(ALL_SIZES_SET.has((parts[0]||"").toUpperCase())) return "_default_";
+                      return parts[0] || "_default_";
+                    }
                     // Check which part is a size – the other is the color
                     const firstIsSize = ALL_SIZES_SET.has(parts[0].toUpperCase());
                     const lastIsSize = ALL_SIZES_SET.has(parts[parts.length-1].toUpperCase());
                     if(firstIsSize && !lastIsSize) return parts.slice(1).join(" / ");
                     if(!firstIsSize && lastIsSize) return parts.slice(0, -1).join(" / ");
-                    // Default: first part = color
                     return parts[0];
                   };
                   const getSize = (v) => {
