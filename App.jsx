@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.4";
+const APP_VERSION = "v2.5.6";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -3318,6 +3318,7 @@ function AppInner({currentUser,onLogout}){
   const [bestellungen,__setBestellungen]=useState([]);
   const [dtfItems,__setDtfItems]=useState([]);
   const [syncStatus,setSyncStatus]=useState("idle");
+  const [shopifyDebug,setShopifyDebug]=useState([]);
   const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
 
   // ── All refs (must be before triggerSave and setters) ──────────
@@ -3728,28 +3729,36 @@ function AppInner({currentUser,onLogout}){
     if(prod.shopifyProductLink && !isCap){
       const link = prod.shopifyProductLink;
       const doneSizes = prod.done || {};
+      const debugLines = [`🛍 Push zu: ${link.title}`, `locationId: ${link.locationId||"LEER"}`, `Varianten: ${(link.variants||[]).length}`];
       DEFAULT_SIZES.forEach(size => {
         const qty = doneSizes[size] || 0;
         if(qty <= 0) return;
-        // Find matching variant by title (S, M, L, XL etc)
         const variant = (link.variants||[]).find(v =>
           v.title.toLowerCase() === size.toLowerCase() ||
           v.title.toLowerCase().includes(size.toLowerCase())
         );
-        if(variant){
-          fetch(SHEETS_URL, {
-            method:"POST", redirect:"follow",
-            headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({
-              action:"shopify_adjust_inventory",
-              location_id: link.locationId,
-              inventory_item_id: variant.inventory_item_id,
-              available_adjustment: qty
-            })
-          }).then(()=>log(`Shopify +${qty}×${size} → ${link.title}`))
-          .catch(e=>console.warn("Shopify push failed",e));
-        }
+        if(!variant){ debugLines.push(`❌ ${size}: Variante nicht gefunden`); return; }
+        debugLines.push(`⟳ ${size} +${qty} → ${variant.inventory_item_id}`);
+        fetch(SHEETS_URL, {
+          method:"POST", redirect:"follow",
+          headers:{"Content-Type":"text/plain"},
+          body:JSON.stringify({
+            action:"shopify_adjust_inventory",
+            location_id: link.locationId,
+            inventory_item_id: variant.inventory_item_id,
+            available_adjustment: qty
+          })
+        }).then(r=>r.text()).then(t=>{
+          try {
+            const parsed = JSON.parse(t);
+            setShopifyDebug(d=>[...d, `✓ ${size} +${qty}: ${parsed.inventory_level?"OK":parsed.error||t.slice(0,80)}`]);
+          } catch(e) { setShopifyDebug(d=>[...d, `✓ ${size} +${qty}: ${t.slice(0,80)}`]); }
+          log(`Shopify +${qty}×${size} → ${link.title}`);
+        }).catch(e=>setShopifyDebug(d=>[...d, `❌ ${size}: ${String(e)}`]));
       });
+      setShopifyDebug(debugLines);
+    } else if(!prod.shopifyProductLink) {
+      setShopifyDebug(["⚠ Kein Shopify Produkt verknüpft"]);
     }
   };
 
@@ -3819,6 +3828,15 @@ function AppInner({currentUser,onLogout}){
 })();}setShowPAModal(false);}}/>}
       {showCats&&<CategoryModal categories={categories} onClose={()=>setShowCats(false)} onSave={cats=>{setCategories(cats);setShowCats(false);}}/>}
       {confirmDelete&&<DeleteConfirmModal name={confirmDelete.name} onConfirm={()=>{confirmDelete.onConfirm();setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
+      {shopifyDebug.length>0&&(
+        <div style={{position:"fixed",bottom:80,right:16,background:"#111",color:"#fff",borderRadius:12,padding:"12px 16px",zIndex:500,maxWidth:320,fontSize:12,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <span style={{fontWeight:800,fontSize:13}}>Shopify Debug</span>
+            <button onClick={()=>setShopifyDebug([])} style={{background:"none",border:"none",color:"#aaa",cursor:"pointer",fontSize:16,lineHeight:1}}>✕</button>
+          </div>
+          {shopifyDebug.map((l,i)=><div key={i} style={{padding:"2px 0",borderBottom:"1px solid #333",color:l.startsWith("❌")?"#f87171":l.startsWith("✓")?"#4ade80":"#fff"}}>{l}</div>)}
+        </div>
+      )}
       {confirmProduce&&<ConfirmProduceModal prod={confirmProduce} blank={products.find(p=>p.id===confirmProduce.blankId)} onConfirm={handleProduceConfirm} onCancel={()=>setConfirmProduce(null)}/>}
       {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)}/>}
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
