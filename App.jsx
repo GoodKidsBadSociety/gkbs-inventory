@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.85
+// GKBS INVENTORY v1.86
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.85";
+const APP_VERSION = "v1.86";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -2774,11 +2774,19 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} onBestellen={handleBestellen} onBestellenDtf={(dtf,menge)=>{
-  const dpm=dtf.designsPerMeter||1;
-  const meter=dpm>1?Math.ceil(menge/dpm):null;
-  setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
-}}/>}
+        {view==="bestellbedarf"&&<BestellbedarfView
+          prods={prods} products={products} dtfItems={dtfItems}
+          bestellungen={bestellungen}
+          onBestellen={handleBestellen}
+          onDirectAdd={directAddBestellung}
+          currentUser={currentUser}
+          onOpenAllModal={setAllModal}
+          onBestellenDtf={(dtf,menge)=>{
+            const dpm=dtf.designsPerMeter||1;
+            const meter=dpm>1?Math.ceil(menge/dpm):null;
+            setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
+          }}
+        />}
 
         {/* Production */}
         {view==="production"&&(
