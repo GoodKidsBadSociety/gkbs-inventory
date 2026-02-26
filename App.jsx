@@ -2877,7 +2877,7 @@ function AppInner({currentUser,onLogout}){
   const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
   return(
-    <>    <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif"}}>
       {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{if(showProdModal==="add"){setProducts(ps=>[...ps,p]);(() => {
   const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];
   const stockParts=SIZES.filter(s=>(p.stock||{})[s]>0).map(s=>`${s}: ${p.stock[s]}`);
@@ -3115,7 +3115,6 @@ function AppInner({currentUser,onLogout}){
         </div>
       )}
     </div>
-    </>
   );
 }
 
