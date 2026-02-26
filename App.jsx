@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.70
+// GKBS INVENTORY v1.71
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.70";
+const APP_VERSION = "v1.71";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1718,7 +1718,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,onBestellen,onBestellenDtf,currentUser}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onBestellenDtf,currentUser}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien"); // "textilien" | "dtf"
   const [openSize,setOpenSize]=useState(null);
