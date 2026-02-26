@@ -204,20 +204,21 @@ const STANLEY_STELLA_PRESETS = [
 ];
 
 // ─── Stanley/Stella CSV Export ────────────────────────────────────
-function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
+function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvSelected) {
   const rows = [];
   rows.push("ProductId,Quantity,UnitOfMeasureId,VariantId,Project");
-
   const sizeMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
 
   Object.entries(bedarfMap).forEach(([blankId, sizeNeeds]) => {
     const blank = products.find(p => p.id === blankId);
     if(!blank || !blank.stProductId) return;
-    const isCap = isCapMap[blankId];
 
     Object.entries(sizeNeeds).forEach(([key, needed]) => {
       if(!needed || needed <= 0) return;
-      // Calculate avail and toOrder
+      // Only export if selected (when csvSelected has entries)
+      const hasSelection = csvSelected && Object.keys(csvSelected).length > 0;
+      if(hasSelection && !csvSelected[blankId+"__"+key]) return;
+
       const isCapKey = key.startsWith("cap_");
       const capColor = isCapKey ? (blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key) : null;
       const avail = isCapKey ? (capColor?.stock||0) : ((blank.stock||{})[key]||0);
@@ -225,19 +226,15 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
       const toOrder = Math.max(0, needed + minStockVal - avail);
       if(toOrder <= 0) return;
 
-      let variantId = "";
-      if(isCapKey) {
-        // For caps: stColorCode is per-cap-color or use blank stColorCode
-        const colorCode = capColor?.stColorCode || blank.stColorCode || "";
-        variantId = colorCode;
-      } else {
-        const stSize = sizeMap[key] || key;
-        variantId = (blank.stColorCode || "") + stSize;
-      }
+      const variantId = isCapKey
+        ? (capColor?.stColorCode || blank.stColorCode || "")
+        : (blank.stColorCode || "") + (sizeMap[key] || key);
 
       rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${projectName}`);
     });
   });
+
+  if(rows.length <= 1){ alert("Keine Positionen für den Export gefunden."); return; }
 
   const csv = rows.join("\r\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -251,6 +248,7 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
 
 // ─── Shared style constants ───────────────────────────────────────
 const S = {
@@ -2011,8 +2009,8 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
                   {hasStCode&&<button type="button" onClick={toggleProduct} title="Für CSV auswählen"
-                    style={{width:22,height:22,borderRadius:5,border:`2px solid ${allCsvSelected?"#3b82f6":someCsvSelected?"#93c5fd":"#ddd"}`,background:allCsvSelected?"#3b82f6":someCsvSelected?"#eff6ff":"#fff",color:"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}>
-                    {allCsvSelected?"✓":someCsvSelected?"−":""}
+                    style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
+                    CSV
                   </button>}
                   {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
@@ -2051,8 +2049,8 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                             {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
                           </div>
                           {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}} title="Für CSV auswählen"
-                            style={{width:22,height:22,borderRadius:5,border:`2px solid ${csvSelected[blankId+"__"+key]?"#3b82f6":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#3b82f6":"#fff",color:"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}>
-                            {csvSelected[blankId+"__"+key]?"✓":""}
+                            style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
+                            CSV
                           </button>}
                           <button type="button" disabled={ordered} onClick={(e)=>{e.stopPropagation();if(!ordered)onBestellen(blank,key,isCapKey,capColor,toOrder);}}
                             style={{background:ordered?"#f0f0f0":ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ordered?"#ddd":ok?"#bbf7d0":"#fecaca"}`,cursor:ordered?"not-allowed":"pointer",flexShrink:0,opacity:ordered?0.5:1}}>
