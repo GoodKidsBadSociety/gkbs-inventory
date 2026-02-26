@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.4.4";
+const APP_VERSION = "v2.4.6";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -2293,7 +2293,10 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
 
   const createOrderFromLine = (order, line) => {
     // Extract size from variant title (e.g. "S / Black" → "S")
-    const size = (line.variant_title||"").split("/")[0].trim()||"M";
+    // Extract size from variant title - try each part against known sizes
+    const ALL_SIZES_CHECK = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
+    const variantParts = (line.variant_title||"").split("/").map(p=>p.trim());
+    const size = variantParts.find(p=>ALL_SIZES_CHECK.some(s=>s.toLowerCase()===p.toLowerCase())) || variantParts[variantParts.length-1] || "M";
     // Show blank picker popup
     setBlankPickerData({order, line, size});
   };
@@ -2312,11 +2315,16 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       locationId: locations[0]?.id ? String(locations[0].id) : "",
       locationName: locations[0]?.name||""
     };
+    // Build full qty with all sizes, only ordered size gets qty
+    const ALL_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
+    const normalizedSize = ALL_SIZES.find(s=>s.toLowerCase()===size.toLowerCase())||size;
+    const fullQty = Object.fromEntries(ALL_SIZES.map(s=>[s, s===normalizedSize?(line.quantity||1):0]));
+    const fullDone = Object.fromEntries(ALL_SIZES.map(s=>[s,0]));
     const newProd = {
       id:"shopify_"+order.id+"_"+line.id,
-      name:`${line.title} (${line.variant_title||""})`,
+      name:line.title,
       blankId: blankId||"",
-      notes:`Shopify ${order.name}`,
+      notes:`Shopify ${order.name} · ${normalizedSize}`,
       priority:"Hoch",
       status:"Geplant",
       veredelung:["Drucken"],
@@ -2325,8 +2333,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       shopifyOrderId:String(order.id),
       shopifyOrderName:order.name,
       shopifyProductLink,
-      qty:{[size]:line.quantity||1},
-      done:{}
+      qty:fullQty,
+      done:fullDone
     };
     onAddProd(newProd);
     setBlankPickerData(null);
