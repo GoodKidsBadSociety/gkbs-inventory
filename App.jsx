@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.96";
+const APP_VERSION = "v1.97";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -2566,6 +2566,23 @@ function AppInner({currentUser,onLogout}){
     setBestellModal({blank, key, isCapKey, capColor, toOrder: menge});
   };
 
+  const handleDirectAdd = (blank, key, isCapKey, capColor, menge) => {
+    const label = isCapKey ? (capColor?.name || key) : key;
+    const neu = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2),
+      blankId: blank.id, blankName: blank.name, blankHex: blank.colorHex||"#ccc",
+      sizeKey: key, label, isCapKey, capColor: capColor||null,
+      menge, status: "offen",
+      createdAt: new Date().toISOString(), createdBy: currentUser.name,
+    };
+    setBestellungen(b => {
+      const exists = b.find(x=>x.blankId===blank.id&&x.sizeKey===key&&x.status==="offen");
+      if(exists) return b;
+      log(`Direkt bestellt: ${blank.name} ${label} × ${menge}`);
+      return [neu,...b];
+    });
+  };
+
   const handleBestellungConfirm = (menge) => {
     const {blank, key, isCapKey, capColor, isDtf, dtfName} = bestellModal;
     const label = isDtf ? "DTF Transfer" : (isCapKey ? (capColor?.name || key) : key);
@@ -2967,7 +2984,7 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} onBestellen={handleBestellen} onBestellenDtf={(dtf,menge)=>{
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
   const dpm=dtf.designsPerMeter||1;
   const meter=dpm>1?Math.ceil(menge/dpm):null;
   setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
