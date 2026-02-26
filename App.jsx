@@ -2978,6 +2978,7 @@ function AppInner({currentUser,onLogout}){
             </>}
           </div>
         </div>
+        </div>
         {/* Tab bar */}
         <div style={{overflowX:"auto",padding:mobile?"4px 14px 10px":"4px 24px 12px",marginTop:4}}>
           <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
