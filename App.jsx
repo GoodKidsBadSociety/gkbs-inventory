@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.1.0";
+const APP_VERSION = "v2.1.3";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -425,10 +425,7 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const now = new Date();
-  const date = now.toISOString().slice(0,10).replace(/-/g,"");
-  const time = now.toTimeString().slice(0,8).replace(/:/g,"");
-  a.download = `${projectName}.csv`;
+  a.download = `${projectName.replace(/[/:]/g,"")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -2398,7 +2395,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           {!hasAnyMissing
             ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
-                <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}${mm}${yy}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
+                <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const hh=String(now.getHours()).padStart(2,"0");const mi=String(now.getMinutes()).padStart(2,"0");const ss=String(now.getSeconds()).padStart(2,"0");const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}/${mm}/${yy}+${hh}:${mi}:${ss}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
                   ⬇ CSV Export
                 </button>
