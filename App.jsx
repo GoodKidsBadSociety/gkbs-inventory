@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.4";
+const APP_VERSION = "v2.0.5";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -475,9 +475,9 @@ const CHECK=()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stro
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
 const DEMO_PRODUCTS = [
-  {id:"1",name:"Classic Logo Tee",category:"T-Shirt",color:"Black",colorHex:"#111111",buyPrice:12.50,supplierUrl:"https://example.com",stock:{XXS:2,XS:5,S:3,M:18,L:10,XL:4,XXL:2,XXXL:1},minStock:{XXS:2,XS:5,S:10,M:10,L:8,XL:5,XXL:3,XXXL:2}},
-  {id:"2",name:"Natur Loose Fit Tee",category:"T-Shirt",color:"Natural",colorHex:"#e8dcc8",buyPrice:14.00,supplierUrl:"",stock:{XXS:0,XS:2,S:3,M:5,L:4,XL:2,XXL:0,XXXL:0},minStock:{XXS:2,XS:3,S:5,M:5,L:5,XL:3,XXL:2,XXXL:1}},
-  {id:"3",name:"Heavy Cap",category:"Cap",colorHex:"#222222",buyPrice:8.00,supplierUrl:"",capColors:[{id:"c1",name:"Black",hex:"#111111",stock:5},{id:"c2",name:"White",hex:"#f5f5f5",stock:3},{id:"c3",name:"Navy",hex:"#1e3a5f",stock:2}]},
+  {id:"1",name:"Classic Logo Tee",category:"T-Shirt",color:"Black",colorHex:"#111111",buyPrice:12.50,stock:{XXS:2,XS:5,S:3,M:18,L:10,XL:4,XXL:2,XXXL:1},minStock:{XXS:2,XS:5,S:10,M:10,L:8,XL:5,XXL:3,XXXL:2}},
+  {id:"2",name:"Natur Loose Fit Tee",category:"T-Shirt",color:"Natural",colorHex:"#e8dcc8",buyPrice:14.00,stock:{XXS:0,XS:2,S:3,M:5,L:4,XL:2,XXL:0,XXXL:0},minStock:{XXS:2,XS:3,S:5,M:5,L:5,XL:3,XXL:2,XXXL:1}},
+  {id:"3",name:"Heavy Cap",category:"Cap",colorHex:"#222222",buyPrice:8.00,capColors:[{id:"c1",name:"Black",hex:"#111111",stock:5},{id:"c2",name:"White",hex:"#f5f5f5",stock:3},{id:"c3",name:"Navy",hex:"#1e3a5f",stock:2}]},
 ];
 const DEMO_PRODS = [
   {id:"p1",name:"Gemeindebau T-Shirt",blankId:"2",status:"Geplant",priority:"Hoch",notes:"SS25 Drop",veredelung:["Drucken"],designUrl:"",colorHex:"#e8dcc8",photos:[],isCapOrder:false,qty:{XXS:0,XS:0,S:5,M:5,L:3,XL:2,XXL:0,XXXL:0},done:{XXS:0,XS:0,S:0,M:0,L:0,XL:0,XXL:0,XXXL:0}},
@@ -1041,6 +1041,18 @@ function ArchivedCard({prod,blank,onDelete}){
 // ─── Modals ───────────────────────────────────────────────────────
 function ModalWrap({onClose,onSave,children,footer,width=600}){
   const mobile=useIsMobile();
+  useEffect(()=>{
+    const handler=(e)=>{
+      if(e.key==="Enter"&&!e.isComposing){
+        const tag=document.activeElement?.tagName;
+        if(tag==="TEXTAREA"||tag==="SELECT")return;
+        if(onSave)onSave();
+      }
+      if(e.key==="Escape")onClose();
+    };
+    window.addEventListener("keydown",handler);
+    return()=>window.removeEventListener("keydown",handler);
+  },[onClose,onSave]);
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:300,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{
@@ -1230,7 +1242,6 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [color,setColor]=useState(initial?.color||"");
   const [colorHex,setColorHex]=useState(initial?.colorHex||"#000000");
   const [buyPrice,setBuyPrice]=useState(initial?.buyPrice!=null?String(initial.buyPrice):"");
-  const [supplierUrl,setSupplierUrl]=useState(initial?.supplierUrl||"");
   const [stProductId,setStProductId]=useState(initial?.stProductId||"");
   const [stColorCode,setStColorCode]=useState(initial?.stColorCode||"");
   const [stock,setStock]=useState(initial?.stock||mkQty());
@@ -1254,7 +1265,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
@@ -1317,8 +1328,6 @@ function ProductModal({categories,initial,onClose,onSave}){
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
         <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
       </div>
-      <input style={inp} placeholder="🔗 Hersteller-Link" value={supplierUrl} onChange={e=>setSupplierUrl(e.target.value)}/>
-
       {!isCap&&(
         <div style={S.col8}>
           <input style={inp} placeholder="Farbname (z.B. Black, Natural)" value={color} onChange={e=>setColor(e.target.value)}/>
@@ -1363,7 +1372,7 @@ function ProductModal({categories,initial,onClose,onSave}){
       )}
       <div style={{display:"flex",gap:10,marginTop:4}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
+        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
           style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
       </div>
     </ModalWrap>
@@ -1472,7 +1481,7 @@ function BestellbedarfModal({prods,products,onClose}){
             <div style={S.cardHdr}>
               <SmartDot item={blank} size={22}/>
               <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
-              {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
+              
               <button type="button" disabled={allOrdered}
                 style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
                 onClick={()=>{
@@ -2397,7 +2406,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
                     CSV
                   </button>}
-                  {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
+                  
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allOrdered||minSizes.length===0}
                       style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
@@ -3221,7 +3230,7 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
   const dpm=dtf.designsPerMeter||1;
   const meter=dpm>1?Math.ceil(menge/dpm):null;
-  setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
+  setBestellModal({blank:{...dtf,category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
 }}/>}
 
         {/* Production */}
