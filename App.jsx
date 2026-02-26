@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.76
+// GKBS INVENTORY v1.78
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.76";
+const APP_VERSION = "v1.78";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1564,13 +1564,10 @@ function AllBestellungModal({blank, sizes, onClose, onConfirm}){
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState("");
   const inputRefs = useRef({});
-  const mengenRef = useRef(mengen);
-  useEffect(()=>{mengenRef.current=mengen;},[mengen]);
-
   const setM=(key,val)=>setMengen(m=>({...m,[key]:Math.max(1,val)}));
   const startEdit=(key)=>{setDraft(String(mengen[key]));setEditing(key);setTimeout(()=>inputRefs.current[key]?.select(),30);};
   const commitEdit=(key)=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)setM(key,n);setEditing(null);};
-  const handleConfirm=()=>onConfirm(mengenRef.current);
+  const handleConfirm=()=>onConfirm(mengen);
 
   return(
     <ModalWrap onClose={onClose} width={400} onSave={handleConfirm}>
@@ -1780,6 +1777,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
   const [allModal,setAllModal]=useState(null);
+  const allModalRef=useRef(null);
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -1837,19 +1835,21 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
   const handleAllConfirm=(mengen)=>{
-    if(!allModal)return;
-    allModal.sizes.forEach(s=>{
-      const menge=mengen[s.key]||s.toOrder;
-      if(menge<=0)return;
+    const modal=allModalRef.current;
+    if(!modal)return;
+    modal.sizes.forEach(s=>{
+      const menge=(mengen&&mengen[s.key])||s.toOrder;
+      if(!menge||menge<=0)return;
       const isCapKey=s.key.startsWith("cap_");
-      const capColor=isCapKey?(allModal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
-      onDirectAdd(allModal.blank,s.key,isCapKey,capColor,menge);
+      const capColor=isCapKey?(modal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
+      onDirectAdd(modal.blank,s.key,isCapKey,capColor,menge);
     });
+    allModalRef.current=null;
     setAllModal(null);
   };
   return(
     <div style={S.col12}>
-      {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onConfirm={handleAllConfirm}/>}
+      {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>{allModalRef.current=null;setAllModal(null);}} onConfirm={handleAllConfirm}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
@@ -1952,12 +1952,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                       return(<>
                         <button type="button" disabled={allOrdered||minSizes.length===0}
                           style={{padding:"6px 12px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
-                          onClick={()=>{if(!allOrdered&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
+                          onClick={()=>{if(!allOrdered&&minSizes.length>0){const v={blank,sizes:minSizes};allModalRef.current=v;setAllModal(v);}}}>
                           ALL MIN
                         </button>
                         <button type="button" disabled={allOrdered||maxSizes.length===0}
                           style={{padding:"6px 12px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
-                          onClick={()=>{if(!allOrdered&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
+                          onClick={()=>{if(!allOrdered&&maxSizes.length>0){const v={blank,sizes:maxSizes};allModalRef.current=v;setAllModal(v);}}}>
                           ALL MAX
                         </button>
                       </>);
