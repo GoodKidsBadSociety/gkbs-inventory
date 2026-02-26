@@ -2490,7 +2490,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       {tab==="orders"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {(()=>{
-            const isOE=(t)=>ONLINE_EXCLUSIVE_PRODUCTS.includes(t.toUpperCase().trim());
+            const normalize=(t)=>t.toUpperCase().replace(/\s+/g," ").trim().split(" - ")[0].trim();
+            const isOE=(t)=>ONLINE_EXCLUSIVE_PRODUCTS.map(normalize).includes(normalize(t));
             const filtered=shopifyOrders.map(o=>({...o,line_items:(o.line_items||[]).filter(l=>isOE(l.title))})).filter(o=>o.line_items.length>0);
             if(filtered.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Online Exclusive Bestellungen</div>;
             return filtered.map(order=>(
