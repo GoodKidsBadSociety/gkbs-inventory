@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.6";
+const APP_VERSION = "v2.5.7";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1194,7 +1194,16 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
 
   const load = async () => {
     if(open){ setOpen(false); return; }
-    if(shopifyProds.length>0){ setOpen(true); return; }
+    if(shopifyProds.length>0){
+      // If we have prods but no location yet, fetch locations
+      if(!selLocRef.current){
+        fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(t=>{
+          const d=JSON.parse(t);
+          if(d.locations&&d.locations.length>0){ setLocations(d.locations); selLocRef.current=d.locations[0]; }
+        }).catch(()=>{});
+      }
+      setOpen(true); return;
+    }
     setLoading(true);
     try {
       const [d1, d2] = await Promise.all([
@@ -1202,11 +1211,10 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
         fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
       ]);
       if(d1.products) setShopifyProds(d1.products);
-      if(d2.locations){
+      if(d2.locations && d2.locations.length>0){
         setLocations(d2.locations);
-        if(d2.locations.length>=1 && !selLocRef.current){
-          selLocRef.current = d2.locations[0];
-        }
+        // Always set first location as default
+        selLocRef.current = d2.locations[0];
       }
     } catch(e){}
     setLoading(false);
