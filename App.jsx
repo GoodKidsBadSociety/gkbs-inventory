@@ -1760,6 +1760,7 @@ function FinanceView({products, dtfItems=[]}){
         <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{grandQty} Stück total</div></div>
         <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{grandTotal.toFixed(2)}</div>
       </div>
+      </>}
     </div>
   );
 }
