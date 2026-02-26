@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.86
+// GKBS INVENTORY v1.87
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.86";
+const APP_VERSION = "v1.87";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1240,6 +1240,7 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
 function BestellbedarfModal({prods,products,onClose}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [openSize,setOpenSize]=useState(null);
+  const [csvSelected,setCsvSelected]=useState({});
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -1839,6 +1840,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
+  const [csvSelected,setCsvSelected]=useState({});
 
   // allModal managed locally, rendered via portal pattern at top of return
   const bedarfMap={};
@@ -1953,9 +1955,9 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           {!hasAnyMissing
             ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
-                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS")}
+                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS",csvSelected)}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
-                  ⬇ Stanley/Stella CSV
+                  ⬇ CSV Export
                 </button>
               </div>
           }
@@ -1973,6 +1975,19 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             const alreadyOrdered=(key)=>(bestellungen||[]).some(b=>!b.isDtf&&b.status==="offen"&&b.produktId===blankId&&b.sizeKey===key);
             const allOrdered=relKeys.every(k=>alreadyOrdered(k));
             const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
+            // CSV selection helpers (only for Stanley/Stella products)
+            const hasStCode = !!blank.stProductId;
+            const productKeys = relKeys.map(k=>blankId+"__"+k);
+            const allCsvSelected = hasStCode && productKeys.every(k=>csvSelected[k]);
+            const someCsvSelected = hasStCode && productKeys.some(k=>csvSelected[k]);
+            const toggleProduct = () => {
+              const next = !allCsvSelected;
+              setCsvSelected(s=>{ const n={...s}; productKeys.forEach(k=>{ if(next) n[k]=true; else delete n[k]; }); return n; });
+            };
+            const toggleKey = (key) => {
+              const ck = blankId+"__"+key;
+              setCsvSelected(s=>{ const n={...s}; if(n[ck]) delete n[ck]; else n[ck]=true; return n; });
+            };
             const minSizes=openKeys.map(key=>{
               const needed=sizeNeeds[key]||0;
               const isCapKey=key.startsWith("cap_");
@@ -1995,6 +2010,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
+                  {hasStCode&&<button type="button" onClick={toggleProduct} title="Für CSV auswählen"
+                    style={{width:22,height:22,borderRadius:5,border:`2px solid ${allCsvSelected?"#3b82f6":someCsvSelected?"#93c5fd":"#ddd"}`,background:allCsvSelected?"#3b82f6":someCsvSelected?"#eff6ff":"#fff",color:"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}>
+                    {allCsvSelected?"✓":someCsvSelected?"−":""}
+                  </button>}
                   {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allOrdered||minSizes.length===0}
@@ -2031,6 +2050,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                             <div style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
                             {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
                           </div>
+                          {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}} title="Für CSV auswählen"
+                            style={{width:22,height:22,borderRadius:5,border:`2px solid ${csvSelected[blankId+"__"+key]?"#3b82f6":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#3b82f6":"#fff",color:"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}>
+                            {csvSelected[blankId+"__"+key]?"✓":""}
+                          </button>}
                           <button type="button" disabled={ordered} onClick={(e)=>{e.stopPropagation();if(!ordered)onBestellen(blank,key,isCapKey,capColor,toOrder);}}
                             style={{background:ordered?"#f0f0f0":ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ordered?"#ddd":ok?"#bbf7d0":"#fecaca"}`,cursor:ordered?"not-allowed":"pointer",flexShrink:0,opacity:ordered?0.5:1}}>
                             <div style={{fontSize:9,color:ordered?"#bbb":ok?"#16a34a":"#ef4444",fontWeight:700}}>{ordered?"✓":"MIN"}</div>
