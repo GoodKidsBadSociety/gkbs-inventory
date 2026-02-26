@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.4.1";
+const APP_VERSION = "v2.4.4";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1175,6 +1175,115 @@ function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
   );
 }
 
+
+// ─── Shopify Product Picker (for Production Modal) ────────────────
+function ShopifyProdPicker({sheetsUrl, value, onChange}){
+  const [shopifyProds, setShopifyProds] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selProd, setSelProd] = useState(value?.shopifyProductId ? {id:value.shopifyProductId, title:value.title, variants:value.variants||[]} : null);
+  const [selLoc, setSelLoc] = useState(value?.locationId ? {id:value.locationId} : null);
+
+  const load = async () => {
+    if(shopifyProds.length>0) { setOpen(true); return; }
+    setLoading(true);
+    try {
+      const [d1, d2] = await Promise.all([
+        fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse),
+        fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
+      ]);
+      if(d1.products) setShopifyProds(d1.products);
+      if(d2.locations) {
+        setLocations(d2.locations);
+        if(d2.locations.length===1 && !selLoc) setSelLoc(d2.locations[0]);
+      }
+    } catch(e) {}
+    setLoading(false);
+    setOpen(true);
+  };
+
+  const doSelect = (prod) => {
+    setSelProd(prod);
+  };
+
+  const doConfirm = () => {
+    if(!selProd || !selLoc) return;
+    onChange({
+      shopifyProductId: String(selProd.id),
+      title: selProd.title,
+      variants: (selProd.variants||[]).map(v=>({
+        id: String(v.id),
+        title: v.title,
+        inventory_item_id: String(v.inventory_item_id)
+      })),
+      locationId: String(selLoc.id),
+      locationName: selLoc.name
+    });
+    setOpen(false);
+  };
+
+  const clear = (e) => { e.stopPropagation(); onChange(null); setSelProd(null); };
+
+  return(
+    <div>
+      {/* Trigger button */}
+      <button type="button" onClick={load}
+        style={{width:"100%",padding:"11px 14px",borderRadius:10,border:`1.5px solid ${value?"#bbf7d0":"#e8e8e8"}`,background:value?"#f0fdf4":"#f8f8f8",color:value?"#16a34a":"#888",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+        {loading ? "⟳ Laden..." : value ? <>✓ {value.title} <span style={{fontSize:11,opacity:0.6}}>({value.variants?.length} Varianten · {value.locationName||""})</span></> : "🛍 Shopify Produkt auswählen..."}
+        {value && <span onClick={clear} style={{marginLeft:"auto",fontSize:16,color:"#ef4444",lineHeight:1}}>✕</span>}
+      </button>
+
+      {/* Dropdown */}
+      {open && !loading && (
+        <div style={{position:"relative",zIndex:50}}>
+          <div style={{position:"absolute",top:4,left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 4px 20px rgba(0,0,0,0.12)",maxHeight:320,display:"flex",flexDirection:"column"}}>
+            <div style={{overflowY:"auto",flex:1}}>
+              {shopifyProds.length===0 && <div style={{padding:20,color:"#ccc",textAlign:"center",fontSize:13}}>Keine Produkte — Shopify Tab öffnen und Token eintragen</div>}
+              {shopifyProds.map(sp=>(
+                <div key={sp.id} onClick={()=>doSelect(sp)}
+                  style={{padding:"10px 14px",cursor:"pointer",background:selProd?.id===sp.id?"#f0fdf4":"#fff",borderBottom:"1px solid #f5f5f5",display:"flex",alignItems:"center",gap:10}}
+                  onMouseEnter={e=>e.currentTarget.style.background=selProd?.id===sp.id?"#f0fdf4":"#f9f9f9"}
+                  onMouseLeave={e=>e.currentTarget.style.background=selProd?.id===sp.id?"#f0fdf4":"#fff"}>
+                  {sp.images?.[0]?.src
+                    ?<img src={sp.images[0].src} style={{width:32,height:32,borderRadius:6,objectFit:"cover",flexShrink:0}} alt=""/>
+                    :<div style={{width:32,height:32,borderRadius:6,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>👕</div>}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700}}>{sp.title}</div>
+                    <div style={{fontSize:11,color:"#aaa"}}>{sp.variants?.length||0} Varianten</div>
+                  </div>
+                  {selProd?.id===sp.id && <span style={{color:"#16a34a",fontWeight:800}}>✓</span>}
+                </div>
+              ))}
+            </div>
+            {/* Location selector if multiple */}
+            {locations.length > 1 && (
+              <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0"}}>
+                <div style={{fontSize:11,color:"#bbb",fontWeight:700,marginBottom:6}}>STANDORT</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  {locations.map(loc=>(
+                    <button key={loc.id} type="button" onClick={()=>setSelLoc(loc)}
+                      style={{padding:"5px 10px",borderRadius:7,border:`1.5px solid ${selLoc?.id===loc.id?"#111":"#e8e8e8"}`,background:selLoc?.id===loc.id?"#111":"#f8f8f8",color:selLoc?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>
+                      {loc.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:8"}}>
+              <button type="button" onClick={()=>setOpen(false)} style={{flex:1,padding:"8px",borderRadius:8,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:13}}>Abbrechen</button>
+              <button type="button" onClick={doConfirm} disabled={!selProd||!selLoc}
+                style={{flex:2,padding:"8px",borderRadius:8,border:"none",background:selProd&&selLoc?"#16a34a":"#e0e0e0",color:selProd&&selLoc?"#fff":"#bbb",cursor:selProd&&selLoc?"pointer":"not-allowed",fontWeight:800,fontSize:13}}>
+                ✓ Auswählen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const editing=!!initial;
   const [modalLightbox,setModalLightbox]=useState(null);
@@ -1189,6 +1298,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const [photos,setPhotos]=useState(initial?.photos||[]);
   const [qty,setQty]=useState(initial?.qty||mkQty());
   const [done,setDone]=useState(initial?.done||mkQty());
+  const [shopifyProductLink,setShopifyProductLink]=useState(initial?.shopifyProductLink||null); // {shopifyProductId, title, variants:[{id,title,inventory_item_id}], locationId}
   const getCapColorsFromBlank=(blankProd,existingCapColors)=>{
     if(!blankProd||blankProd.category!=="Cap")return existingCapColors||[];
     // Map blank's capColors to order format, preserving qty/done if already set
@@ -1209,7 +1319,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
   const doSaveProd = () => {
     if(!name.trim()||!blankId||veredelung.length===0) return;
-    onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});
+    onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors,shopifyProductLink:shopifyProductLink||null});
   };
   return(
     <ModalWrap onClose={onClose} onSave={doSaveProd} width={640} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSaveProd()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{editing?"✓ Speichern":"✓ Anlegen"}</button></div>}>
@@ -1302,6 +1412,15 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
           </div>
         </div>
       )}
+      {/* Shopify Verknüpfung */}
+      <div>
+        <div style={S.secLabel}>🛍 SHOPIFY PRODUKT VERKNÜPFEN</div>
+        <ShopifyProdPicker
+          sheetsUrl={SHEETS_URL}
+          value={shopifyProductLink}
+          onChange={setShopifyProductLink}
+        />
+      </div>
     </ModalWrap>
   );
 }
@@ -2165,23 +2284,52 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
 
   const syncToShopify = async (link, qty) => {
     setSyncMsg("⟳ Synchronisiere...");
-    const res = await apiPost({action:"shopify_set_inventory", location_id:link.shopifyLocationId, inventory_item_id:link.shopifyInventoryItemId, available:qty});
-    setSyncMsg(res.inventory_level?"✓ Bestand synchronisiert!":"⚠ Fehler beim Sync");
+    const res = await apiPost({action:"shopify_adjust_inventory", location_id:link.shopifyLocationId, inventory_item_id:link.shopifyInventoryItemId, available_adjustment:qty});
+    setSyncMsg(res.inventory_level?"✓ +"+qty+" zu Shopify addiert!":"⚠ Fehler beim Sync");
     setTimeout(()=>setSyncMsg(null),4000);
   };
 
+  const [blankPickerData, setBlankPickerData] = useState(null); // {order, line, size}
+
   const createOrderFromLine = (order, line) => {
-    const link = shopifyLinks.find(l=>l.shopifyProductId==line.product_id);
-    const blank = link ? products.find(p=>p.id===link.gkbsProductId) : null;
+    // Extract size from variant title (e.g. "S / Black" → "S")
     const size = (line.variant_title||"").split("/")[0].trim()||"M";
+    // Show blank picker popup
+    setBlankPickerData({order, line, size});
+  };
+
+  const confirmCreateOrder = (blankId) => {
+    if(!blankPickerData) return;
+    const {order, line, size} = blankPickerData;
+    const blank = products.find(p=>p.id===blankId);
+    // Build shopifyProductLink for auto-push on completion
+    const shopifyProductLink = {
+      shopifyProductId: String(line.product_id),
+      title: line.title,
+      variants: shopifyProds.find(p=>p.id==line.product_id)?.variants?.map(v=>({
+        id:String(v.id), title:v.title, inventory_item_id:String(v.inventory_item_id)
+      }))||[],
+      locationId: locations[0]?.id ? String(locations[0].id) : "",
+      locationName: locations[0]?.name||""
+    };
     const newProd = {
-      id:"shopify_"+order.id+"_"+line.id, name:`${line.title} (${line.variant_title||""})`,
-      blankId:blank?.id||"", notes:`Shopify ${order.name}`, priority:"Hoch",
-      status:"Geplant", veredelung:["Drucken"], colorHex:blank?.colorHex||"#888",
-      isOnlineExclusive:true, shopifyOrderId:String(order.id), shopifyOrderName:order.name,
-      qty:{[size]:line.quantity||1}, done:{}
+      id:"shopify_"+order.id+"_"+line.id,
+      name:`${line.title} (${line.variant_title||""})`,
+      blankId: blankId||"",
+      notes:`Shopify ${order.name}`,
+      priority:"Hoch",
+      status:"Geplant",
+      veredelung:["Drucken"],
+      colorHex:blank?.colorHex||"#888",
+      isOnlineExclusive:true,
+      shopifyOrderId:String(order.id),
+      shopifyOrderName:order.name,
+      shopifyProductLink,
+      qty:{[size]:line.quantity||1},
+      done:{}
     };
     onAddProd(newProd);
+    setBlankPickerData(null);
     setSyncMsg("✓ Auftrag erstellt: "+newProd.name);
     setTimeout(()=>setSyncMsg(null),4000);
   };
@@ -2191,6 +2339,41 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {blankPickerData&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setBlankPickerData(null)}>
+          <div style={{background:"#fff",borderRadius:18,width:440,maxWidth:"95vw",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0"}}>
+              <div style={{fontSize:16,fontWeight:800}}>📦 Blank auswählen</div>
+              <div style={{fontSize:12,color:"#aaa",marginTop:2}}>
+                {blankPickerData.line.title} · Größe: <b style={{color:"#111"}}>{blankPickerData.size}</b> · {blankPickerData.line.quantity}×
+              </div>
+            </div>
+            <div style={{maxHeight:340,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:6}}>
+              {products.filter(p=>p.category!=="Cap").map(p=>{
+                const stock = Object.values(p.stock||{}).reduce((a,b)=>a+b,0);
+                const sizeStock = (p.stock||{})[blankPickerData.size]||0;
+                return(
+                  <button key={p.id} type="button" onClick={()=>confirmCreateOrder(p.id)}
+                    style={{padding:"12px 14px",borderRadius:11,border:"1.5px solid #e8e8e8",background:"#f8f8f8",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+                    <SmartDot item={p} size={18}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:800}}>{p.name}</div>
+                      <div style={{fontSize:11,color:"#aaa"}}>{p.color||""} · {p.category}</div>
+                    </div>
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <div style={{fontSize:10,color:"#aaa"}}>Gr. {blankPickerData.size}</div>
+                      <div style={{fontSize:18,fontWeight:900,color:sizeStock===0?"#ef4444":sizeStock<3?"#f97316":"#16a34a"}}>{sizeStock}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0"}}>
+              <button type="button" onClick={()=>setBlankPickerData(null)} style={{width:"100%",padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+            </div>
+          </div>
+        </div>
+      )}
       {linkModal&&<ShopifyLinkModal prod={linkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} shopifyProds={shopifyProds} locations={locations} onSave={async(links)=>{await saveLinks(links);setLinkModal(null);}} onClose={()=>setLinkModal(null)}/>}
 
       {/* Header */}
@@ -2296,7 +2479,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       {/* Sync */}
       {tab==="sync"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{background:"#f8f8f8",borderRadius:10,padding:"12px 16px",fontSize:12,color:"#888"}}>Setzt den Shopify-Bestand auf den aktuellen GKBS-Gesamtbestand. Wird auch automatisch nach jeder Produktion ausgelöst.</div>
+          <div style={{background:"#f8f8f8",borderRadius:10,padding:"12px 16px",fontSize:12,color:"#888"}}>Addiert den GKBS-Bestand zum bestehenden Shopify-Bestand. Wird auch automatisch nach jeder Produktion ausgelöst (+produzierte Menge).</div>
           {shopifyLinks.length===0&&<div style={{color:"#ccc",fontSize:14,padding:40,textAlign:"center"}}>Keine Verknüpfungen vorhanden</div>}
           {shopifyLinks.map((link,i)=>{
             const gkbs = products.find(p=>p.id===link.gkbsProductId);
@@ -2313,7 +2496,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                   <div style={{fontSize:10,color:"#aaa"}}>GKBS</div>
                   <div style={{fontSize:22,fontWeight:900,color:"#111",lineHeight:1}}>{total}</div>
                 </div>
-                <button onClick={()=>syncToShopify(link,total)} style={{padding:"8px 14px",borderRadius:9,border:"none",background:"#96bf48",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:13,flexShrink:0}}>→ Shopify</button>
+                <button onClick={()=>syncToShopify(link,total)} style={{padding:"8px 14px",borderRadius:9,border:"none",background:"#96bf48",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:13,flexShrink:0}}>+ Shopify</button>
               </div>
             );
           })}
@@ -3520,17 +3703,32 @@ function AppInner({currentUser,onLogout}){
       }
     }
     setConfirmProduce(null);
-    // Check if blank has Shopify link — if not, prompt to link
-    if(prod.blankId){
-      const hasLink=(shopifyLinks||[]).some(l=>l.gkbsProductId===prod.blankId);
-      if(!hasLink){
-        const blank=products.find(p=>p.id===prod.blankId);
-        if(blank) setTimeout(()=>setShopifyLinkModal({...blank,_prod:prod,_totalProduced:totalDone}),600);
-      } else {
-        // Auto-push produced qty to Shopify
-        const link=(shopifyLinks||[]).find(l=>l.gkbsProductId===prod.blankId);
-        if(link) shopifyAdjustInventory(link,totalDone);
-      }
+    // Push per-size quantities to Shopify if prod has shopifyProductLink
+    if(prod.shopifyProductLink && !isCap){
+      const link = prod.shopifyProductLink;
+      const doneSizes = prod.done || {};
+      DEFAULT_SIZES.forEach(size => {
+        const qty = doneSizes[size] || 0;
+        if(qty <= 0) return;
+        // Find matching variant by title (S, M, L, XL etc)
+        const variant = (link.variants||[]).find(v =>
+          v.title.toLowerCase() === size.toLowerCase() ||
+          v.title.toLowerCase().includes(size.toLowerCase())
+        );
+        if(variant){
+          fetch(SHEETS_URL, {
+            method:"POST", redirect:"follow",
+            headers:{"Content-Type":"text/plain"},
+            body:JSON.stringify({
+              action:"shopify_adjust_inventory",
+              location_id: link.locationId,
+              inventory_item_id: variant.inventory_item_id,
+              available_adjustment: qty
+            })
+          }).then(()=>log(`Shopify +${qty}×${size} → ${link.title}`))
+          .catch(e=>console.warn("Shopify push failed",e));
+        }
+      });
     }
   };
 
