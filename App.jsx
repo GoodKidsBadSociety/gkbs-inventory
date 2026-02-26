@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.4.7";
+const APP_VERSION = "v2.4.8";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1182,6 +1182,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [selProd, setSelProd] = useState(value?.shopifyProductId ? {id:value.shopifyProductId, title:value.title, variants:value.variants||[]} : null);
   const [selLoc, setSelLoc] = useState(value?.locationId ? {id:value.locationId} : null);
 
@@ -1223,7 +1224,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
     setOpen(false);
   };
 
-  const clear = (e) => { e.stopPropagation(); onChange(null); setSelProd(null); };
+  const clear = (e) => { e.stopPropagation(); onChange(null); setSelProd(null); setSearch(""); };
 
   return(
     <div>
@@ -1239,8 +1240,11 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
         <div style={{position:"relative",zIndex:50}}>
           <div style={{position:"absolute",top:4,left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 4px 20px rgba(0,0,0,0.12)",maxHeight:320,display:"flex",flexDirection:"column"}}>
             <div style={{overflowY:"auto",flex:1}}>
-              {shopifyProds.length===0 && <div style={{padding:20,color:"#ccc",textAlign:"center",fontSize:13}}>Keine Produkte — Shopify Tab öffnen und Token eintragen</div>}
-              {shopifyProds.map(sp=>(
+                <div style={{padding:"8px 10px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Suchen..." style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1px solid #e8e8e8",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+              </div>
+              {shopifyProds.filter(sp=>!search||sp.title.toLowerCase().includes(search.toLowerCase())).length===0 && <div style={{padding:20,color:"#ccc",textAlign:"center",fontSize:13}}>Keine Treffer</div>}
+              {shopifyProds.filter(sp=>!search||sp.title.toLowerCase().includes(search.toLowerCase())).map(sp=>(
                 <div key={sp.id} onClick={()=>doSelect(sp)}
                   style={{padding:"10px 14px",cursor:"pointer",background:selProd?.id===sp.id?"#f0fdf4":"#fff",borderBottom:"1px solid #f5f5f5",display:"flex",alignItems:"center",gap:10}}
                   onMouseEnter={e=>e.currentTarget.style.background=selProd?.id===sp.id?"#f0fdf4":"#f9f9f9"}
@@ -1271,7 +1275,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
               </div>
             )}
             <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:8}}>
-              <button type="button" onClick={()=>setOpen(false)} style={{flex:1,padding:"8px",borderRadius:8,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:13}}>Abbrechen</button>
+              <button type="button" onClick={()=>{setOpen(false);setSearch("");}} style={{flex:1,padding:"8px",borderRadius:8,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:13}}>Abbrechen</button>
               <button type="button" onClick={doConfirm} disabled={!selProd||!selLoc}
                 style={{flex:2,padding:"8px",borderRadius:8,border:"none",background:selProd&&selLoc?"#16a34a":"#e0e0e0",color:selProd&&selLoc?"#fff":"#bbb",cursor:selProd&&selLoc?"pointer":"not-allowed",fontWeight:800,fontSize:13}}>
                 ✓ Auswählen
@@ -2232,6 +2236,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
   const [connected, setConnected] = useState(null); // null=unknown, true, false
   const [syncMsg, setSyncMsg] = useState(null);
   const [linkModal, setLinkModal] = useState(null);
+  const [prodSearch, setProdSearch] = useState("");
 
   const apiFetch = async (action, params="") => {
     const r = await fetch(`${sheetsUrl}?action=${action}${params}`, {redirect:"follow"});
@@ -2412,8 +2417,9 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       {/* Products */}
       {tab==="products"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {shopifyProds.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte — Token eingeben und Reload klicken</div>}
-          {shopifyProds.map(sp=>{
+          <input value={prodSearch} onChange={e=>setProdSearch(e.target.value)} placeholder="🔍 Produkt suchen..." style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
+          {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Treffer</div>}
+          {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).map(sp=>{
             const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id);
             const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
             return(
@@ -2518,6 +2524,8 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
   const [selVar,setSelVar] = useState(null);
   const [selLoc,setSelLoc] = useState(null);
   const [selGkbs,setSelGkbs] = useState(prod?._shopifyProd?null:prod?.id);
+  const [linkSearch,setLinkSearch] = useState("");
+  const [linkDropOpen,setLinkDropOpen] = useState(false);
   const isFromShopify = !!prod?._shopifyProd;
 
   useEffect(()=>{
@@ -2575,10 +2583,22 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
             </div>}
             {!isFromShopify&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SHOPIFY PRODUKT</div>
-              <select value={selSP?.id||""} onChange={e=>{const sp=shopifyProds.find(p=>p.id==e.target.value);setSelSP(sp||null);setSelVar(null);}} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none"}}>
-                <option value="">-- Shopify Produkt --</option>
-                {shopifyProds.map(sp=><option key={sp.id} value={sp.id}>{sp.title}</option>)}
-              </select>
+              <div style={{position:"relative"}}>
+                <input value={linkSearch} onChange={e=>{setLinkSearch(e.target.value);setLinkDropOpen(true);}} onFocus={()=>setLinkDropOpen(true)}
+                  placeholder="🔍 Shopify Produkt suchen..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+                {selSP&&!linkDropOpen&&<div style={{fontSize:12,color:"#16a34a",fontWeight:700,marginTop:4}}>✓ {selSP.title}</div>}
+                {linkDropOpen&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.1)",maxHeight:200,overflowY:"auto",zIndex:10,marginTop:2}}>
+                  {shopifyProds.filter(sp=>!linkSearch||sp.title.toLowerCase().includes(linkSearch.toLowerCase())).slice(0,20).map(sp=>(
+                    <div key={sp.id} onClick={()=>{setSelSP(sp);setSelVar(null);setLinkSearch(sp.title);setLinkDropOpen(false);}}
+                      style={{padding:"9px 12px",cursor:"pointer",fontSize:13,fontWeight:selSP?.id===sp.id?800:400,background:selSP?.id===sp.id?"#f0fdf4":"#fff",borderBottom:"1px solid #f5f5f5"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="#f9f9f9"}
+                      onMouseLeave={e=>e.currentTarget.style.background=selSP?.id===sp.id?"#f0fdf4":"#fff"}>
+                      {sp.title}
+                    </div>
+                  ))}
+                  {shopifyProds.filter(sp=>!linkSearch||sp.title.toLowerCase().includes(linkSearch.toLowerCase())).length===0&&<div style={{padding:12,color:"#ccc",fontSize:12,textAlign:"center"}}>Keine Treffer</div>}
+                </div>}
+              </div>
             </div>}
             {selSP&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
