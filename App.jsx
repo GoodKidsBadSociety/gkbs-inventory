@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.9";
+const APP_VERSION = "v2.1.0";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1158,8 +1158,17 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
+  const doSaveProd = () => {
+    if(!name.trim()||!blankId||veredelung.length===0) return;
+    onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});
+  };
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});}} width={640}>
+    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640} footer={
+      <div style={{display:"flex",gap:10}}>
+        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+        <button type="button" onClick={doSaveProd} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Anlegen"}</button>
+      </div>
+    }>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
       <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
@@ -1249,11 +1258,6 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
           </div>
         </div>
       )}
-      <div style={{display:"flex",gap:10,marginTop:4}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim()||!blankId||veredelung.length===0)return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors});}}
-          style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Anlegen"}</button>
-      </div>
     </ModalWrap>
   );
 }
@@ -1287,8 +1291,18 @@ function ProductModal({categories,initial,onClose,onSave}){
     setPresetProduct(null);
   };
 
+  const doSave = () => {
+    if(!name.trim()) return;
+    onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});
+  };
+
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
+    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={
+      <div style={{display:"flex",gap:10}}>
+        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+        <button type="button" onClick={doSave} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
+      </div>
+    }>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
@@ -1392,11 +1406,6 @@ function ProductModal({categories,initial,onClose,onSave}){
           </div>
         </div>
       )}
-      <div style={{display:"flex",gap:10,marginTop:4}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
-          style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
-      </div>
     </ModalWrap>
   );
 }
@@ -1597,7 +1606,12 @@ function DtfModal({initial, onClose, onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={save}>
+    <ModalWrap onClose={onClose} width={400} onSave={save} footer={
+      <div style={{display:"flex",gap:10}}>
+        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+        <button type="button" onClick={save} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{initial?"Speichern":"Anlegen"}</button>
+      </div>
+    }>
       <div style={{fontSize:17,fontWeight:800}}>{initial ? "DTF bearbeiten" : "DTF anlegen"}</div>
       <div>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
@@ -1868,6 +1882,10 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
               <span style={{fontSize:11,fontWeight:400,color:"#aaa",marginLeft:8}}>({fAnzahl} × €{calcFehlerPreis().toFixed(2)})</span>
             </div>}
           </div>
+          <div style={{display:"flex",gap:10,marginTop:4}}>
+            <button type="button" onClick={()=>setShowAddFehler(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+            <button type="button" onClick={addFehler} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#ef4444",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>🔴 Eintragen</button>
+          </div>
         </ModalWrap>
       )}
       {showAddPromo&&(
@@ -1888,6 +1906,10 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
               </div>
             </div>
             {pPreis&&<div style={{background:"#fff7ed",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#f97316"}}>Gesamt: €{((parseFloat(pPreis)||0)*pAnzahl).toFixed(2)}</div>}
+          </div>
+          <div style={{display:"flex",gap:10,marginTop:4}}>
+            <button type="button" onClick={()=>setShowAddPromo(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+            <button type="button" onClick={addPromo} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#f97316",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>🎁 Eintragen</button>
           </div>
         </ModalWrap>
       )}
@@ -2376,7 +2398,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           {!hasAnyMissing
             ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
-                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS",csvSelected)}
+                <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}${mm}${yy}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
                   ⬇ CSV Export
                 </button>
