@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.6.3";
+const APP_VERSION = "v2.7.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2466,11 +2466,12 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
           <input value={prodSearch} onChange={e=>setProdSearch(e.target.value)} placeholder="🔍 Produkt suchen..." style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
           {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Treffer</div>}
           {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).map(sp=>{
-            const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id);
+            const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id&&l.linkLevel!=="variant");
             const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
             const expanded = !!expandedProds[sp.id];
             const variants = sp.variants||[];
             const totalInv = variants.reduce((a,v)=>a+(v.inventory_quantity||0),0);
+            const varLinkCount = variants.filter(v=>shopifyLinks.some(l=>l.shopifyVariantId==String(v.id)&&l.linkLevel==="variant")).length;
             return(
               <div key={sp.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
                 <div onClick={()=>toggleExpand(sp.id)} style={{padding:"14px 16px",display:"flex",gap:12,alignItems:"center",cursor:"pointer",userSelect:"none"}}>
@@ -2481,6 +2482,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                     <div style={{fontSize:13,fontWeight:800}}>{sp.title}</div>
                     <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten · {sp.status}</div>
                     {gkbs&&<div style={{fontSize:11,color:"#16a34a",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
+                    {!gkbs&&varLinkCount>0&&<div style={{fontSize:11,color:"#3b82f6",marginTop:2,fontWeight:700}}>🔗 {varLinkCount} Variante{varLinkCount>1?"n":""} verknüpft</div>}
                   </div>
                   <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
                     <div style={{fontSize:10,color:"#aaa"}}>Gesamt</div>
@@ -2488,8 +2490,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                   </div>
                   <span style={{fontSize:14,color:"#bbb",flexShrink:0,transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
                   <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true});}}
-                    style={{padding:"6px 12px",borderRadius:8,border:"1px solid",borderColor:link?"#bbf7d0":"#e8e8e8",background:link?"#f0fdf4":"#f8f8f8",color:link?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
-                    {link?"✓ Verknüpft":"🔗 Verknüpfen"}
+                    style={{padding:"6px 12px",borderRadius:8,border:"1px solid",borderColor:link?"#bbf7d0":varLinkCount>0?"#93c5fd":"#e8e8e8",background:link?"#f0fdf4":varLinkCount>0?"#eff6ff":"#f8f8f8",color:link?"#16a34a":varLinkCount>0?"#3b82f6":"#555",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
+                    {link?"✓ Verknüpft":varLinkCount>0?`🔗 ${varLinkCount}`:"🔗 Verknüpfen"}
                   </button>
                 </div>
                 {expanded&&variants.length>0&&(
@@ -2497,19 +2499,32 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                     {/* Table header */}
                     <div style={{display:"flex",padding:"6px 16px",fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5,textTransform:"uppercase"}}>
                       <div style={{flex:1}}>Variante</div>
-                      {!mobile&&<div style={{width:80,textAlign:"right"}}>SKU</div>}
-                      <div style={{width:60,textAlign:"right"}}>Preis</div>
-                      <div style={{width:60,textAlign:"right"}}>Bestand</div>
+                      {!mobile&&<div style={{width:100,textAlign:"right"}}>SKU</div>}
+                      <div style={{width:50,textAlign:"right"}}>Preis</div>
+                      <div style={{width:55,textAlign:"right"}}>Bestand</div>
+                      <div style={{width:120,textAlign:"right"}}>Verknüpfung</div>
                     </div>
                     {variants.map(v=>{
                       const qty = v.inventory_quantity||0;
+                      const varLink = shopifyLinks.find(l=>l.shopifyVariantId==String(v.id)&&l.linkLevel==="variant");
+                      const effectiveLink = varLink || link;
+                      const linkedGkbs = effectiveLink ? products.find(p=>p.id===effectiveLink.gkbsProductId) : null;
                       return(
                         <div key={v.id} style={{display:"flex",alignItems:"center",padding:"8px 16px",borderTop:"1px solid #f8f8f8",fontSize:13}}>
-                          <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{v.title||"Default"}</div>
-                          {!mobile&&<div style={{width:80,textAlign:"right",fontSize:11,color:"#aaa",fontFamily:"monospace"}}>{v.sku||"–"}</div>}
-                          <div style={{width:60,textAlign:"right",fontSize:12,color:"#666"}}>€{Number(v.price||0).toFixed(0)}</div>
-                          <div style={{width:60,textAlign:"right"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontWeight:600,color:"#333"}}>{v.title||"Default"}</div>
+                            {linkedGkbs&&<div style={{fontSize:10,color:varLink?"#3b82f6":"#16a34a",fontWeight:700,marginTop:1}}>{varLink?"🔗 ":"↑ "}{linkedGkbs.name}</div>}
+                          </div>
+                          {!mobile&&<div style={{width:100,textAlign:"right",fontSize:11,color:"#aaa",fontFamily:"monospace"}}>{v.sku||"–"}</div>}
+                          <div style={{width:50,textAlign:"right",fontSize:12,color:"#666"}}>€{Number(v.price||0).toFixed(0)}</div>
+                          <div style={{width:55,textAlign:"right"}}>
                             <span style={{fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
+                          </div>
+                          <div style={{width:120,textAlign:"right"}}>
+                            <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_preselectedVariant:v});}}
+                              style={{padding:"5px 10px",borderRadius:8,border:"1px solid",borderColor:varLink?"#93c5fd":"#e8e8e8",background:varLink?"#eff6ff":"#f8f8f8",color:varLink?"#3b82f6":"#555",cursor:"pointer",fontWeight:700,fontSize:11}}>
+                              {varLink?"✓ Verknüpft":"🔗 Verknüpfen"}
+                            </button>
                           </div>
                         </div>
                       );
@@ -2517,7 +2532,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                     {/* Variant summary footer */}
                     <div style={{display:"flex",padding:"8px 16px",borderTop:"1px solid #f0f0f0",background:"#fafafa",fontSize:12,fontWeight:700}}>
                       <div style={{flex:1,color:"#888"}}>{variants.length} Varianten</div>
-                      <div style={{width:60,textAlign:"right",color:"#111"}}>{totalInv} Stk</div>
+                      <div style={{width:55,textAlign:"right",color:"#111"}}>{totalInv} Stk</div>
+                      <div style={{width:120}}/>
                     </div>
                   </div>
                 )}
@@ -2583,12 +2599,14 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
             const gkbs = products.find(p=>p.id===link.gkbsProductId);
             if(!gkbs) return null;
             const total = Object.values(gkbs.stock||{}).reduce((a,b)=>a+b,0);
+            const isVar = link.linkLevel==="variant";
             return(
-              <div key={i} style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+              <div key={i} style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:`1px solid ${isVar?"#bfdbfe":"#ebebeb"}`,display:"flex",alignItems:"center",gap:12}}>
                 <SmartDot item={gkbs} size={20}/>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:800}}>{gkbs.name}</div>
                   <div style={{fontSize:11,color:"#aaa",marginTop:1}}>↔ {link.label}</div>
+                  {isVar&&<div style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginTop:1}}>🔗 Varianten-Verknüpfung</div>}
                 </div>
                 <div style={{textAlign:"right",flexShrink:0,marginRight:4}}>
                   <div style={{fontSize:10,color:"#aaa"}}>GKBS</div>
@@ -2609,12 +2627,14 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
   const [shopifyProds,setShopifyProds] = useState(spIn||[]);
   const [locs,setLocs] = useState(locsIn||[]);
   const [loading,setLoading] = useState((!spIn||spIn.length===0));
+  const preVar = prod?._preselectedVariant||null;
   const [selSP,setSelSP] = useState(prod?._shopifyProd?prod:null);
-  const [selVar,setSelVar] = useState(null);
+  const [selVar,setSelVar] = useState(preVar||null);
   const [selLoc,setSelLoc] = useState(null);
   const [selGkbs,setSelGkbs] = useState(prod?._shopifyProd?null:prod?.id);
   const [linkSearch,setLinkSearch] = useState("");
   const [linkDropOpen,setLinkDropOpen] = useState(false);
+  const [linkLevel,setLinkLevel] = useState(preVar?"variant":"product");
   const isFromShopify = !!prod?._shopifyProd;
 
   useEffect(()=>{
@@ -2645,24 +2665,53 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
       shopifyVariantId:String(selVar.id),
       shopifyInventoryItemId:String(selVar.inventory_item_id),
       shopifyLocationId:String(selLoc.id),
-      label:`${selSP.title} – ${selVar.title}`
+      label:`${selSP.title} – ${selVar.title}`,
+      linkLevel: linkLevel
     };
-    onSave([...links.filter(l=>l.gkbsProductId!==gkbsId),newLink]);
+    let updated;
+    if(linkLevel==="variant"){
+      // Variant-level: replace any existing link for this specific variant
+      updated = [...links.filter(l=>!(l.shopifyVariantId===String(selVar.id)&&l.linkLevel==="variant")), newLink];
+    } else {
+      // Product-level: replace existing product-level link for this gkbs product
+      updated = [...links.filter(l=>!(l.gkbsProductId===gkbsId&&l.linkLevel!=="variant")), newLink];
+    }
+    onSave(updated);
   };
+
+  const doRemoveVariantLink = () => {
+    if(!preVar) return;
+    const updated = links.filter(l=>!(l.shopifyVariantId===String(preVar.id)&&l.linkLevel==="variant"));
+    onSave(updated);
+  };
+
+  const existingVarLink = preVar ? links.find(l=>l.shopifyVariantId==String(preVar.id)&&l.linkLevel==="variant") : null;
 
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{background:"#fff",borderRadius:18,width:460,maxWidth:"95vw",maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
         <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div>
-            <div style={{fontSize:16,fontWeight:800}}>🔗 Shopify verknüpfen</div>
-            <div style={{fontSize:12,color:"#aaa",marginTop:2}}>{prod?.name||prod?.title}</div>
+            <div style={{fontSize:16,fontWeight:800}}>🔗 {preVar?"Variante":"Shopify"} verknüpfen</div>
+            <div style={{fontSize:12,color:"#aaa",marginTop:2}}>
+              {prod?.name||prod?.title}
+              {preVar&&<span style={{color:"#3b82f6",fontWeight:700}}> → {preVar.title}</span>}
+            </div>
           </div>
           <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:14,flex:1}}>
           {loading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Lade Shopify Daten...</div>}
           {!loading&&<>
+            {/* Link Level Toggle – only show when coming from variant */}
+            {preVar&&<div>
+              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VERKNÜPFUNGS-LEVEL</div>
+              <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:10,padding:3}}>
+                {[["variant","🔗 Nur diese Variante"],["product","📦 Ganzes Produkt"]].map(([v,lbl])=>(
+                  <button key={v} onClick={()=>{setLinkLevel(v);if(v==="variant")setSelVar(preVar);}} style={{flex:1,padding:"8px 12px",borderRadius:8,border:"none",background:linkLevel===v?"#fff":"transparent",color:linkLevel===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:12,boxShadow:linkLevel===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+                ))}
+              </div>
+            </div>}
             {isFromShopify&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GKBS PRODUKT (Blank)</div>
               <select value={selGkbs||""} onChange={e=>setSelGkbs(e.target.value)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none"}}>
@@ -2689,7 +2738,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
                 </div>}
               </div>
             </div>}
-            {selSP&&<div>
+            {selSP&&linkLevel!=="variant"&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {(selSP.variants||[]).map(v=>(
@@ -2699,6 +2748,11 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
                   </button>
                 ))}
               </div>
+            </div>}
+            {preVar&&linkLevel==="variant"&&<div style={{background:"#eff6ff",borderRadius:10,padding:"12px 16px",border:"1px solid #bfdbfe"}}>
+              <div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginBottom:2}}>VARIANTE</div>
+              <div style={{fontSize:14,fontWeight:800,color:"#1e40af"}}>{preVar.title}</div>
+              <div style={{fontSize:11,color:"#60a5fa",marginTop:2}}>Lager: {preVar.inventory_quantity} · SKU: {preVar.sku||"–"}</div>
             </div>}
             {locs.length>1&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STANDORT</div>
@@ -2714,6 +2768,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
           </>}
         </div>
         <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0,display:"flex",gap:10}}>
+          {existingVarLink&&<button type="button" onClick={doRemoveVariantLink} style={{padding:13,borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontWeight:700,fontSize:13}}>✕ Entfernen</button>}
           <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
           <button type="button" onClick={doSave} disabled={!canSave}
             style={{flex:2,padding:13,borderRadius:10,border:"none",background:canSave?"#16a34a":"#e0e0e0",color:canSave?"#fff":"#bbb",cursor:canSave?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
