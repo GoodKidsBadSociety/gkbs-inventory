@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.7";
+const APP_VERSION = "v2.5.9";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1628,6 +1628,16 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
   const capDoneItems=(prod.capColors||[]).filter(c=>c.done>0);
   const sizDoneItems=DEFAULT_SIZES.filter(s=>((prod.done||{})[s]||0)>0);
   const hasAny=isCap?capDoneItems.length>0:sizDoneItems.length>0;
+  const hasShopify=!!prod.shopifyProductLink;
+  const shopifyTitle=prod.shopifyProductLink?.title||"";
+
+  // Check if all done sizes have matching variants
+  const variants=prod.shopifyProductLink?.variants||[];
+  const missingSizes=!isCap&&hasShopify?sizDoneItems.filter(s=>!variants.find(v=>
+    v.title.toLowerCase()===s.toLowerCase()||v.title.toLowerCase().split("/")[0].trim()===s.toLowerCase()
+  )):[];
+  const shopifyReady=hasShopify&&missingSizes.length===0;
+
   return(
     <ModalWrap onClose={onCancel} width={420}>
       <div style={{fontSize:16,fontWeight:800,color:"#111"}}>Abschließen & Bestand abziehen</div>
@@ -1637,6 +1647,25 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
         {isCap?capDoneItems.map(c=><div key={c.id} style={{background:"#f8f8f8",borderRadius:9,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}><div style={{width:16,height:16,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/><div><div style={{fontSize:10,color:"#aaa",fontWeight:700}}>{c.name}</div><div style={{fontSize:18,fontWeight:900,color:"#111"}}>{c.done}</div></div></div>)
         :sizDoneItems.map(s=><div key={s} style={{background:"#f8f8f8",borderRadius:9,padding:"8px 12px",textAlign:"center"}}><div style={{fontSize:10,color:"#aaa",fontWeight:700}}>{s}</div><div style={{fontSize:18,fontWeight:900,color:"#111"}}>{(prod.done||{})[s]}</div></div>)}
       </div>
+
+      {/* Shopify Status */}
+      {!isCap&&hasAny&&(
+        hasShopify&&shopifyReady
+          ?<div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
+              <span style={{width:8,height:8,borderRadius:"50%",background:"#16a34a",display:"inline-block",flexShrink:0}}/>
+              <div style={{fontSize:12,color:"#16a34a",fontWeight:700}}>Shopify Bestand wird aktualisiert: <strong>{shopifyTitle}</strong></div>
+            </div>
+          :hasShopify&&missingSizes.length>0
+            ?<div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:10,padding:"10px 14px"}}>
+                <div style={{fontSize:12,color:"#f97316",fontWeight:700}}>⚠ Shopify: Varianten nicht gefunden für {missingSizes.join(", ")}</div>
+                <div style={{fontSize:11,color:"#f97316",marginTop:2}}>Bestand wird nicht vollständig aktualisiert.</div>
+              </div>
+            :<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{width:8,height:8,borderRadius:"50%",background:"#ef4444",display:"inline-block",flexShrink:0}}/>
+                <div style={{fontSize:12,color:"#ef4444",fontWeight:700}}>Kein Shopify Produkt verknüpft — Bestand wird nicht aktualisiert.</div>
+              </div>
+      )}
+
       <div style={{fontSize:12,color:"#f97316",fontWeight:600}}>⚠ Kann nicht rückgängig gemacht werden.</div>
       <div style={{display:"flex",gap:10}}>
         <button type="button" onClick={onCancel} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#666",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
@@ -3743,7 +3772,7 @@ function AppInner({currentUser,onLogout}){
         if(qty <= 0) return;
         const variant = (link.variants||[]).find(v =>
           v.title.toLowerCase() === size.toLowerCase() ||
-          v.title.toLowerCase().includes(size.toLowerCase())
+          v.title.toLowerCase().split('/')[0].trim() === size.toLowerCase()
         );
         if(!variant){ debugLines.push(`❌ ${size}: Variante nicht gefunden`); return; }
         debugLines.push(`⟳ ${size} +${qty} → ${variant.inventory_item_id}`);
