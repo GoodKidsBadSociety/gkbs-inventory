@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.3";
+const APP_VERSION = "v2.5.4";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1190,12 +1190,11 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selProd, setSelProd] = useState(value?.shopifyProductId ? {id:value.shopifyProductId, title:value.title, variants:value.variants||[]} : null);
-  const [selLoc, setSelLoc] = useState(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
   const selLocRef = useRef(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
 
   const load = async () => {
-    if(shopifyProds.length>0) { setOpen(true); return; }
+    if(open){ setOpen(false); return; }
+    if(shopifyProds.length>0){ setOpen(true); return; }
     setLoading(true);
     try {
       const [d1, d2] = await Promise.all([
@@ -1203,102 +1202,88 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
         fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
       ]);
       if(d1.products) setShopifyProds(d1.products);
-      if(d2.locations) {
+      if(d2.locations){
         setLocations(d2.locations);
-        if(d2.locations.length===1 && !selLocRef.current) {
-          setSelLoc(d2.locations[0]);
+        if(d2.locations.length>=1 && !selLocRef.current){
           selLocRef.current = d2.locations[0];
         }
       }
-    } catch(e) {}
+    } catch(e){}
     setLoading(false);
     setOpen(true);
   };
 
-  const doSelect = (prod) => {
-    setSelProd(prod);
-  };
-
-  const doConfirm = () => {
-    const loc = selLocRef.current || selLoc;
-    if(!selProd || !loc) return;
+  const select = (prod) => {
+    const loc = selLocRef.current;
     onChange({
-      shopifyProductId: String(selProd.id),
-      title: selProd.title,
-      variants: (selProd.variants||[]).map(v=>({
+      shopifyProductId: String(prod.id),
+      title: prod.title,
+      variants: (prod.variants||[]).map(v=>({
         id: String(v.id),
         title: v.title,
         inventory_item_id: String(v.inventory_item_id)
       })),
-      locationId: String(loc.id),
-      locationName: loc.name
+      locationId: loc ? String(loc.id) : "",
+      locationName: loc ? loc.name : ""
     });
     setOpen(false);
+    setSearch("");
   };
 
-  const clear = (e) => { e.stopPropagation(); onChange(null); setSelProd(null); setSearch(""); };
+  const clear = (e) => { e.stopPropagation(); onChange(null); };
+
+  const filtered = shopifyProds.filter(sp=>!search||sp.title.toLowerCase().includes(search.toLowerCase()));
 
   return(
     <div>
-      {/* Trigger button */}
+      {/* Trigger */}
       <button type="button" onClick={load}
         style={{width:"100%",padding:"11px 14px",borderRadius:10,border:`1.5px solid ${value?"#bbf7d0":"#e8e8e8"}`,background:value?"#f0fdf4":"#f8f8f8",color:value?"#16a34a":"#888",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
-        {loading ? "⟳ Laden..." : value ? <>✓ {value.title} <span style={{fontSize:11,opacity:0.6}}>({value.variants?.length} Varianten · {value.locationName||""})</span></> : "🛍 Shopify Produkt auswählen..."}
-        {value && <span onClick={clear} style={{marginLeft:"auto",fontSize:16,color:"#ef4444",lineHeight:1}}>✕</span>}
+        {loading?"⟳ Laden...": value
+          ? <><span style={{flex:1}}>✓ {value.title}</span><span style={{fontSize:11,opacity:0.6}}>({value.variants?.length} Varianten)</span></>
+          : <span style={{flex:1}}>🛍 Shopify Produkt auswählen...</span>}
+        {value && <span onClick={clear} style={{fontSize:16,color:"#ef4444",lineHeight:1,padding:"0 4px"}}>✕</span>}
+        {!value && <span style={{fontSize:12,color:"#bbb"}}>{open?"▲":"▼"}</span>}
       </button>
 
-      {/* Dropdown */}
-      {open && !loading && (
-        <div style={{position:"relative",zIndex:50}}>
-          <div style={{position:"absolute",top:4,left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 4px 20px rgba(0,0,0,0.12)",maxHeight:320,display:"flex",flexDirection:"column"}}>
-            <div style={{overflowY:"auto",flex:1}}>
-                <div style={{padding:"8px 10px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
-                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Suchen..." style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1px solid #e8e8e8",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+      {/* Inline expanded list — no absolute positioning */}
+      {open && (
+        <div style={{border:"1px solid #e8e8e8",borderRadius:10,marginTop:4,overflow:"hidden",background:"#fff"}}>
+          <div style={{padding:"8px 10px",borderBottom:"1px solid #f0f0f0"}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)}
+              placeholder="🔍 Suchen..."
+              style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1px solid #e8e8e8",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          <div style={{maxHeight:220,overflowY:"auto"}}>
+            {filtered.length===0 && <div style={{padding:20,color:"#ccc",textAlign:"center",fontSize:13}}>Keine Treffer</div>}
+            {filtered.map(sp=>(
+              <div key={sp.id} onClick={()=>select(sp)}
+                style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid #f5f5f5",display:"flex",alignItems:"center",gap:10,background:"#fff"}}
+                onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"}
+                onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+                {sp.images?.[0]?.src
+                  ?<img src={sp.images[0].src} style={{width:28,height:28,borderRadius:5,objectFit:"cover",flexShrink:0}} alt=""/>
+                  :<div style={{width:28,height:28,borderRadius:5,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14}}>👕</div>}
+                <span style={{fontSize:13,fontWeight:600}}>{sp.title}</span>
               </div>
-              {shopifyProds.filter(sp=>!search||sp.title.toLowerCase().includes(search.toLowerCase())).length===0 && <div style={{padding:20,color:"#ccc",textAlign:"center",fontSize:13}}>Keine Treffer</div>}
-              {shopifyProds.filter(sp=>!search||sp.title.toLowerCase().includes(search.toLowerCase())).map(sp=>(
-                <div key={sp.id} onClick={()=>doSelect(sp)}
-                  style={{padding:"10px 14px",cursor:"pointer",background:selProd?.id===sp.id?"#f0fdf4":"#fff",borderBottom:"1px solid #f5f5f5",display:"flex",alignItems:"center",gap:10}}
-                  onMouseEnter={e=>e.currentTarget.style.background=selProd?.id===sp.id?"#f0fdf4":"#f9f9f9"}
-                  onMouseLeave={e=>e.currentTarget.style.background=selProd?.id===sp.id?"#f0fdf4":"#fff"}>
-                  {sp.images?.[0]?.src
-                    ?<img src={sp.images[0].src} style={{width:32,height:32,borderRadius:6,objectFit:"cover",flexShrink:0}} alt=""/>
-                    :<div style={{width:32,height:32,borderRadius:6,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>👕</div>}
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:13,fontWeight:700}}>{sp.title}</div>
-                    <div style={{fontSize:11,color:"#aaa"}}>{sp.variants?.length||0} Varianten</div>
-                  </div>
-                  {selProd?.id===sp.id && <span style={{color:"#16a34a",fontWeight:800}}>✓</span>}
-                </div>
+            ))}
+          </div>
+          {locations.length>1&&(
+            <div style={{padding:"8px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:6,flexWrap:"wrap"}}>
+              {locations.map(loc=>(
+                <button key={loc.id} type="button" onClick={()=>{selLocRef.current=loc;}}
+                  style={{padding:"4px 10px",borderRadius:7,border:`1.5px solid ${selLocRef.current?.id===loc.id?"#111":"#e8e8e8"}`,background:selLocRef.current?.id===loc.id?"#111":"#f8f8f8",color:selLocRef.current?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>
+                  {loc.name}
+                </button>
               ))}
             </div>
-            {/* Location selector if multiple */}
-            {locations.length > 1 && (
-              <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0"}}>
-                <div style={{fontSize:11,color:"#bbb",fontWeight:700,marginBottom:6}}>STANDORT</div>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {locations.map(loc=>(
-                    <button key={loc.id} type="button" onClick={()=>{setSelLoc(loc);selLocRef.current=loc;}}
-                      style={{padding:"5px 10px",borderRadius:7,border:`1.5px solid ${selLoc?.id===loc.id?"#111":"#e8e8e8"}`,background:selLoc?.id===loc.id?"#111":"#f8f8f8",color:selLoc?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>
-                      {loc.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:8}}>
-              <button type="button" onClick={()=>{setOpen(false);setSearch("");}} style={{flex:1,padding:"8px",borderRadius:8,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:13}}>Abbrechen</button>
-              <button type="button" onClick={doConfirm} disabled={!selProd||!selLoc}
-                style={{flex:2,padding:"8px",borderRadius:8,border:"none",background:selProd&&selLoc?"#16a34a":"#e0e0e0",color:selProd&&selLoc?"#fff":"#bbb",cursor:selProd&&selLoc?"pointer":"not-allowed",fontWeight:800,fontSize:13}}>
-                ✓ Auswählen
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
     </div>
   );
 }
+
 
 function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const editing=!!initial;
