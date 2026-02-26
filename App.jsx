@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.1";
+const APP_VERSION = "v2.0.2";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -522,13 +522,15 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   const color=complete?GR:atLimit?OR:"#111";
   if(mobile){
     return(
-      <div style={{display:"flex",alignItems:"center",background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:10,padding:"10px 12px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
-        <span style={{fontSize:14,color:"#555",fontWeight:800,width:36}}>{size}</span>
-        <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
-        <span style={{fontSize:11,color:sCol(avail),fontWeight:700,marginRight:8}}>↓{avail}</span>
-        <div style={{display:"flex",gap:6}}>
-          <button onClick={onDec} style={btn(36,true)}>−</button>
-          <button onClick={onInc} disabled={disabled} style={btn(36,false,disabled)}>+</button>
+      <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"12px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
+        <span style={{fontSize:14,color:"#555",fontWeight:800,width:40,flexShrink:0}}>{size}</span>
+        <div style={{flex:1}}>
+          <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
+        </div>
+        <span style={{fontSize:12,color:sCol(avail),fontWeight:700,marginRight:4,flexShrink:0}}>↓{avail}</span>
+        <div style={{display:"flex",gap:8,flexShrink:0}}>
+          <button onClick={onDec} style={btn(40,true)}>−</button>
+          <button onClick={onInc} disabled={disabled} style={btn(40,false,disabled)}>+</button>
         </div>
       </div>
     );
@@ -1440,6 +1442,21 @@ function DtfStockInput({value, onChange}){
 }
 
 // ─── DTF Card ─────────────────────────────────────────────────────
+function DtfStockNum({value, onChange}){
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const ref = useRef(null);
+  const start = () => { setDraft(String(value)); setEditing(true); setTimeout(()=>ref.current?.select(),30); };
+  const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onChange(n); setEditing(false); };
+  return editing
+    ? <input ref={ref} type="number" inputMode="numeric" value={draft}
+        onChange={e=>setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+        style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,border:"2px solid #3b82f6",borderRadius:12,padding:"8px",outline:"none",background:"#fff"}}/>
+    : <span onDoubleClick={start} style={{fontSize:32,fontWeight:900,color:"#111",cursor:"text",display:"inline-block",minWidth:60,textAlign:"center"}} title="Doppelklick zum Bearbeiten">{value}</span>;
+}
+
 function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
   const mobile = useIsMobile();
   const adj = (d) => onUpdate({...item, stock: Math.max(0, item.stock + d)});
@@ -1459,12 +1476,12 @@ function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
         <button onClick={onDelete} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #fee2e2",background:"#fff",color:"#ef4444",fontSize:12,fontWeight:700,cursor:"pointer"}}>✕</button>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:16,background:"#f8f8f8",borderRadius:12,padding:"12px 16px"}}>
-        <button onClick={()=>adj(-1)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:20,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+        <button onClick={()=>adj(-1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
         <div style={{flex:1,textAlign:"center"}}>
-          <DtfStockInput value={item.stock} onChange={v=>onUpdate({...item,stock:Math.max(0,v)})}/>
+          <DtfStockNum value={item.stock} onChange={v=>onUpdate({...item,stock:Math.max(0,v)})}/>
           <div style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:2}}>STÜCK AUF LAGER</div>
         </div>
-        <button onClick={()=>adj(1)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:20,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+        <button onClick={()=>adj(1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
       </div>
     </div>
   );
