@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.97";
+const APP_VERSION = "v2.0";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -248,10 +248,11 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
   const now = new Date();
   const date = now.toISOString().slice(0,10).replace(/-/g,"");
   const time = now.toTimeString().slice(0,8).replace(/:/g,"");
-  a.download = `GKBS_${projectName}_${date}_${time}.csv`;
+  a.download = `${projectName}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
+
 
 // ─── Shared style constants ───────────────────────────────────────
 const S = {
@@ -2155,7 +2156,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               return Math.max(0,needed+minStockVal-avail)>0;
             });
             if(relKeys.length===0)return null;
-            const alreadyOrdered=(key)=>(bestellungen||[]).some(b=>!b.isDtf&&b.status==="offen"&&b.produktId===blankId&&b.sizeKey===key);
+            const alreadyOrdered=(key)=>(bestellungen||[]).some(b=>!b.isDtf&&b.status==="offen"&&(b.blankId===blankId||b.produktId===blankId)&&b.sizeKey===key);
             const allOrdered=relKeys.every(k=>alreadyOrdered(k));
             const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
             const hasStCode=!!blank.stProductId;
@@ -2573,7 +2574,7 @@ function AppInner({currentUser,onLogout}){
       blankId: blank.id, blankName: blank.name, blankHex: blank.colorHex||"#ccc",
       sizeKey: key, label, isCapKey, capColor: capColor||null,
       menge, status: "offen",
-      createdAt: new Date().toISOString(), createdBy: currentUser.name,
+      bestelltAm: new Date().toISOString(), createdBy: currentUser.name,
     };
     setBestellungen(b => {
       const exists = b.find(x=>x.blankId===blank.id&&x.sizeKey===key&&x.status==="offen");
