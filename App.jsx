@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0";
+const APP_VERSION = "v2.0.1";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1940,9 +1940,11 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   const offenTextilien = offenAll.filter(b=>!b.isDtf).length;
   const offenDtf = offenAll.filter(b=>b.isDtf).length;
   const fmtDate = (iso) => {
+    if(!iso) return "–";
     const d = new Date(iso);
+    if(isNaN(d.getTime())) return "–";
     const pad = n => String(n).padStart(2,"0");
-    return `${d.getDate()}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+    return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
   };
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -2141,7 +2143,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
                 <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS",csvSelected)}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
-                  ⬇ Stanley/Stella CSV
+                  ⬇ CSV Export
                 </button>
               </div>
           }
@@ -2571,7 +2573,7 @@ function AppInner({currentUser,onLogout}){
     const label = isCapKey ? (capColor?.name || key) : key;
     const neu = {
       id: Date.now().toString() + Math.random().toString(36).slice(2),
-      blankId: blank.id, blankName: blank.name, blankHex: blank.colorHex||"#ccc",
+      blankId: blank.id, blankName: blank.name, produktName: blank.name, blankHex: blank.colorHex||"#ccc",
       sizeKey: key, label, isCapKey, capColor: capColor||null,
       menge, status: "offen",
       bestelltAm: new Date().toISOString(), createdBy: currentUser.name,
@@ -2909,7 +2911,7 @@ function AppInner({currentUser,onLogout}){
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
       {/* ── Header ── */}
-      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",padding:mobile?"12px 14px":"16px 24px",position:"sticky",top:0,zIndex:50}}>
+      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",padding:mobile?"12px 14px":"16px 24px",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 8px rgba(0,0,0,0.06)"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -2964,7 +2966,7 @@ function AppInner({currentUser,onLogout}){
 
 
         {/* Tab bar */}
-        <div style={{display:"flex",gap:3,marginBottom:mobile?14:18,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
+        <div style={{display:"flex",gap:3,marginBottom:mobile?14:18,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content",position:"sticky",top:mobile?53:61,zIndex:90,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
           {TABS.map(([v,lbl])=>(
             <button key={v} onClick={()=>setView(v)}
               style={{padding:mobile?"8px 14px":"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
