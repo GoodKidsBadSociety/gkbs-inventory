@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.3.1";
+const APP_VERSION = "v2.3.2";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -3393,9 +3393,9 @@ function AppInner({currentUser,onLogout}){
         {view==="inventory"&&(
           <>
             {/* Sub-tabs: Textil / DTF */}
-            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12,width:"fit-content"}}>
+            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
               {[["textil","👕 Textil"],["dtf","🖨 DTF"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setInventoryTab(t)} style={{padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
             {inventoryTab==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
