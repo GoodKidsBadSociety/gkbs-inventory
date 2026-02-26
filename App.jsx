@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.0";
+const APP_VERSION = "v2.5.1";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -1191,7 +1191,8 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selProd, setSelProd] = useState(value?.shopifyProductId ? {id:value.shopifyProductId, title:value.title, variants:value.variants||[]} : null);
-  const [selLoc, setSelLoc] = useState(value?.locationId ? {id:value.locationId} : null);
+  const [selLoc, setSelLoc] = useState(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
+  const selLocRef = React.useRef(value?.locationId ? {id:value.locationId, name:value.locationName} : null);
 
   const load = async () => {
     if(shopifyProds.length>0) { setOpen(true); return; }
@@ -1204,7 +1205,10 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
       if(d1.products) setShopifyProds(d1.products);
       if(d2.locations) {
         setLocations(d2.locations);
-        if(d2.locations.length===1 && !selLoc) setSelLoc(d2.locations[0]);
+        if(d2.locations.length===1 && !selLocRef.current) {
+          setSelLoc(d2.locations[0]);
+          selLocRef.current = d2.locations[0];
+        }
       }
     } catch(e) {}
     setLoading(false);
@@ -1216,7 +1220,8 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
   };
 
   const doConfirm = () => {
-    if(!selProd || !selLoc) return;
+    const loc = selLocRef.current || selLoc;
+    if(!selProd || !loc) return;
     onChange({
       shopifyProductId: String(selProd.id),
       title: selProd.title,
@@ -1225,8 +1230,8 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
         title: v.title,
         inventory_item_id: String(v.inventory_item_id)
       })),
-      locationId: String(selLoc.id),
-      locationName: selLoc.name
+      locationId: String(loc.id),
+      locationName: loc.name
     });
     setOpen(false);
   };
@@ -1273,7 +1278,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
                 <div style={{fontSize:11,color:"#bbb",fontWeight:700,marginBottom:6}}>STANDORT</div>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {locations.map(loc=>(
-                    <button key={loc.id} type="button" onClick={()=>setSelLoc(loc)}
+                    <button key={loc.id} type="button" onClick={()=>{setSelLoc(loc);selLocRef.current=loc;}}
                       style={{padding:"5px 10px",borderRadius:7,border:`1.5px solid ${selLoc?.id===loc.id?"#111":"#e8e8e8"}`,background:selLoc?.id===loc.id?"#111":"#f8f8f8",color:selLoc?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>
                       {loc.name}
                     </button>
