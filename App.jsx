@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.3";
+const APP_VERSION = "v2.0.4";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -63,150 +63,324 @@ async function sheetsSave(products, prods, dtfItems, bestellungen, categories, v
 
 // ─── Stanley/Stella Presets ───────────────────────────────────────
 const STANLEY_STELLA_PRESETS = [
+  // ── T-Shirts ──────────────────────────────────────────────────
   {
-    id: "STTU169",
-    name: "Creator 2.0",
-    productId: "STTU169",
-    fit: "Unisex · Medium Fit · 180 GSM",
-    colors: [
-      // Whites
-      { code: "C054", name: "Natural Raw",     hex: "#f5f0dc", price: 3.83 },
-      { code: "C018", name: "Off White",       hex: "#f0ede4", price: 3.83 },
-      { code: "C504", name: "Vintage White",   hex: "#ede8dc", price: 3.83 },
-      { code: "C001", name: "White",           hex: "#ffffff", price: 3.83 },
-      // Colors
-      { code: "C089", name: "Aloe",            hex: "#7d9e8c", price: 4.15 },
-      { code: "C253", name: "Anthracite",      hex: "#4a4a4a", price: 4.15 },
-      { code: "C145", name: "Aqua Blue",       hex: "#6bbfcb", price: 4.15 },
-      { code: "C002", name: "Black",           hex: "#111111", price: 4.15 },
-      { code: "C156", name: "Blue Grey",       hex: "#7a8fa0", price: 4.15 },
-      { code: "C728", name: "Blue Ice",        hex: "#b8d8e4", price: 4.15 },
-      { code: "C149", name: "Blue Soul",       hex: "#3d5a80", price: 4.15 },
-      { code: "C053", name: "Bright Blue",     hex: "#1a6bcc", price: 4.15 },
-      { code: "C129", name: "Bubble Pink",     hex: "#f5a0c0", price: 4.15 },
-      { code: "C244", name: "Burgundy",        hex: "#6e1a2a", price: 4.15 },
-      { code: "C005", name: "Cotton Pink",     hex: "#f2c4c4", price: 4.15 },
-      { code: "C151", name: "Deep Plum",       hex: "#3d1a3a", price: 4.15 },
-      { code: "C136", name: "Deep Teal",       hex: "#1a5a5a", price: 4.15 },
-      { code: "C028", name: "Desert Dust",     hex: "#c8b89a", price: 4.15 },
-      { code: "C150", name: "Earthy Red",      hex: "#8b3a2a", price: 4.15 },
-      { code: "C153", name: "Faded Olive",     hex: "#8a8a5a", price: 4.15 },
-      { code: "C143", name: "Fiesta",          hex: "#e85a2a", price: 4.15 },
-      { code: "C101", name: "Fraiche Peche",   hex: "#f5c4a0", price: 4.15 },
-      { code: "C727", name: "French Navy",     hex: "#1a2a4a", price: 4.15 },
-      { code: "C036", name: "Glazed Green",    hex: "#2a6a4a", price: 4.15 },
-      { code: "C144", name: "Green Bay",       hex: "#5a7a5a", price: 4.15 },
-      { code: "C730", name: "Heritage Brown",  hex: "#7a3a2a", price: 4.15 },
-      { code: "C155", name: "Honey Paper",     hex: "#e8d4a0", price: 4.15 },
-      { code: "C715", name: "India Ink Grey",  hex: "#5a5a6a", price: 4.15 },
-      { code: "C223", name: "Khaki",           hex: "#8a7a5a", price: 4.15 },
-      { code: "C112", name: "Latte",           hex: "#c8a87a", price: 4.15 },
-      { code: "C063", name: "Lavender",        hex: "#b0a0cc", price: 4.15 },
-      { code: "C355", name: "Lilac Dream",     hex: "#c8b4d8", price: 4.15 },
-      { code: "C729", name: "Mindful Blue",    hex: "#4a6a8a", price: 4.15 },
-      { code: "C138", name: "Misty Grey",      hex: "#b0b0b0", price: 4.15 },
-      { code: "C735", name: "Misty Jade",      hex: "#a0c4b8", price: 4.15 },
-      { code: "C135", name: "Mocha",           hex: "#7a5a4a", price: 4.15 },
-      { code: "C142", name: "Nispero",         hex: "#e8a84a", price: 4.15 },
-      { code: "C048", name: "Ochre",           hex: "#c8901a", price: 4.15 },
-      { code: "C357", name: "Pool Blue",       hex: "#4ab4c8", price: 4.15 },
-      { code: "C115", name: "Purple Love",     hex: "#7a3a8a", price: 4.15 },
-      { code: "C004", name: "Red",             hex: "#cc2222", price: 4.15 },
-      { code: "C116", name: "Red Brown",       hex: "#7a2a1a", price: 4.15 },
-      { code: "C204", name: "Spectra Yellow",  hex: "#f5d000", price: 4.15 },
-      { code: "C702", name: "Stargazer",       hex: "#1a3a5a", price: 4.15 },
-      { code: "C358", name: "Stone",           hex: "#a09880", price: 4.15 },
-      { code: "C137", name: "Verdant Green",   hex: "#2a6a2a", price: 4.15 },
-      { code: "C356", name: "Viva Yellow",     hex: "#f5c800", price: 4.15 },
-      { code: "C088", name: "Worker Blue",     hex: "#2a4a6a", price: 4.15 },
-      // Essential Heathers
-      { code: "C146", name: "Cool Heather Grey",    hex: "#b4b8c0", price: 4.15 },
-      { code: "C652", name: "Dark Heather Blue",    hex: "#3a4a6a", price: 4.15 },
-      { code: "C651", name: "Dark Heather Grey",    hex: "#5a5a5a", price: 4.15 },
-      { code: "C250", name: "Heather Grey",         hex: "#c0bcb8", price: 4.15 },
-      { code: "C731", name: "Heather Haze",         hex: "#b0a8c0", price: 4.15 },
+    id:"STTU169", category:"T-Shirt", name:"Creator 2.0", fit:"Unisex · Medium Fit · 180g",
+    colors:[
+      {code:"C001",name:"White",hex:"#f5f5f5",price:3.83},
+      {code:"C018",name:"Off White",hex:"#f0ede4",price:3.83},
+      {code:"C504",name:"Vintage White",hex:"#ede8dc",price:3.83},
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:3.83},
+      {code:"C002",name:"Black",hex:"#111111",price:4.15},
+      {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:4.15},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:4.15},
+      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:4.15},
+      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:4.15},
+      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:4.15},
+      {code:"C036",name:"Glazed Green",hex:"#4a7a5a",price:4.15},
+      {code:"C063",name:"Lavender",hex:"#b0a0cc",price:4.15},
+      {code:"C005",name:"Cotton Pink",hex:"#f2c4c4",price:4.15},
+      {code:"C150",name:"Earthy Red",hex:"#8b3a2a",price:4.15},
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:4.15},
+      {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:4.15},
+      {code:"C156",name:"Blue Grey",hex:"#6a7a8a",price:4.15},
+      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:4.15},
+      {code:"C149",name:"Blue Soul",hex:"#2a5a8a",price:4.15},
+      {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:4.15},
+      {code:"C129",name:"Bubble Pink",hex:"#f0a0b8",price:4.15},
+      {code:"C151",name:"Deep Plum",hex:"#4a1a3a",price:4.15},
+      {code:"C136",name:"Deep Teal",hex:"#1a4a4a",price:4.15},
+      {code:"C153",name:"Faded Olive",hex:"#8a8a5a",price:4.15},
+      {code:"C143",name:"Fiesta",hex:"#e84a2a",price:4.15},
+      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:4.15},
+      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:4.15},
+      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:4.15},
+      {code:"C155",name:"Honey Paper",hex:"#f0d890",price:4.15},
+      {code:"C715",name:"India Ink Grey",hex:"#3a3a4a",price:4.15},
+      {code:"C112",name:"Latte",hex:"#c8a878",price:4.15},
+      {code:"C355",name:"Lilac Dream",hex:"#c0a8d8",price:4.15},
+      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:4.15},
+      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:4.15},
+      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:4.15},
+      {code:"C135",name:"Mocha",hex:"#7a5040",price:4.15},
+      {code:"C142",name:"Nispero",hex:"#d8a060",price:4.15},
+      {code:"C048",name:"Ochre",hex:"#c8900a",price:4.15},
+      {code:"C357",name:"Pool Blue",hex:"#60b8d0",price:4.15},
+      {code:"C115",name:"Purple Love",hex:"#6a3a8a",price:4.15},
+      {code:"C004",name:"Red",hex:"#cc2020",price:4.15},
+      {code:"C116",name:"Red Brown",hex:"#7a3020",price:4.15},
+      {code:"C204",name:"Spectra Yellow",hex:"#f8d000",price:4.15},
+      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:4.15},
+      {code:"C358",name:"Stone",hex:"#b0a898",price:4.15},
+      {code:"C137",name:"Verdant Green",hex:"#3a7a3a",price:4.15},
+      {code:"C356",name:"Viva Yellow",hex:"#f8c820",price:4.15},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:4.15},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:4.15},
+      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:4.15},
+      {code:"C652",name:"Dark Heather Blue",hex:"#3a4a6a",price:4.15},
+      {code:"C651",name:"Dark Heather Grey",hex:"#5a5a60",price:4.15},
     ]
   },
   {
-    id: "STTU788",
-    name: "Freestyler",
-    productId: "STTU788",
-    fit: "Unisex · Relaxed Fit · 240 GSM",
-    colors: [
-      { code: "C054", name: "Natural Raw",        hex: "#f5f0dc", price: 7.88 },
-      { code: "C001", name: "White",               hex: "#ffffff", price: 7.88 },
-      { code: "C089", name: "Aloe",                hex: "#7d9e8c", price: 8.35 },
-      { code: "C002", name: "Black",               hex: "#111111", price: 8.35 },
-      { code: "C244", name: "Burgundy",            hex: "#6e1a2a", price: 8.35 },
-      { code: "C361", name: "Cream",               hex: "#f0ecd4", price: 8.35 },
-      { code: "C028", name: "Desert Dust",         hex: "#c8b89a", price: 8.35 },
-      { code: "C101", name: "Fraiche Peche",       hex: "#f5c4a0", price: 8.35 },
-      { code: "C727", name: "French Navy",         hex: "#1a2a4a", price: 8.35 },
-      { code: "C036", name: "Glazed Green",        hex: "#2a6a4a", price: 8.35 },
-      { code: "C730", name: "Heritage Brown",      hex: "#7a3a2a", price: 8.35 },
-      { code: "C085", name: "Kaffa Coffee",        hex: "#5a3a28", price: 8.35 },
-      { code: "C223", name: "Khaki",               hex: "#8a7a5a", price: 8.35 },
-      { code: "C729", name: "Mindful Blue",        hex: "#4a6a8a", price: 8.35 },
-      { code: "C735", name: "Misty Jade",          hex: "#a0c4b8", price: 8.35 },
-      { code: "C135", name: "Mocha",               hex: "#7a5a4a", price: 8.35 },
-      { code: "C702", name: "Stargazer",           hex: "#1a3a5a", price: 8.35 },
-      { code: "C088", name: "Worker Blue",         hex: "#2a4a6a", price: 8.35 },
-      { code: "C146", name: "Cool Heather Grey",   hex: "#b4b8c0", price: 8.35 },
-      { code: "C651", name: "Dark Heather Grey",   hex: "#5a5a5a", price: 8.35 },
-      { code: "C250", name: "Heather Grey",        hex: "#c0bcb8", price: 8.35 },
-      { code: "C731", name: "Heather Haze",        hex: "#b0a8c0", price: 8.35 },
+    id:"STTU788", category:"T-Shirt", name:"Freestyler", fit:"Unisex · Relaxed Fit · 240g",
+    colors:[
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:7.88},
+      {code:"C001",name:"White",hex:"#f5f5f5",price:7.88},
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:8.35},
+      {code:"C002",name:"Black",hex:"#111111",price:8.35},
+      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:8.35},
+      {code:"C361",name:"Cream",hex:"#f0e8c0",price:8.35},
+      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:8.35},
+      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:8.35},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:8.35},
+      {code:"C036",name:"Glazed Green",hex:"#4a7a5a",price:8.35},
+      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:8.35},
+      {code:"C085",name:"Kaffa Coffee",hex:"#5a3a2a",price:8.35},
+      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:8.35},
+      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:8.35},
+      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:8.35},
+      {code:"C135",name:"Mocha",hex:"#7a5040",price:8.35},
+      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:8.35},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:8.35},
+      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:8.35},
+      {code:"C651",name:"Dark Heather Grey",hex:"#5a5a60",price:8.35},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:8.35},
+      {code:"C731",name:"Heather Haze",hex:"#c0b8c8",price:8.35},
     ]
   },
   {
-    id: "STTU073",
-    name: "Freestyler Vintage",
-    productId: "STTU073",
-    fit: "Unisex · Relaxed Fit · 240 GSM",
-    colors: [
-      { code: "C162", name: "G. Dyed Anthracite",   hex: "#6a6a6a", price: 9.4 },
-      { code: "C140", name: "G. Dyed Black Rock",   hex: "#1e1e1e", price: 9.4 },
-      { code: "C158", name: "G. Dyed Blue Grey",    hex: "#6a7a9a", price: 9.4 },
-      { code: "C732", name: "G. Dyed Blue Stone",   hex: "#8abcd4", price: 9.4 },
-      { code: "C109", name: "G. Dyed Khaki",        hex: "#6a5a3a", price: 9.4 },
-      { code: "C733", name: "G. Dyed Latte",        hex: "#c8a878", price: 9.4 },
-      { code: "C157", name: "G. Dyed Misty Grey",   hex: "#a0a0a0", price: 9.4 },
-      { code: "C161", name: "G. Dyed Purple Love",  hex: "#7a6aaa", price: 9.4 },
+    id:"STTU073", category:"T-Shirt", name:"Freestyler Vintage", fit:"Unisex · Relaxed Fit · 240g",
+    colors:[
+      {code:"C162",name:"G. Dyed Anthracite",hex:"#6a6a6a",price:9.40},
+      {code:"C140",name:"G. Dyed Black Rock",hex:"#2a2a2a",price:9.40},
+      {code:"C158",name:"G. Dyed Blue Grey",hex:"#6a7a8a",price:9.40},
+      {code:"C732",name:"G. Dyed Blue Stone",hex:"#7ab0c8",price:9.40},
+      {code:"C109",name:"G. Dyed Khaki",hex:"#9a8a5a",price:9.40},
+      {code:"C733",name:"G. Dyed Latte",hex:"#c8a878",price:9.40},
+      {code:"C157",name:"G. Dyed Misty Grey",hex:"#b0b0b8",price:9.40},
+      {code:"C161",name:"G. Dyed Purple Love",hex:"#7a5a9a",price:9.40},
     ]
   },
   {
-    id: "STTU171",
-    name: "Sparker 2.0",
-    productId: "STTU171",
-    fit: "Unisex · Relaxed Fit · 215 GSM",
-    colors: [
-      // Whites
-      { code: "C054", name: "Natural Raw",     hex: "#f5f0dc", price: 5.83 },
-      { code: "C018", name: "Off White",       hex: "#f0ede4", price: 5.83 },
-      { code: "C001", name: "White",           hex: "#ffffff", price: 5.83 },
-      // Colors
-      { code: "C089", name: "Aloe",            hex: "#7d9e8c", price: 6.62 },
-      { code: "C253", name: "Anthracite",      hex: "#4a4a4a", price: 6.62 },
-      { code: "C002", name: "Black",           hex: "#111111", price: 6.62 },
-      { code: "C728", name: "Blue Ice",        hex: "#b8d8e4", price: 6.62 },
-      { code: "C129", name: "Bubble Pink",     hex: "#f5a0c0", price: 6.62 },
-      { code: "C143", name: "Fiesta",          hex: "#e85a2a", price: 6.62 },
-      { code: "C727", name: "French Navy",     hex: "#1a2a4a", price: 6.62 },
-      { code: "C036", name: "Glazed Green",    hex: "#2a6a4a", price: 6.62 },
-      { code: "C144", name: "Green Bay",       hex: "#5a7a5a", price: 6.62 },
-      { code: "C730", name: "Heritage Brown",  hex: "#7a3a2a", price: 6.62 },
-      { code: "C223", name: "Khaki",           hex: "#8a7a5a", price: 6.62 },
-      { code: "C112", name: "Latte",           hex: "#c8a87a", price: 6.62 },
-      { code: "C138", name: "Misty Grey",      hex: "#b0b0b0", price: 6.62 },
-      { code: "C135", name: "Mocha",           hex: "#7a5a4a", price: 6.62 },
-      { code: "C142", name: "Nispero",         hex: "#e8a84a", price: 6.62 },
-      { code: "C357", name: "Pool Blue",       hex: "#4ab4c8", price: 6.62 },
-      { code: "C115", name: "Purple Love",     hex: "#7a3a8a", price: 6.62 },
-      { code: "C702", name: "Stargazer",       hex: "#1a3a5a", price: 6.62 },
-      { code: "C358", name: "Stone",           hex: "#a09880", price: 6.62 },
-      { code: "C134", name: "Violet",          hex: "#6a4a9a", price: 6.62 },
-      { code: "C088", name: "Worker Blue",     hex: "#2a4a6a", price: 6.62 },
+    id:"STTU171", category:"T-Shirt", name:"Sparker 2.0", fit:"Unisex · Relaxed Fit · 215g",
+    colors:[
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:5.83},
+      {code:"C018",name:"Off White",hex:"#f0ede4",price:5.83},
+      {code:"C001",name:"White",hex:"#f5f5f5",price:5.83},
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:6.62},
+      {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:6.62},
+      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:6.62},
+      {code:"C002",name:"Black",hex:"#111111",price:6.62},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:6.62},
+      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:6.62},
+      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:6.62},
+      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:6.62},
+      {code:"C112",name:"Latte",hex:"#c8a878",price:6.62},
+      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:6.62},
+      {code:"C135",name:"Mocha",hex:"#7a5040",price:6.62},
+      {code:"C142",name:"Nispero",hex:"#d8a060",price:6.62},
+      {code:"C129",name:"Bubble Pink",hex:"#f0a0b8",price:6.62},
+      {code:"C143",name:"Fiesta",hex:"#e84a2a",price:6.62},
+      {code:"C357",name:"Pool Blue",hex:"#60b8d0",price:6.62},
+      {code:"C115",name:"Purple Love",hex:"#6a3a8a",price:6.62},
+      {code:"C086",name:"Red Earth",hex:"#8b3020",price:6.62},
+      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:6.62},
+      {code:"C358",name:"Stone",hex:"#b0a898",price:6.62},
+      {code:"C134",name:"Violet",hex:"#5a4a8a",price:6.62},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:6.62},
     ]
-  }
+  },
+  // ── Hoodies ───────────────────────────────────────────────────
+  {
+    id:"STSU177", category:"Hoodie", name:"Cruiser 2.0", fit:"Unisex · Medium Fit · 350g",
+    colors:[
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:16.75},
+      {code:"C018",name:"Off White",hex:"#f0ede4",price:16.75},
+      {code:"C001",name:"White",hex:"#f5f5f5",price:16.75},
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:16.75},
+      {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:16.75},
+      {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:16.75},
+      {code:"C002",name:"Black",hex:"#111111",price:16.75},
+      {code:"C156",name:"Blue Grey",hex:"#6a7a8a",price:16.75},
+      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:16.75},
+      {code:"C149",name:"Blue Soul",hex:"#2a5a8a",price:16.75},
+      {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:16.75},
+      {code:"C129",name:"Bubble Pink",hex:"#f0a0b8",price:16.75},
+      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:16.75},
+      {code:"C005",name:"Cotton Pink",hex:"#f2c4c4",price:16.75},
+      {code:"C151",name:"Deep Plum",hex:"#4a1a3a",price:16.75},
+      {code:"C136",name:"Deep Teal",hex:"#1a4a4a",price:16.75},
+      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:16.75},
+      {code:"C150",name:"Earthy Red",hex:"#8b3a2a",price:16.75},
+      {code:"C153",name:"Faded Olive",hex:"#8a8a5a",price:16.75},
+      {code:"C143",name:"Fiesta",hex:"#e84a2a",price:16.75},
+      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:16.75},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:16.75},
+      {code:"C036",name:"Glazed Green",hex:"#4a7a5a",price:16.75},
+      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:16.75},
+      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:16.75},
+      {code:"C155",name:"Honey Paper",hex:"#f0d890",price:16.75},
+      {code:"C715",name:"India Ink Grey",hex:"#3a3a4a",price:16.75},
+      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:16.75},
+      {code:"C112",name:"Latte",hex:"#c8a878",price:16.75},
+      {code:"C063",name:"Lavender",hex:"#b0a0cc",price:16.75},
+      {code:"C355",name:"Lilac Dream",hex:"#c0a8d8",price:16.75},
+      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:16.75},
+      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:16.75},
+      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:16.75},
+      {code:"C135",name:"Mocha",hex:"#7a5040",price:16.75},
+      {code:"C142",name:"Nispero",hex:"#d8a060",price:16.75},
+      {code:"C048",name:"Ochre",hex:"#c8900a",price:16.75},
+      {code:"C357",name:"Pool Blue",hex:"#60b8d0",price:16.75},
+      {code:"C115",name:"Purple Love",hex:"#6a3a8a",price:16.75},
+      {code:"C004",name:"Red",hex:"#cc2020",price:16.75},
+      {code:"C116",name:"Red Brown",hex:"#7a3020",price:16.75},
+      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:16.75},
+      {code:"C358",name:"Stone",hex:"#b0a898",price:16.75},
+      {code:"C356",name:"Viva Yellow",hex:"#f8c820",price:16.75},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:16.75},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:16.75},
+      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:16.75},
+      {code:"C651",name:"Dark Heather Grey",hex:"#5a5a60",price:16.75},
+      {code:"C731",name:"Heather Haze",hex:"#c0b8c8",price:16.75},
+      {code:"C650",name:"Mid Heather Grey",hex:"#909098",price:16.75},
+    ]
+  },
+  {
+    id:"STSU797", category:"Hoodie", name:"Cooper Dry", fit:"Unisex · Oversized · 400g",
+    colors:[
+      {code:"C001",name:"White",hex:"#f5f5f5",price:24.89},
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:24.89},
+      {code:"C002",name:"Black",hex:"#111111",price:24.89},
+      {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:24.89},
+      {code:"C078",name:"Butter",hex:"#f8e890",price:24.89},
+      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:24.89},
+      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:24.89},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:24.89},
+      {code:"C085",name:"Kaffa Coffee",hex:"#5a3a2a",price:24.89},
+      {code:"C086",name:"Red Earth",hex:"#8b3020",price:24.89},
+      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:24.89},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:24.89},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:24.89},
+    ]
+  },
+  {
+    id:"STSU209", category:"Hoodie", name:"Slammer 2.0", fit:"Unisex · Oversized · 350g",
+    colors:[
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:19.85},
+      {code:"C001",name:"White",hex:"#f5f5f5",price:19.85},
+      {code:"C002",name:"Black",hex:"#111111",price:19.85},
+      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:19.85},
+      {code:"C361",name:"Cream",hex:"#f0e8c0",price:19.85},
+      {code:"C359",name:"Dusk",hex:"#8a7a9a",price:19.85},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:19.85},
+      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:19.85},
+      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:19.85},
+      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:19.85},
+      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:19.85},
+      {code:"C135",name:"Mocha",hex:"#7a5040",price:19.85},
+      {code:"C360",name:"Pink Joy",hex:"#f0a0b0",price:19.85},
+      {code:"C358",name:"Stone",hex:"#b0a898",price:19.85},
+      {code:"C134",name:"Violet",hex:"#5a4a8a",price:19.85},
+      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:19.85},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:19.85},
+    ]
+  },
+  {
+    id:"STSU211", category:"Hoodie", name:"Slammer 2.0 Vintage", fit:"Unisex · Oversized · 380g",
+    colors:[
+      {code:"C162",name:"G. Dyed Anthracite",hex:"#6a6a6a",price:23.84},
+      {code:"C140",name:"G. Dyed Black Rock",hex:"#2a2a2a",price:23.84},
+      {code:"C732",name:"G. Dyed Blue Stone",hex:"#7ab0c8",price:23.84},
+      {code:"C733",name:"G. Dyed Latte",hex:"#c8a878",price:23.84},
+      {code:"C157",name:"G. Dyed Misty Grey",hex:"#b0b0b8",price:23.84},
+    ]
+  },
+  // ── Crewnecks ─────────────────────────────────────────────────
+  {
+    id:"STSU208", category:"Crewneck", name:"Radder 2.0", fit:"Unisex · Oversized · 350g",
+    colors:[
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:15.65},
+      {code:"C001",name:"White",hex:"#f5f5f5",price:15.65},
+      {code:"C002",name:"Black",hex:"#111111",price:15.65},
+      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:15.65},
+      {code:"C361",name:"Cream",hex:"#f0e8c0",price:15.65},
+      {code:"C359",name:"Dusk",hex:"#8a7a9a",price:15.65},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:15.65},
+      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:15.65},
+      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:15.65},
+      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:15.65},
+      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:15.65},
+      {code:"C135",name:"Mocha",hex:"#7a5040",price:15.65},
+      {code:"C360",name:"Pink Joy",hex:"#f0a0b0",price:15.65},
+      {code:"C358",name:"Stone",hex:"#b0a898",price:15.65},
+      {code:"C134",name:"Violet",hex:"#5a4a8a",price:15.65},
+      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:15.65},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:15.65},
+    ]
+  },
+  {
+    id:"STSU210", category:"Crewneck", name:"Radder 2.0 Vintage", fit:"Unisex · Oversized · 380g",
+    colors:[
+      {code:"C162",name:"G. Dyed Anthracite",hex:"#6a6a6a",price:18.48},
+      {code:"C140",name:"G. Dyed Black Rock",hex:"#2a2a2a",price:18.48},
+      {code:"C732",name:"G. Dyed Blue Stone",hex:"#7ab0c8",price:18.48},
+      {code:"C733",name:"G. Dyed Latte",hex:"#c8a878",price:18.48},
+      {code:"C157",name:"G. Dyed Misty Grey",hex:"#b0b0b8",price:18.48},
+    ]
+  },
+  {
+    id:"STSU798", category:"Crewneck", name:"Ledger Dry", fit:"Unisex · Oversized · 400g",
+    colors:[
+      {code:"C001",name:"White",hex:"#f5f5f5",price:19.48},
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:19.48},
+      {code:"C002",name:"Black",hex:"#111111",price:19.48},
+      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:19.48},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:19.48},
+      {code:"C085",name:"Kaffa Coffee",hex:"#5a3a2a",price:19.48},
+      {code:"C086",name:"Red Earth",hex:"#8b3020",price:19.48},
+      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:19.48},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:19.48},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:19.48},
+    ]
+  },
+  {
+    id:"STSU795", category:"Crewneck", name:"Miller Dry", fit:"Unisex · Oversized · 400g",
+    colors:[
+      {code:"C089",name:"Aloe",hex:"#8db49a",price:21.63},
+      {code:"C002",name:"Black",hex:"#111111",price:21.63},
+      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:21.63},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:21.63},
+      {code:"C086",name:"Red Earth",hex:"#8b3020",price:21.63},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:21.63},
+    ]
+  },
+  // ── Taschen ───────────────────────────────────────────────────
+  {
+    id:"STAU760", category:"Tasche", name:"Tote Bag", fit:"Unisex · One Size · 300g",
+    colors:[
+      {code:"C007",name:"Natural",hex:"#f0e8cc",price:2.94},
+      {code:"C001",name:"White",hex:"#f5f5f5",price:2.94},
+      {code:"C002",name:"Black",hex:"#111111",price:2.94},
+      {code:"C591",name:"Midnight Blue",hex:"#1a1a4a",price:2.94},
+      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:2.94},
+    ]
+  },
+  {
+    id:"STAU117", category:"Tasche", name:"Shopping Bag 2.0", fit:"Unisex · One Size · 400g",
+    colors:[
+      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:4.62},
+      {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:4.62},
+      {code:"C002",name:"Black",hex:"#111111",price:4.62},
+      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:4.62},
+      {code:"C136",name:"Deep Teal",hex:"#1a4a4a",price:4.62},
+      {code:"C359",name:"Dusk",hex:"#8a7a9a",price:4.62},
+      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:4.62},
+      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:4.62},
+      {code:"C112",name:"Latte",hex:"#c8a878",price:4.62},
+      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:4.62},
+    ]
+  },
 ];
 
 // ─── Stanley/Stella CSV Export ────────────────────────────────────
@@ -1085,59 +1259,54 @@ function ProductModal({categories,initial,onClose,onSave}){
 
       {/* Stanley/Stella Preset Picker */}
       {!editing&&(
-        <div>
-          <button type="button" onClick={()=>setShowPresets(s=>!s)}
-            style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1.5px dashed #ccc",background:"#fafafa",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
-            <span>⚡</span> Stanley/Stella Preset laden…
-            <span style={{marginLeft:"auto",color:"#bbb"}}>{showPresets?"▲":"▼"}</span>
-          </button>
-          {showPresets&&(
-            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,marginTop:6,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
-              {!presetProduct ? (
-                // Step 1: choose product with category tabs
-                <div style={{display:"flex",flexDirection:"column",gap:0}}>
-                  <div style={{padding:"10px 10px 6px",display:"flex",gap:4,flexWrap:"wrap"}}>
-                    {["T-Shirt","Hoodie","Crewneck","Tasche"].map(cat=>(
-                      <button key={cat} type="button"
-                        onClick={()=>setPresetCat(cat)}
-                        style={{padding:"5px 12px",borderRadius:20,border:"none",
-                          background:presetCat===cat?"#111":"#f0f0f0",
-                          color:presetCat===cat?"#fff":"#555",
-                          fontWeight:700,fontSize:12,cursor:"pointer"}}>
-                        {cat}
-                      </button>
-                    ))}
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {/* Category buttons */}
+          {!presetProduct&&(
+            <div style={{display:"flex",gap:6}}>
+              {["T-Shirt","Hoodie","Crewneck","Tasche"].map(cat=>(
+                <button key={cat} type="button"
+                  onClick={()=>{setPresetCat(cat);setShowPresets(true);}}
+                  style={{flex:1,padding:"8px 4px",borderRadius:10,border:"none",
+                    background:showPresets&&presetCat===cat?"#111":"#f0f0f0",
+                    color:showPresets&&presetCat===cat?"#fff":"#555",
+                    fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Product list */}
+          {showPresets&&!presetProduct&&(
+            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
+              {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>(
+                <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
+                  style={{width:"100%",padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
+                    <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit}</div>
                   </div>
-                  {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>(
-                    <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
-                      style={{padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
-                        <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit}</div>
-                      </div>
-                      <span style={{color:"#bbb"}}>›</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                // Step 2: choose color
-                <div>
-                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
-                    <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
-                    <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{presetProduct.name}</div>
-                  </div>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:12,maxHeight:220,overflowY:"auto"}}>
-                    {presetProduct.colors.map(c=>(
-                      <button key={c.code} type="button" onClick={()=>applyPreset(presetProduct,c)}
-                        title={c.name+" ("+c.code+")"}
-                        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 10px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",cursor:"pointer",minWidth:72,flex:"0 0 auto"}}>
-                        <div style={{width:28,height:28,borderRadius:"50%",background:c.hex,border:"2px solid #e0e0e0",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.15)"}}/>
-                        <div style={{fontSize:9,fontWeight:700,color:"#555",textAlign:"center",lineHeight:1.2}}>{c.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+                  <span style={{color:"#bbb"}}>›</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Color picker */}
+          {showPresets&&presetProduct&&(
+            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
+                <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
+                <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{presetProduct.name}</div>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:12,maxHeight:220,overflowY:"auto"}}>
+                {presetProduct.colors.map(c=>(
+                  <button key={c.code} type="button" onClick={()=>applyPreset(presetProduct,c)}
+                    title={c.name+" ("+c.code+")"}
+                    style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 10px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",cursor:"pointer",minWidth:72,flex:"0 0 auto"}}>
+                    <div style={{width:28,height:28,borderRadius:"50%",background:c.hex,border:"2px solid #e0e0e0",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.15)"}}/>
+                    <div style={{fontSize:9,fontWeight:700,color:"#555",textAlign:"center",lineHeight:1.2}}>{c.name}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
