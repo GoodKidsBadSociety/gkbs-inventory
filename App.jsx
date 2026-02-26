@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.5";
+const APP_VERSION = "v2.0.8";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -534,9 +534,9 @@ function Lightbox({src,onClose}){
 }
 
 // ─── Cap Color Editor ─────────────────────────────────────────────
-function CapColorEditor({colors,onChange,mode}){
+function CapColorEditor({colors,onChange,mode,showMinStock=false}){
   const inp={background:"#fff",border:"1px solid #e0e0e0",borderRadius:8,color:"#111",padding:"8px 10px",fontSize:14,outline:"none",boxSizing:"border-box"};
-  const addColor=()=>onChange([...colors,mode==="stock"?{id:mkId(),name:"Neue Farbe",hex:"#888888",stock:0}:{id:mkId(),name:"Neue Farbe",hex:"#888888",qty:0,done:0}]);
+  const addColor=()=>onChange([...colors,mode==="stock"?{id:mkId(),name:"Neue Farbe",hex:"#888888",stock:0,minStock:0}:{id:mkId(),name:"Neue Farbe",hex:"#888888",qty:0,done:0,minStock:0}]);
   const update=(id,f,v)=>onChange(colors.map(c=>c.id===id?{...c,[f]:v}:c));
   const remove=(id)=>onChange(colors.filter(c=>c.id!==id));
   const adj=(id,f,d)=>{const c=colors.find(x=>x.id===id);update(id,f,Math.max(0,(c?.[f]||0)+d));};
@@ -544,15 +544,32 @@ function CapColorEditor({colors,onChange,mode}){
   return(
     <div style={S.col8}>
       {colors.map(c=>(
-        <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f8f8",borderRadius:12,padding:"10px 12px",flexWrap:"wrap"}}>
-          <input type="color" value={c.hex} onChange={e=>update(c.id,"hex",e.target.value)} style={{width:36,height:36,borderRadius:"50%",border:"2px solid #444",cursor:"pointer",padding:2,flexShrink:0}}/>
-          <input style={{...inp,flex:1,minWidth:80}} value={c.name} onChange={e=>update(c.id,"name",e.target.value)} placeholder="Name"/>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:"auto"}}>
-            <button type="button" onClick={()=>adj(c.id,field,-1)} style={btn(34,true)}>−</button>
-            <span style={{fontSize:20,fontWeight:900,color:"#111",width:34,textAlign:"center"}}>{c[field]||0}</span>
-            <button type="button" onClick={()=>adj(c.id,field,1)} style={btn(34)}>+</button>
+        <div key={c.id} style={{background:"#f8f8f8",borderRadius:12,padding:"10px 12px",display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <input type="color" value={c.hex} onChange={e=>update(c.id,"hex",e.target.value)} style={{width:36,height:36,borderRadius:"50%",border:"2px solid #444",cursor:"pointer",padding:2,flexShrink:0}}/>
+            <input style={{...inp,flex:1,minWidth:80}} value={c.name} onChange={e=>update(c.id,"name",e.target.value)} placeholder="Name"/>
+            <button type="button" onClick={()=>remove(c.id)} style={{background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:20,padding:"0 2px",lineHeight:1,flexShrink:0}}>✕</button>
           </div>
-          <button type="button" onClick={()=>remove(c.id)} style={{background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:20,padding:"0 2px",lineHeight:1,flexShrink:0}}>✕</button>
+          <div style={{display:"flex",gap:8}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,fontWeight:700,color:"#aaa",letterSpacing:0.8,marginBottom:4}}>BESTAND</div>
+              <div style={{display:"flex",alignItems:"center",gap:6,background:"#fff",borderRadius:8,padding:"6px 10px",border:"1px solid #e8e8e8"}}>
+                <button type="button" onClick={()=>adj(c.id,field,-1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                <span style={{fontSize:18,fontWeight:900,color:"#111",flex:1,textAlign:"center"}}>{c[field]||0}</span>
+                <button type="button" onClick={()=>adj(c.id,field,1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+              </div>
+            </div>
+            {showMinStock&&(
+              <div style={{flex:1}}>
+                <div style={{fontSize:9,fontWeight:700,color:"#aaa",letterSpacing:0.8,marginBottom:4}}>SOLLBESTAND</div>
+                <div style={{display:"flex",alignItems:"center",gap:6,background:"#fff",borderRadius:8,padding:"6px 10px",border:"1px solid #e8e8e8"}}>
+                  <button type="button" onClick={()=>adj(c.id,"minStock",-1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fef3c7",color:"#d97706",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                  <span style={{fontSize:18,fontWeight:900,color:"#d97706",flex:1,textAlign:"center"}}>{c.minStock||0}</span>
+                  <button type="button" onClick={()=>adj(c.id,"minStock",1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fef3c7",color:"#d97706",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       ))}
       <button type="button" onClick={addColor} style={{padding:"12px",borderRadius:10,border:"2px dashed #d0d0d0",background:"#fafafa",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14,textAlign:"center"}}>+ Farbe hinzufügen</button>
@@ -1041,18 +1058,21 @@ function ArchivedCard({prod,blank,onDelete}){
 // ─── Modals ───────────────────────────────────────────────────────
 function ModalWrap({onClose,onSave,children,footer,width=600}){
   const mobile=useIsMobile();
+  // ESC via window (works even if nothing focused inside modal)
   useEffect(()=>{
-    const handler=(e)=>{
-      if(e.key==="Enter"&&!e.isComposing){
-        const tag=document.activeElement?.tagName;
-        if(tag==="TEXTAREA"||tag==="SELECT")return;
-        if(onSave)onSave();
-      }
-      if(e.key==="Escape")onClose();
-    };
+    const handler=(e)=>{if(e.key==="Escape")onClose();};
     window.addEventListener("keydown",handler);
     return()=>window.removeEventListener("keydown",handler);
-  },[onClose,onSave]);
+  },[onClose]);
+  const handleModalKeyDown=(e)=>{
+    if(e.key==="Enter"&&!e.isComposing){
+      const tag=document.activeElement?.tagName;
+      const type=document.activeElement?.type;
+      if(tag==="TEXTAREA"||tag==="SELECT")return;
+      // for number inputs: only save if not in an inline-edit widget
+      if(onSave){e.preventDefault();onSave();}
+    }
+  };
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:300,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{
@@ -1064,7 +1084,7 @@ function ModalWrap({onClose,onSave,children,footer,width=600}){
         display:"flex",
         flexDirection:"column",
         boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
-      }} onClick={e=>e.stopPropagation()}>
+      }} onClick={e=>e.stopPropagation()} onKeyDown={handleModalKeyDown}>
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
           {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
           <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
@@ -1094,7 +1114,7 @@ function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
       <button type="button" onClick={onDec} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
       {editing
         ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
-            onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+            onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==="Enter"){e.stopPropagation();commit();}if(e.key==="Escape")setEditing(false);}}
             style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",border:"none",background:"transparent",outline:"none"}}/>
         : <span onDoubleClick={startEdit} style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",cursor:"text"}}>{value}</span>
       }
@@ -1340,35 +1360,34 @@ function ProductModal({categories,initial,onClose,onSave}){
       )}
       {isCap?(
         <div>
-          <div style={S.secLabel}>FARBEN & BESTAND</div>
-          <CapColorEditor colors={capColors} onChange={setCapColors} mode="stock"/>
+          <div style={S.secLabel}>FARBEN, BESTAND & SOLLBESTAND</div>
+          <CapColorEditor colors={capColors} onChange={setCapColors} mode="stock" showMinStock={true}/>
         </div>
       ):(
-        <>
-          <div>
-            <div style={S.secLabel}>BESTAND</div>
-            <div style={S.col5}>
-              {DEFAULT_SIZES.map(size=>(
-                <QtyRow key={size} size={size} avail={0} over={false} value={stock[size]||0}
-                  onDec={()=>setStock(s=>({...s,[size]:Math.max(0,(s[size]||0)-1)}))}
-                  onInc={()=>setStock(s=>({...s,[size]:(s[size]||0)+1}))}
-                  onSet={(v)=>setStock(s=>({...s,[size]:v}))}/>
-              ))}
-            </div>
+        <div>
+          <div style={S.secLabel}>BESTAND</div>
+          <div style={S.col5}>
+            {DEFAULT_SIZES.map(size=>(
+              <QtyRow key={size} size={size} avail={0} over={false} value={stock[size]||0}
+                onDec={()=>setStock(s=>({...s,[size]:Math.max(0,(s[size]||0)-1)}))}
+                onInc={()=>setStock(s=>({...s,[size]:(s[size]||0)+1}))}
+                onSet={(v)=>setStock(s=>({...s,[size]:v}))}/>
+            ))}
           </div>
-          <div>
-            <div style={S.secLabel}>SOLLBESTAND (Min.)</div>
-            <div style={S.col5}>
-              {DEFAULT_SIZES.map(size=>(
-                <div key={size} style={{display:"flex",alignItems:"center",gap:10,background:"#fafafa",borderRadius:10,padding:"8px 12px"}}>
-                  <span style={{fontSize:13,fontWeight:800,color:"#aaa",width:36}}>{size}</span>
-                  <div style={{flex:1}}/>
-                  <input type="number" min="0" style={{...inp,textAlign:"center",padding:"7px",fontSize:14,fontWeight:700,width:70}} value={minStock[size]||0} onChange={e=>setMinStock(s=>({...s,[size]:parseInt(e.target.value)||0}))}/>
-                </div>
-              ))}
-            </div>
+        </div>
+      )}
+      {!isCap&&(
+        <div>
+          <div style={S.secLabel}>SOLLBESTAND (Min.)</div>
+          <div style={S.col5}>
+            {DEFAULT_SIZES.map(size=>(
+              <QtyRow key={size} size={size} avail={0} over={false} value={minStock[size]||0}
+                onDec={()=>setMinStock(s=>({...s,[size]:Math.max(0,(s[size]||0)-1)}))}
+                onInc={()=>setMinStock(s=>({...s,[size]:(s[size]||0)+1}))}
+                onSet={(v)=>setMinStock(s=>({...s,[size]:v}))}/>
+            ))}
           </div>
-        </>
+        </div>
       )}
       <div style={{display:"flex",gap:10,marginTop:4}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
@@ -1627,7 +1646,7 @@ function DtfStockInput({value, onChange}){
         ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             onChange={e=>setDraft(e.target.value)}
             onBlur={commit}
-            onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+            onKeyDown={e=>{if(e.key==="Enter"){e.stopPropagation();commit();}if(e.key==="Escape")setEditing(false);}}
             style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,border:"2px solid #3b82f6",borderRadius:12,padding:"10px 8px",outline:"none",background:"#fff"}}/>
         : <span onDoubleClick={startEdit} style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,color:"#111",cursor:"text",padding:"10px 8px",borderRadius:12,border:"2px solid transparent",display:"inline-block"}}
             title="Doppelklick zum Bearbeiten">{value}</span>
@@ -1648,7 +1667,7 @@ function DtfStockNum({value, onChange}){
     ? <input ref={ref} type="number" inputMode="numeric" value={draft}
         onChange={e=>setDraft(e.target.value)}
         onBlur={commit}
-        onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
+        onKeyDown={e=>{if(e.key==="Enter"){e.stopPropagation();commit();}if(e.key==="Escape")setEditing(false);}}
         style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,border:"2px solid #3b82f6",borderRadius:12,padding:"8px",outline:"none",background:"#fff"}}/>
     : <span onDoubleClick={start} style={{fontSize:32,fontWeight:900,color:"#111",cursor:"text",display:"inline-block",minWidth:60,textAlign:"center"}} title="Doppelklick zum Bearbeiten">{value}</span>;
 }
@@ -1890,7 +1909,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   return(
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["blanks","🧵 Blanks"],["dtf","🖨 DTF"],["verluste","📉 Verluste"]].map(([v,lbl])=>(
+        {[["blanks","👕 Textilien"],["dtf","🖨 DTF"],["verluste","📉 Verluste"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -1986,7 +2005,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
       })()}
       {/* Combined total */}
       <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:4}}>
-        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Blanks + DTF</div></div>
+        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Textilien + DTF</div></div>
         <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{(grandTotal+dtfTotal).toFixed(2)}</div>
       </div>
     </div>
@@ -2741,6 +2760,7 @@ function AppInner({currentUser,onLogout}){
     sheetsLoad().then(data=>{
       if(data?.products){__setProducts(data.products);productsRef.current=data.products;}
       if(data?.prods){__setProds(data.prods);prodsRef.current=data.prods;}
+      if(data?.categories&&Array.isArray(data.categories)&&data.categories.length>0){categoriesRef.current=data.categories;__setCategories(data.categories);}
       // Merge remote logs with localStorage
       if(data?.logs && Array.isArray(data.logs)){
         try{
@@ -3221,10 +3241,10 @@ function AppInner({currentUser,onLogout}){
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
           onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
-          onDelete={id=>{const item=dtfItems.find(x=>x.id===id);setDtfItems(d=>d.filter(x=>x.id!==id));if(item)log(`DTF gelöscht: ${item.name}`);}}
+          onDelete={id=>{const item=dtfItems.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name,onConfirm:()=>{setDtfItems(d=>d.filter(x=>x.id!==id));log(`DTF gelöscht: ${item.name}`);setConfirmDelete(null);}});}}
           onEdit={item=>setShowDtfModal(item)}
           onAdd={()=>setShowDtfModal("add")}/>}
-        {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
+        {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{const item=bestellungen.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name||(item.isDtf?"DTF-Bestellung":"Bestellung"),onConfirm:()=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");setConfirmDelete(null);}});}}/>}
 
         {/* Bestellbedarf as tab */}
         {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
