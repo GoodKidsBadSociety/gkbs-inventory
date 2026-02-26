@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.1.5";
+const APP_VERSION = "v2.1.6";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1298,12 +1298,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={
-      <div style={{display:"flex",gap:10}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={doSave} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
-      </div>
-    }>
+    <ModalWrap onClose={onClose} onSave={doSave} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
@@ -1407,6 +1402,10 @@ function ProductModal({categories,initial,onClose,onSave}){
           </div>
         </div>
       )}
+      <div style={{position:"sticky",bottom:0,background:"#fff",paddingTop:10,marginTop:4,display:"flex",gap:10,zIndex:10}}>
+        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+        <button type="button" onClick={doSave} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
+      </div>
     </ModalWrap>
   );
 }
