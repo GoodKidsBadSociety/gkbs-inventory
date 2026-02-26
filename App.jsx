@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.6.0";
+const APP_VERSION = "v2.6.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2489,8 +2489,11 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       {/* Orders */}
       {tab==="orders"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {shopifyOrders.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine offenen Bestellungen</div>}
-          {shopifyOrders.map(order=>(
+          {(()=>{
+            const isOE=(t)=>ONLINE_EXCLUSIVE_PRODUCTS.includes(t.toUpperCase().trim());
+            const filtered=shopifyOrders.map(o=>({...o,line_items:(o.line_items||[]).filter(l=>isOE(l.title))})).filter(o=>o.line_items.length>0);
+            if(filtered.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Online Exclusive Bestellungen</div>;
+            return filtered.map(order=>(
             <div key={order.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
               <div style={{padding:"12px 16px",background:"#f9f9f9",display:"flex",alignItems:"center",gap:10}}>
                 <div style={{flex:1}}>
