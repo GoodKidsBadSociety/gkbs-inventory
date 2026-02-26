@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.74
+// GKBS INVENTORY v1.75
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.74";
+const APP_VERSION = "v1.75";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1773,7 +1773,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onBestellenDtf,currentUser}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
@@ -1841,7 +1841,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onB
       if(menge<=0)return;
       const isCapKey=s.key.startsWith("cap_");
       const capColor=isCapKey?(allModal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
-      onBestellen(allModal.blank,s.key,isCapKey,capColor,menge);
+      onDirectAdd(allModal.blank,s.key,isCapKey,capColor,menge);
     });
     setAllModal(null);
   };
@@ -2344,6 +2344,28 @@ function AppInner({currentUser,onLogout}){
     setBestellungen(b => [neu, ...b]);
     log(`Bestellung aufgegeben – ${neu.produktName}${isDtf?" (DTF)":" | "+label}: ${menge} Stk`);
     setBestellModal(null);
+  };
+
+  const directAddBestellung = (blank, key, isCapKey, capColor, menge) => {
+    const label = isCapKey ? (capColor?.name || key) : key;
+    const neu = {
+      id: (Date.now() + Math.random()).toString(),
+      produktId: blank.id,
+      produktName: blank.name,
+      label,
+      sizeKey: key,
+      isCapKey,
+      capColorId: capColor?.id || null,
+      isDtf: false,
+      dtfId: null,
+      designsPerMeter: null,
+      meterAnzahl: null,
+      menge,
+      bestelltAm: new Date().toISOString(),
+      status: "offen"
+    };
+    setBestellungen(b => [neu, ...b]);
+    log(`Bestellung aufgegeben – ${blank.name} | ${label}: ${menge} Stk`);
   };
 
   const handleWareneingang = (bestellung, mengeEingang) => {
