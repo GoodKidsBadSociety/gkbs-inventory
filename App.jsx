@@ -1065,6 +1065,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   const isCap=category==="Cap";
   const [showPresets, setShowPresets] = useState(false);
   const [presetProduct, setPresetProduct] = useState(null);
+  const [presetCat, setPresetCat] = useState("T-Shirt");
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
 
   const applyPreset = (preset, colorObj) => {
@@ -1093,10 +1094,21 @@ function ProductModal({categories,initial,onClose,onSave}){
           {showPresets&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,marginTop:6,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               {!presetProduct ? (
-                // Step 1: choose product
+                // Step 1: choose product with category tabs
                 <div style={{display:"flex",flexDirection:"column",gap:0}}>
-                  <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"10px 14px 6px"}}>ARTIKEL WÄHLEN</div>
-                  {STANLEY_STELLA_PRESETS.map(p=>(
+                  <div style={{padding:"10px 10px 6px",display:"flex",gap:4,flexWrap:"wrap"}}>
+                    {["T-Shirt","Hoodie","Crewneck","Tasche"].map(cat=>(
+                      <button key={cat} type="button"
+                        onClick={()=>setPresetCat(cat)}
+                        style={{padding:"5px 12px",borderRadius:20,border:"none",
+                          background:presetCat===cat?"#111":"#f0f0f0",
+                          color:presetCat===cat?"#fff":"#555",
+                          fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                  {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>(
                     <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
                       style={{padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                       <div style={{flex:1}}>
@@ -3135,11 +3147,11 @@ function AppInner({currentUser,onLogout}){
 
       {/* Mobile bottom tab bar */}
       {mobile&&(
-        <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"8px 0 20px",zIndex:50}}>
+        <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"6px 0 env(safe-area-inset-bottom,8px)",zIndex:50}}>
           {TABS.map(([v,lbl])=>(
-            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#bbb"}}>
-              <span style={{fontSize:20}}>{lbl.split(" ")[0]}</span>
-              <span style={{fontSize:10,fontWeight:700}}>{lbl.split(" ").slice(1).join(" ")}</span>
+            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 0",color:view===v?"#111":"#bbb"}}>
+              <span style={{fontSize:18}}>{lbl.split(" ")[0]}</span>
+              <span style={{fontSize:9,fontWeight:700}}>{lbl.split(" ").slice(1).join(" ")}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:6,background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
             </button>
           ))}
