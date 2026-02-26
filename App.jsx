@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.73
+// GKBS INVENTORY v1.74
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.73";
+const APP_VERSION = "v1.74";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1556,34 +1556,53 @@ function FinanceView({products}){
 // ─── Bestellung aufgeben Modal ────────────────────────────────────
 
 function AllBestellungModal({blank, sizes, onClose, onConfirm}){
-  // sizes = [{key, label, toOrder}]
-  const total = sizes.reduce((a,s)=>a+s.toOrder, 0);
-  const [menge, setMenge] = useState(total > 0 ? total : 1);
-  const inputRef = useRef(null);
-  useEffect(()=>{ setTimeout(()=>inputRef.current?.select(), 50); }, []);
+  // mengen: {key: menge}
+  const [mengen, setMengen] = useState(()=>{
+    const m={};
+    sizes.forEach(s=>{m[s.key]=s.toOrder>0?s.toOrder:1;});
+    return m;
+  });
+  const [editing, setEditing] = useState(null); // key being edited
+  const [draft, setDraft] = useState("");
+  const inputRefs = useRef({});
+
+  const setM=(key,val)=>setMengen(m=>({...m,[key]:Math.max(1,val)}));
+  const startEdit=(key)=>{setDraft(String(mengen[key]));setEditing(key);setTimeout(()=>inputRefs.current[key]?.select(),30);};
+  const commitEdit=(key)=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)setM(key,n);setEditing(null);};
+
   return(
-    <ModalWrap onClose={onClose} width={380} onSave={()=>onConfirm(menge)}>
+    <ModalWrap onClose={onClose} width={400} onSave={()=>onConfirm(mengen)}>
       <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
-      <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
+      <div style={{background:"#f8f8f8",borderRadius:12,padding:"12px 14px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
-        <div style={{fontSize:12,color:"#888",marginTop:4,display:"flex",flexWrap:"wrap",gap:4}}>
-          {sizes.map(s=>(
-            <span key={s.key} style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:700}}>
-              {s.label} · {s.toOrder} Stk
-            </span>
-          ))}
-        </div>
+        <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{blank.color||blank.category}</div>
       </div>
-      <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GESAMTMENGE</div>
-        <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
-          <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
-          <input ref={inputRef} type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
-            style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
-          <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
-        </div>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {sizes.map(s=>(
+          <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"10px 14px"}}>
+            <span style={{fontSize:13,fontWeight:800,color:"#444",flex:1}}>{s.label}</span>
+            <button type="button" onClick={()=>setM(s.key,mengen[s.key]-1)}
+              style={{width:34,height:34,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
+            {editing===s.key
+              ? <input ref={el=>inputRefs.current[s.key]=el} type="number" inputMode="numeric" value={draft}
+                  onChange={e=>setDraft(e.target.value)}
+                  onBlur={()=>commitEdit(s.key)}
+                  onKeyDown={e=>{if(e.key==="Enter")commitEdit(s.key);if(e.key==="Escape")setEditing(null);}}
+                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
+              : <span onDoubleClick={()=>startEdit(s.key)}
+                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"text",borderBottom:"2px solid transparent"}}>
+                  {mengen[s.key]}
+                </span>
+            }
+            <button type="button" onClick={()=>setM(s.key,mengen[s.key]+1)}
+              style={{width:34,height:34,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
+          </div>
+        ))}
       </div>
-      <button onClick={()=>onConfirm(menge)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 2px"}}>
+        <span style={{fontSize:12,color:"#aaa",fontWeight:600}}>Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong></span>
+      </div>
+      <button onClick={()=>onConfirm(mengen)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
         Zur Bestellliste hinzufügen →
       </button>
     </ModalWrap>
@@ -1815,14 +1834,14 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onB
     return {dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit};
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
-  const handleAllConfirm=(menge)=>{
+  const handleAllConfirm=(mengen)=>{
     if(!allModal)return;
-    // Call onBestellen for each size proportionally (or as one combined entry)
-    // We open one modal and then call onBestellen per size with its original toOrder
     allModal.sizes.forEach(s=>{
+      const menge=mengen[s.key]||s.toOrder;
+      if(menge<=0)return;
       const isCapKey=s.key.startsWith("cap_");
       const capColor=isCapKey?(allModal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
-      onBestellen(allModal.blank,s.key,isCapKey,capColor,s.toOrder);
+      onBestellen(allModal.blank,s.key,isCapKey,capColor,menge);
     });
     setAllModal(null);
   };
