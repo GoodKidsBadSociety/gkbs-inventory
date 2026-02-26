@@ -59,6 +59,7 @@ async function sheetsSave(products, prods, dtfItems, bestellungen, categories) {
 const STANLEY_STELLA_PRESETS = [
   {
     id: "STTU169",
+    category: "T-Shirt",
     name: "Creator 2.0",
     productId: "STTU169",
     fit: "Unisex · Medium Fit · 180 GSM",
@@ -203,6 +204,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU177",
+    category: "Hoodie",
     name: "Cruiser 2.0",
     productId: "STSU177",
     fit: "Unisex · Medium Fit · 350 GSM",
@@ -259,6 +261,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU797",
+    category: "Hoodie",
     name: "Cooper Dry",
     productId: "STSU797",
     fit: "Unisex · Oversized · 400 GSM",
@@ -280,6 +283,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU209",
+    category: "Hoodie",
     name: "Slammer 2.0",
     productId: "STSU209",
     fit: "Unisex · Oversized · 350 GSM",
@@ -305,6 +309,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU211",
+    category: "Hoodie",
     name: "Slammer 2.0 Vintage",
     productId: "STSU211",
     fit: "Unisex · Oversized · 380 GSM",
@@ -318,6 +323,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU210",
+    category: "Crewneck",
     name: "Radder 2.0 Vintage",
     productId: "STSU210",
     fit: "Unisex · Oversized · 380 GSM",
@@ -331,6 +337,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU208",
+    category: "Crewneck",
     name: "Radder 2.0",
     productId: "STSU208",
     fit: "Unisex · Oversized · 350 GSM",
@@ -356,6 +363,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU798",
+    category: "Crewneck",
     name: "Ledger Dry",
     productId: "STSU798",
     fit: "Unisex · Oversized · 400 GSM",
@@ -374,6 +382,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STSU795",
+    category: "Crewneck",
     name: "Miller Dry",
     productId: "STSU795",
     fit: "Unisex · Oversized · 400 GSM",
@@ -388,6 +397,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STAU760",
+    category: "Tasche",
     name: "Tote Bag",
     productId: "STAU760",
     fit: "Unisex · One Size · 300 GSM",
@@ -401,6 +411,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STAU117",
+    category: "Tasche",
     name: "Shopping Bag 2.0",
     productId: "STAU117",
     fit: "Unisex · One Size · 400 GSM",
@@ -784,6 +795,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{fontSize:mobile?15:16,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{product.name}</div>
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#aaa"}}>{product.color}</span>}
+            {(()=>{const preset=STANLEY_STELLA_PRESETS.find(p=>p.id===product.stProductId||p.productId===product.stProductId);return preset?<span style={{fontSize:11,color:"#bbb"}}>{preset.fit}</span>:null;})()}
             {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>CAP</span>}
             {allOut&&<span style={{fontSize:10,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"2px 7px",fontWeight:700}}>OUT</span>}
             {someOut&&<span style={{fontSize:10,background:"#fff0f0",color:"#dc2626",borderRadius:6,padding:"2px 7px",fontWeight:700}}>VERY LOW</span>}
@@ -1263,7 +1275,6 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [color,setColor]=useState(initial?.color||"");
   const [colorHex,setColorHex]=useState(initial?.colorHex||"#000000");
   const [buyPrice,setBuyPrice]=useState(initial?.buyPrice!=null?String(initial.buyPrice):"");
-  const [supplierUrl,setSupplierUrl]=useState(initial?.supplierUrl||"");
   const [stProductId,setStProductId]=useState(initial?.stProductId||"");
   const [stColorCode,setStColorCode]=useState(initial?.stColorCode||"");
   const [stock,setStock]=useState(initial?.stock||mkQty());
@@ -1281,29 +1292,38 @@ function ProductModal({categories,initial,onClose,onSave}){
     setStProductId(preset.productId);
     setStColorCode(colorObj.code);
     if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
+    if(preset.category) setCategory(preset.category);
     setShowPresets(false);
     setPresetProduct(null);
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
       {!editing&&(
-        <div>
-          <button type="button" onClick={()=>setShowPresets(s=>!s)}
-            style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1.5px dashed #ccc",background:"#fafafa",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
-            <span>⚡</span> Stanley/Stella Preset laden…
-            <span style={{marginLeft:"auto",color:"#bbb"}}>{showPresets?"▲":"▼"}</span>
-          </button>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {/* Category tabs */}
+          <div style={{display:"flex",gap:6}}>
+            {["T-Shirts","Hoodies","Crewnecks","Bags"].map(cat=>{
+              const key = cat==="Bags"?"Tasche":cat==="T-Shirts"?"T-Shirt":cat==="Hoodies"?"Hoodie":"Crewneck";
+              const active = showPresets===key;
+              return(
+                <button key={cat} type="button"
+                  onClick={()=>{ setShowPresets(active?false:key); setPresetProduct(null); }}
+                  style={{flex:1,padding:"8px 4px",borderRadius:9,border:`1.5px solid ${active?"#111":"#ddd"}`,background:active?"#111":"#fff",color:active?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12}}>
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
           {showPresets&&(
-            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,marginTop:6,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
+            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               {!presetProduct ? (
-                // Step 1: choose product
                 <div style={{display:"flex",flexDirection:"column",gap:0}}>
                   <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"10px 14px 6px"}}>ARTIKEL WÄHLEN</div>
-                  {STANLEY_STELLA_PRESETS.map(p=>(
+                  {STANLEY_STELLA_PRESETS.filter(p=>p.category===(showPresets==="Bags"?"Tasche":showPresets==="T-Shirts"?"T-Shirt":showPresets==="Hoodies"?"Hoodie":"Crewneck")).map(p=>(
                     <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
                       style={{padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                       <div style={{flex:1}}>
@@ -1315,7 +1335,6 @@ function ProductModal({categories,initial,onClose,onSave}){
                   ))}
                 </div>
               ) : (
-                // Step 2: choose color
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
                     <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
@@ -1343,11 +1362,10 @@ function ProductModal({categories,initial,onClose,onSave}){
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
         <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
       </div>
-      <input style={inp} placeholder="🔗 Hersteller-Link" value={supplierUrl} onChange={e=>setSupplierUrl(e.target.value)}/>
 
       {!isCap&&(
         <div style={S.col8}>
-          <input style={inp} placeholder="Farbname (z.B. Black, Natural)" value={color} onChange={e=>setColor(e.target.value)}/>
+          <input style={inp} placeholder="Farbname & Infos (z.B. Black, 350 GSM)" value={color} onChange={e=>setColor(e.target.value)}/>
           <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
             {PRESET_COLORS.map(c=><button key={c} type="button" onClick={()=>setColorHex(c)} style={{width:28,height:28,borderRadius:7,border:colorHex===c?"2.5px solid #111":"1px solid #ddd",background:c,cursor:"pointer",padding:0}}/>)}
             <input type="color" value={colorHex} onChange={e=>setColorHex(e.target.value)} style={{width:28,height:28,borderRadius:7,border:"1px solid #ddd",cursor:"pointer",padding:0}}/>
@@ -1389,7 +1407,7 @@ function ProductModal({categories,initial,onClose,onSave}){
       )}
       <div style={{display:"flex",gap:10,marginTop:4}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
+        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
           style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
       </div>
     </ModalWrap>
