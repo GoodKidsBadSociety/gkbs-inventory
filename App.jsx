@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.87
+// GKBS INVENTORY v1.81
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.87";
+const APP_VERSION = "v1.81";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -59,7 +59,6 @@ async function sheetsSave(products, prods, dtfItems, bestellungen, categories) {
 const STANLEY_STELLA_PRESETS = [
   {
     id: "STTU169",
-    category: "T-Shirt",
     name: "Creator 2.0",
     productId: "STTU169",
     fit: "Unisex · Medium Fit · 180 GSM",
@@ -124,7 +123,6 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STTU788",
-    category: "T-Shirt",
     name: "Freestyler",
     productId: "STTU788",
     fit: "Unisex · Relaxed Fit · 240 GSM",
@@ -155,7 +153,6 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STTU073",
-    category: "T-Shirt",
     name: "Freestyler Vintage",
     productId: "STTU073",
     fit: "Unisex · Relaxed Fit · 240 GSM",
@@ -172,7 +169,6 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STTU171",
-    category: "T-Shirt",
     name: "Sparker 2.0",
     productId: "STTU171",
     fit: "Unisex · Relaxed Fit · 215 GSM",
@@ -204,257 +200,24 @@ const STANLEY_STELLA_PRESETS = [
       { code: "C134", name: "Violet",          hex: "#6a4a9a", price: 6.62 },
       { code: "C088", name: "Worker Blue",     hex: "#2a4a6a", price: 6.62 },
     ]
-  },
-  {
-    id: "STSU177",
-    category: "Hoodie",
-    name: "Cruiser 2.0",
-    productId: "STSU177",
-    fit: "Unisex · Medium Fit · 350 GSM",
-    colors: [
-      { code:"C054", name:"Natural Raw",        hex:"#f5f0dc", price:16.75 },
-      { code:"C018", name:"Off White",           hex:"#f0ede0", price:16.75 },
-      { code:"C001", name:"White",               hex:"#f5f5f5", price:16.75 },
-      { code:"C089", name:"Aloe",                hex:"#8aab8c", price:16.75 },
-      { code:"C253", name:"Anthracite",          hex:"#4a4a4a", price:16.75 },
-      { code:"C145", name:"Aqua Blue",           hex:"#5bc4d1", price:16.75 },
-      { code:"C002", name:"Black",               hex:"#111111", price:16.75 },
-      { code:"C156", name:"Blue Grey",           hex:"#7a8fa6", price:16.75 },
-      { code:"C728", name:"Blue Ice",            hex:"#b8d4e8", price:16.75 },
-      { code:"C149", name:"Blue Soul",           hex:"#3a5f8a", price:16.75 },
-      { code:"C053", name:"Bright Blue",         hex:"#1e6fc8", price:16.75 },
-      { code:"C129", name:"Bubble Pink",         hex:"#f0b8c8", price:16.75 },
-      { code:"C244", name:"Burgundy",            hex:"#7a1f2e", price:16.75 },
-      { code:"C005", name:"Cotton Pink",         hex:"#f5c8c8", price:16.75 },
-      { code:"C151", name:"Deep Plum",           hex:"#4a1a3a", price:16.75 },
-      { code:"C136", name:"Deep Teal",           hex:"#1a5f5a", price:16.75 },
-      { code:"C028", name:"Desert Dust",         hex:"#c4a882", price:16.75 },
-      { code:"C150", name:"Earthy Red",          hex:"#8b3a2a", price:16.75 },
-      { code:"C153", name:"Faded Olive",         hex:"#8a8a5a", price:16.75 },
-      { code:"C143", name:"Fiesta",              hex:"#e8402a", price:16.75 },
-      { code:"C101", name:"Fraiche Peche",       hex:"#f0a882", price:16.75 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:16.75 },
-      { code:"C036", name:"Glazed Green",        hex:"#4a7a4a", price:16.75 },
-      { code:"C144", name:"Green Bay",           hex:"#2a5a3a", price:16.75 },
-      { code:"C730", name:"Heritage Brown",      hex:"#6a4a2a", price:16.75 },
-      { code:"C155", name:"Honey Paper",         hex:"#e8d0a0", price:16.75 },
-      { code:"C715", name:"India Ink Grey",      hex:"#3a3a4a", price:16.75 },
-      { code:"C223", name:"Khaki",               hex:"#8a7a5a", price:16.75 },
-      { code:"C112", name:"Latte",               hex:"#c4a882", price:16.75 },
-      { code:"C063", name:"Lavender",            hex:"#b8a8d0", price:16.75 },
-      { code:"C355", name:"Lilac Dream",         hex:"#c8a8c8", price:16.75 },
-      { code:"C729", name:"Mindful Blue",        hex:"#4a6a9a", price:16.75 },
-      { code:"C735", name:"Misty Jade",          hex:"#a8c8b8", price:16.75 },
-      { code:"C142", name:"Nispero",             hex:"#d4885a", price:16.75 },
-      { code:"C048", name:"Ochre",               hex:"#c8882a", price:16.75 },
-      { code:"C357", name:"Pool Blue",           hex:"#6ab8d4", price:16.75 },
-      { code:"C115", name:"Purple Love",         hex:"#6a3a7a", price:16.75 },
-      { code:"C004", name:"Red",                 hex:"#c82a1a", price:16.75 },
-      { code:"C116", name:"Red Brown",           hex:"#7a2a1a", price:16.75 },
-      { code:"C702", name:"Stargazer",           hex:"#1a3a5a", price:16.75 },
-      { code:"C358", name:"Stone",               hex:"#9a8a7a", price:16.75 },
-      { code:"C356", name:"Viva Yellow",         hex:"#e8c82a", price:16.75 },
-      { code:"C088", name:"Worker Blue",         hex:"#2a4a7a", price:16.75 },
-      { code:"C146", name:"Cool Heather Grey",   hex:"#b8b8c0", price:16.75 },
-      { code:"C651", name:"Dark Heather Grey",   hex:"#606068", price:16.75 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:16.75 },
-      { code:"C731", name:"Heather Haze",        hex:"#b8a8b8", price:16.75 },
-      { code:"C650", name:"Mid Heather Grey",    hex:"#909098", price:16.75 },
-    ]
-  },
-  {
-    id: "STSU797",
-    category: "Hoodie",
-    name: "Cooper Dry",
-    productId: "STSU797",
-    fit: "Unisex · Oversized · 400 GSM",
-    colors: [
-      { code:"C001", name:"White",               hex:"#f5f5f5", price:24.89 },
-      { code:"C089", name:"Aloe",                hex:"#8aab8c", price:24.89 },
-      { code:"C002", name:"Black",               hex:"#111111", price:24.89 },
-      { code:"C053", name:"Bright Blue",         hex:"#1e6fc8", price:24.89 },
-      { code:"C078", name:"Butter",              hex:"#f5e090", price:24.89 },
-      { code:"C028", name:"Desert Dust",         hex:"#c4a882", price:24.89 },
-      { code:"C101", name:"Fraiche Peche",       hex:"#f0a882", price:24.89 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:24.89 },
-      { code:"C085", name:"Kaffa Coffee",        hex:"#5a3a2a", price:24.89 },
-      { code:"C086", name:"Red Earth",           hex:"#8b3a2a", price:24.89 },
-      { code:"C702", name:"Stargazer",           hex:"#1a3a5a", price:24.89 },
-      { code:"C088", name:"Worker Blue",         hex:"#2a4a7a", price:24.89 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:24.89 },
-    ]
-  },
-  {
-    id: "STSU209",
-    category: "Hoodie",
-    name: "Slammer 2.0",
-    productId: "STSU209",
-    fit: "Unisex · Oversized · 350 GSM",
-    colors: [
-      { code:"C054", name:"Natural Raw",         hex:"#f5f0dc", price:19.85 },
-      { code:"C001", name:"White",               hex:"#f5f5f5", price:19.85 },
-      { code:"C002", name:"Black",               hex:"#111111", price:19.85 },
-      { code:"C728", name:"Blue Ice",            hex:"#b8d4e8", price:19.85 },
-      { code:"C361", name:"Cream",               hex:"#f5ead0", price:19.85 },
-      { code:"C359", name:"Dusk",                hex:"#8a7a9a", price:19.85 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:19.85 },
-      { code:"C223", name:"Khaki",               hex:"#8a7a5a", price:19.85 },
-      { code:"C729", name:"Mindful Blue",        hex:"#4a6a9a", price:19.85 },
-      { code:"C735", name:"Misty Jade",          hex:"#a8c8b8", price:19.85 },
-      { code:"C138", name:"Misty Grey",          hex:"#b0b8b8", price:19.85 },
-      { code:"C135", name:"Mocha",               hex:"#6a4a3a", price:19.85 },
-      { code:"C360", name:"Pink Joy",            hex:"#f0a0b0", price:19.85 },
-      { code:"C358", name:"Stone",               hex:"#9a8a7a", price:19.85 },
-      { code:"C134", name:"Violet",              hex:"#6a4a8a", price:19.85 },
-      { code:"C146", name:"Cool Heather Grey",   hex:"#b8b8c0", price:19.85 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:19.85 },
-    ]
-  },
-  {
-    id: "STSU211",
-    category: "Hoodie",
-    name: "Slammer 2.0 Vintage",
-    productId: "STSU211",
-    fit: "Unisex · Oversized · 380 GSM",
-    colors: [
-      { code:"C162", name:"G. Dyed Anthracite",  hex:"#5a5a5a", price:23.84 },
-      { code:"C140", name:"G. Dyed Black Rock",  hex:"#2a2a2a", price:23.84 },
-      { code:"C732", name:"G. Dyed Blue Stone",  hex:"#7a9ab0", price:23.84 },
-      { code:"C733", name:"G. Dyed Latte",       hex:"#c4a882", price:23.84 },
-      { code:"C157", name:"G. Dyed Misty Grey",  hex:"#9a9aa0", price:23.84 },
-    ]
-  },
-  {
-    id: "STSU210",
-    category: "Crewneck",
-    name: "Radder 2.0 Vintage",
-    productId: "STSU210",
-    fit: "Unisex · Oversized · 380 GSM",
-    colors: [
-      { code:"C162", name:"G. Dyed Anthracite",  hex:"#5a5a5a", price:18.48 },
-      { code:"C140", name:"G. Dyed Black Rock",  hex:"#2a2a2a", price:18.48 },
-      { code:"C732", name:"G. Dyed Blue Stone",  hex:"#7a9ab0", price:18.48 },
-      { code:"C733", name:"G. Dyed Latte",       hex:"#c4a882", price:18.48 },
-      { code:"C157", name:"G. Dyed Misty Grey",  hex:"#9a9aa0", price:18.48 },
-    ]
-  },
-  {
-    id: "STSU208",
-    category: "Crewneck",
-    name: "Radder 2.0",
-    productId: "STSU208",
-    fit: "Unisex · Oversized · 350 GSM",
-    colors: [
-      { code:"C054", name:"Natural Raw",         hex:"#f5f0dc", price:15.65 },
-      { code:"C001", name:"White",               hex:"#f5f5f5", price:15.65 },
-      { code:"C002", name:"Black",               hex:"#111111", price:15.65 },
-      { code:"C728", name:"Blue Ice",            hex:"#b8d4e8", price:15.65 },
-      { code:"C361", name:"Cream",               hex:"#f5ead0", price:15.65 },
-      { code:"C359", name:"Dusk",                hex:"#8a7a9a", price:15.65 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:15.65 },
-      { code:"C223", name:"Khaki",               hex:"#8a7a5a", price:15.65 },
-      { code:"C729", name:"Mindful Blue",        hex:"#4a6a9a", price:15.65 },
-      { code:"C138", name:"Misty Grey",          hex:"#b0b8b8", price:15.65 },
-      { code:"C735", name:"Misty Jade",          hex:"#a8c8b8", price:15.65 },
-      { code:"C135", name:"Mocha",               hex:"#6a4a3a", price:15.65 },
-      { code:"C360", name:"Pink Joy",            hex:"#f0a0b0", price:15.65 },
-      { code:"C358", name:"Stone",               hex:"#9a8a7a", price:15.65 },
-      { code:"C134", name:"Violet",              hex:"#6a4a8a", price:15.65 },
-      { code:"C146", name:"Cool Heather Grey",   hex:"#b8b8c0", price:15.65 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:15.65 },
-    ]
-  },
-  {
-    id: "STSU798",
-    category: "Crewneck",
-    name: "Ledger Dry",
-    productId: "STSU798",
-    fit: "Unisex · Oversized · 400 GSM",
-    colors: [
-      { code:"C001", name:"White",               hex:"#f5f5f5", price:19.48 },
-      { code:"C089", name:"Aloe",                hex:"#8aab8c", price:19.48 },
-      { code:"C002", name:"Black",               hex:"#111111", price:19.48 },
-      { code:"C028", name:"Desert Dust",         hex:"#c4a882", price:19.48 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:19.48 },
-      { code:"C085", name:"Kaffa Coffee",        hex:"#5a3a2a", price:19.48 },
-      { code:"C086", name:"Red Earth",           hex:"#8b3a2a", price:19.48 },
-      { code:"C702", name:"Stargazer",           hex:"#1a3a5a", price:19.48 },
-      { code:"C088", name:"Worker Blue",         hex:"#2a4a7a", price:19.48 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:19.48 },
-    ]
-  },
-  {
-    id: "STSU795",
-    category: "Crewneck",
-    name: "Miller Dry",
-    productId: "STSU795",
-    fit: "Unisex · Oversized · 400 GSM",
-    colors: [
-      { code:"C089", name:"Aloe",                hex:"#8aab8c", price:21.63 },
-      { code:"C002", name:"Black",               hex:"#111111", price:21.63 },
-      { code:"C028", name:"Desert Dust",         hex:"#c4a882", price:21.63 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:21.63 },
-      { code:"C086", name:"Red Earth",           hex:"#8b3a2a", price:21.63 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:21.63 },
-    ]
-  },
-  {
-    id: "STAU760",
-    category: "Tasche",
-    name: "Tote Bag",
-    productId: "STAU760",
-    fit: "Unisex · One Size · 300 GSM",
-    colors: [
-      { code:"C007", name:"Natural",             hex:"#e8dcc8", price:2.94 },
-      { code:"C001", name:"White",               hex:"#f5f5f5", price:2.94 },
-      { code:"C002", name:"Black",               hex:"#111111", price:2.94 },
-      { code:"C591", name:"Midnight Blue",       hex:"#1a2a40", price:2.94 },
-      { code:"C250", name:"Heather Grey",        hex:"#c0c0c0", price:2.94 },
-    ]
-  },
-  {
-    id: "STAU117",
-    category: "Tasche",
-    name: "Shopping Bag 2.0",
-    productId: "STAU117",
-    fit: "Unisex · One Size · 400 GSM",
-    colors: [
-      { code:"C054", name:"Natural Raw",         hex:"#f5f0dc", price:4.62 },
-      { code:"C145", name:"Aqua Blue",           hex:"#5bc4d1", price:4.62 },
-      { code:"C002", name:"Black",               hex:"#111111", price:4.62 },
-      { code:"C244", name:"Burgundy",            hex:"#7a1f2e", price:4.62 },
-      { code:"C136", name:"Deep Teal",           hex:"#1a5f5a", price:4.62 },
-      { code:"C359", name:"Dusk",                hex:"#8a7a9a", price:4.62 },
-      { code:"C727", name:"French Navy",         hex:"#1a2a4a", price:4.62 },
-      { code:"C144", name:"Green Bay",           hex:"#2a5a3a", price:4.62 },
-      { code:"C112", name:"Latte",               hex:"#c4a882", price:4.62 },
-      { code:"C088", name:"Worker Blue",         hex:"#2a4a7a", price:4.62 },
-    ]
   }
 ];
 
 // ─── Stanley/Stella CSV Export ────────────────────────────────────
-function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvSelected) {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2,"0");
-  const mm = String(now.getMonth()+1).padStart(2,"0");
-  const yyyy = now.getFullYear();
-  const time = now.toTimeString().slice(0,8).replace(/:/g,"");
-  const fullName = `GKBS_${projectName}_${dd}${mm}${yyyy}_${time}`;
+function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName) {
   const rows = [];
   rows.push("ProductId,Quantity,UnitOfMeasureId,VariantId,Project");
+
   const sizeMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
 
   Object.entries(bedarfMap).forEach(([blankId, sizeNeeds]) => {
     const blank = products.find(p => p.id === blankId);
     if(!blank || !blank.stProductId) return;
+    const isCap = isCapMap[blankId];
 
     Object.entries(sizeNeeds).forEach(([key, needed]) => {
       if(!needed || needed <= 0) return;
-      // Only export if selected (when csvSelected has entries)
-      const hasSelection = csvSelected && Object.keys(csvSelected).length > 0;
-      if(hasSelection && !csvSelected[blankId+"__"+key]) return;
-
+      // Calculate avail and toOrder
       const isCapKey = key.startsWith("cap_");
       const capColor = isCapKey ? (blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key) : null;
       const avail = isCapKey ? (capColor?.stock||0) : ((blank.stock||{})[key]||0);
@@ -462,26 +225,32 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
       const toOrder = Math.max(0, needed + minStockVal - avail);
       if(toOrder <= 0) return;
 
-      const variantId = isCapKey
-        ? (capColor?.stColorCode || blank.stColorCode || "")
-        : (blank.stColorCode || "") + (sizeMap[key] || key);
+      let variantId = "";
+      if(isCapKey) {
+        // For caps: stColorCode is per-cap-color or use blank stColorCode
+        const colorCode = capColor?.stColorCode || blank.stColorCode || "";
+        variantId = colorCode;
+      } else {
+        const stSize = sizeMap[key] || key;
+        variantId = (blank.stColorCode || "") + stSize;
+      }
 
-      rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${fullName}`);
+      rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${projectName}`);
     });
   });
-
-  if(rows.length <= 1){ alert("Keine Positionen für den Export gefunden."); return; }
 
   const csv = rows.join("\r\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = fullName+".csv";
+  const now = new Date();
+  const date = now.toISOString().slice(0,10).replace(/-/g,"");
+  const time = now.toTimeString().slice(0,8).replace(/:/g,"");
+  a.download = `GKBS_${projectName}_${date}_${time}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
-
 
 // ─── Shared style constants ───────────────────────────────────────
 const S = {
@@ -798,7 +567,6 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{fontSize:mobile?15:16,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{product.name}</div>
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#aaa"}}>{product.color}</span>}
-            {(()=>{const preset=STANLEY_STELLA_PRESETS.find(p=>p.id===product.stProductId||p.productId===product.stProductId);return preset?<span style={{fontSize:11,color:"#bbb"}}>{preset.fit}</span>:null;})()}
             {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>CAP</span>}
             {allOut&&<span style={{fontSize:10,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"2px 7px",fontWeight:700}}>OUT</span>}
             {someOut&&<span style={{fontSize:10,background:"#fff0f0",color:"#dc2626",borderRadius:6,padding:"2px 7px",fontWeight:700}}>VERY LOW</span>}
@@ -1278,6 +1046,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [color,setColor]=useState(initial?.color||"");
   const [colorHex,setColorHex]=useState(initial?.colorHex||"#000000");
   const [buyPrice,setBuyPrice]=useState(initial?.buyPrice!=null?String(initial.buyPrice):"");
+  const [supplierUrl,setSupplierUrl]=useState(initial?.supplierUrl||"");
   const [stProductId,setStProductId]=useState(initial?.stProductId||"");
   const [stColorCode,setStColorCode]=useState(initial?.stColorCode||"");
   const [stock,setStock]=useState(initial?.stock||mkQty());
@@ -1295,38 +1064,29 @@ function ProductModal({categories,initial,onClose,onSave}){
     setStProductId(preset.productId);
     setStColorCode(colorObj.code);
     if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
-    if(preset.category) setCategory(preset.category);
     setShowPresets(false);
     setPresetProduct(null);
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
+    <ModalWrap onClose={onClose} onSave={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}} width={620}>
       <div style={{fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
       {!editing&&(
-        <div style={{display:"flex",flexDirection:"column",gap:6}}>
-          {/* Category tabs */}
-          <div style={{display:"flex",gap:6}}>
-            {["T-Shirts","Hoodies","Crewnecks","Bags"].map(cat=>{
-              const key = cat==="Bags"?"Tasche":cat==="T-Shirts"?"T-Shirt":cat==="Hoodies"?"Hoodie":"Crewneck";
-              const active = showPresets===key;
-              return(
-                <button key={cat} type="button"
-                  onClick={()=>{ setShowPresets(active?false:key); setPresetProduct(null); }}
-                  style={{flex:1,padding:"8px 4px",borderRadius:9,border:`1.5px solid ${active?"#111":"#ddd"}`,background:active?"#111":"#fff",color:active?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12}}>
-                  {cat}
-                </button>
-              );
-            })}
-          </div>
+        <div>
+          <button type="button" onClick={()=>setShowPresets(s=>!s)}
+            style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1.5px dashed #ccc",background:"#fafafa",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+            <span>⚡</span> Stanley/Stella Preset laden…
+            <span style={{marginLeft:"auto",color:"#bbb"}}>{showPresets?"▲":"▼"}</span>
+          </button>
           {showPresets&&(
-            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
+            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,marginTop:6,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               {!presetProduct ? (
+                // Step 1: choose product
                 <div style={{display:"flex",flexDirection:"column",gap:0}}>
                   <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"10px 14px 6px"}}>ARTIKEL WÄHLEN</div>
-                  {STANLEY_STELLA_PRESETS.filter(p=>p.category===showPresets).map(p=>(
+                  {STANLEY_STELLA_PRESETS.map(p=>(
                     <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
                       style={{padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                       <div style={{flex:1}}>
@@ -1338,6 +1098,7 @@ function ProductModal({categories,initial,onClose,onSave}){
                   ))}
                 </div>
               ) : (
+                // Step 2: choose color
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
                     <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
@@ -1365,10 +1126,11 @@ function ProductModal({categories,initial,onClose,onSave}){
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
         <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
       </div>
+      <input style={inp} placeholder="🔗 Hersteller-Link" value={supplierUrl} onChange={e=>setSupplierUrl(e.target.value)}/>
 
       {!isCap&&(
         <div style={S.col8}>
-          <input style={inp} placeholder="Farbname & Infos (z.B. Black, 350 GSM)" value={color} onChange={e=>setColor(e.target.value)}/>
+          <input style={inp} placeholder="Farbname (z.B. Black, Natural)" value={color} onChange={e=>setColor(e.target.value)}/>
           <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
             {PRESET_COLORS.map(c=><button key={c} type="button" onClick={()=>setColorHex(c)} style={{width:28,height:28,borderRadius:7,border:colorHex===c?"2.5px solid #111":"1px solid #ddd",background:c,cursor:"pointer",padding:0}}/>)}
             <input type="color" value={colorHex} onChange={e=>setColorHex(e.target.value)} style={{width:28,height:28,borderRadius:7,border:"1px solid #ddd",cursor:"pointer",padding:0}}/>
@@ -1410,7 +1172,7 @@ function ProductModal({categories,initial,onClose,onSave}){
       )}
       <div style={{display:"flex",gap:10,marginTop:4}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
+        <button type="button" onClick={()=>{if(!name.trim())return;onSave({id:initial?.id||Date.now().toString(),name:name.trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,supplierUrl:supplierUrl.trim(),stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});}}
           style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>{editing?"Speichern":"Hinzufügen"}</button>
       </div>
     </ModalWrap>
@@ -1478,7 +1240,6 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
 function BestellbedarfModal({prods,products,onClose}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [openSize,setOpenSize]=useState(null);
-  const [csvSelected,setCsvSelected]=useState({});
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -1729,14 +1490,230 @@ function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
   );
 }
 
-function FinanceView({products}){
+
+// ─── Verluste View ───────────────────────────────────────────────
+function VerlustView({products, dtfItems, verluste, setVerluste, promoGifts, setPromoGifts}){
+  const [tab, setTab] = useState("fehler");
+  const [showAddFehler, setShowAddFehler] = useState(false);
+  const [showAddPromo, setShowAddPromo] = useState(false);
+  const [fProd, setFProd] = useState("");
+  const [fGrund, setFGrund] = useState("Druckfehler");
+  const [fDtf, setFDtf] = useState("");
+  const [fAnzahl, setFAnzahl] = useState(1);
+  const [fNotiz, setFNotiz] = useState("");
+  const [pName, setPName] = useState("");
+  const [pInfo, setPInfo] = useState("");
+  const [pPreis, setPPreis] = useState("");
+  const [pAnzahl, setPAnzahl] = useState(1);
+  const STICK_PAUSCHALE = 1.60;
+
+  const getDtfPreis = (dtf) => {
+    if(!dtf||!dtf.pricePerMeter) return 0;
+    return dtf.pricePerMeter / Math.max(1,dtf.designsPerMeter||1);
+  };
+  const calcFehlerPreis = () => {
+    const prod = products.find(p=>p.id===fProd);
+    const dtf = dtfItems.find(d=>d.id===fDtf);
+    const blankPreis = prod?.buyPrice||0;
+    if(fGrund==="Kaputtes Blank") return blankPreis;
+    if(fGrund==="Stickfehler") return blankPreis + STICK_PAUSCHALE;
+    if(fGrund==="Druckfehler") return blankPreis + getDtfPreis(dtf);
+    return blankPreis;
+  };
+  const addFehler = () => {
+    if(!fProd) return;
+    if(fGrund==="Druckfehler"&&!fDtf) return;
+    const prod = products.find(p=>p.id===fProd);
+    const dtf = dtfItems.find(d=>d.id===fDtf);
+    const preisProStk = calcFehlerPreis();
+    setVerluste(v=>[{id:Date.now().toString(),produktId:prod.id,produktName:prod.name,produktHex:prod.colorHex||"#ccc",grund:fGrund,dtfName:dtf?.name||null,anzahl:fAnzahl,preisProStk,gesamt:preisProStk*fAnzahl,notiz:fNotiz,datum:new Date().toISOString()},...v]);
+    setFProd("");setFGrund("Druckfehler");setFDtf("");setFAnzahl(1);setFNotiz("");
+    setShowAddFehler(false);
+  };
+  const addPromo = () => {
+    if(!pName.trim()) return;
+    setPromoGifts(g=>[{id:Date.now().toString(),name:pName.trim(),info:pInfo.trim(),preis:parseFloat(pPreis)||0,anzahl:pAnzahl,gesamt:(parseFloat(pPreis)||0)*pAnzahl,datum:new Date().toISOString()},...g]);
+    setPName("");setPInfo("");setPPreis("");setPAnzahl(1);
+    setShowAddPromo(false);
+  };
+
+  const totalFehler = verluste.reduce((a,v)=>a+v.gesamt,0);
+  const totalPromo = promoGifts.reduce((a,g)=>a+g.gesamt,0);
+  const inp = {padding:"10px 14px",borderRadius:10,border:"1.5px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box"};
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{background:"#111",borderRadius:14,padding:"14px 18px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <div style={{fontSize:11,color:"#888",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div>
+          <div style={{fontSize:28,fontWeight:900,color:"#fff",lineHeight:1.1}}>€{(totalFehler+totalPromo).toFixed(2)}</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+          <div style={{fontSize:11,color:"#ef4444",fontWeight:700}}>🔴 Fehler: €{totalFehler.toFixed(2)}</div>
+          <div style={{fontSize:11,color:"#f97316",fontWeight:700}}>🎁 Promo: €{totalPromo.toFixed(2)}</div>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
+        {[["fehler","🔴 Produktionsfehler"],["promo","🎁 Promo Gifts"]].map(([v,lbl])=>(
+          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        ))}
+      </div>
+      {tab==="fehler"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{display:"flex",justifyContent:"flex-end"}}>
+            <button onClick={()=>setShowAddFehler(true)} style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#ef4444",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>+ Fehler eintragen</button>
+          </div>
+          {verluste.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
+          {verluste.map(v=>(
+            <div key={v.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:v.produktHex,flexShrink:0,border:"1px solid #ddd"}}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.produktName}</div>
+                <div style={{fontSize:11,color:"#aaa"}}>{v.grund}{v.dtfName?` + ${v.dtfName}`:""}{v.notiz?` · ${v.notiz}`:""} · {new Date(v.datum).toLocaleDateString("de-AT")}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontSize:14,fontWeight:800,color:"#ef4444"}}>−€{v.gesamt.toFixed(2)}</div>
+                <div style={{fontSize:11,color:"#bbb"}}>{v.anzahl} Stk · €{(v.preisProStk||0).toFixed(2)}/St</div>
+              </div>
+              <button onClick={()=>setVerluste(vv=>vv.filter(x=>x.id!==v.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fee2e2",color:"#ef4444",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab==="promo"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{display:"flex",justifyContent:"flex-end"}}>
+            <button onClick={()=>setShowAddPromo(true)} style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#f97316",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>+ Promo Gift eintragen</button>
+          </div>
+          {promoGifts.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
+          {promoGifts.map(g=>(
+            <div key={g.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+              <div style={{fontSize:20,flexShrink:0}}>🎁</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
+                <div style={{fontSize:11,color:"#aaa"}}>{g.info?`${g.info} · `:""}  {new Date(g.datum).toLocaleDateString("de-AT")}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{fontSize:14,fontWeight:800,color:"#f97316"}}>−€{g.gesamt.toFixed(2)}</div>
+                <div style={{fontSize:11,color:"#bbb"}}>{g.anzahl} Stk · €{g.preis.toFixed(2)}/St</div>
+              </div>
+              <button onClick={()=>setPromoGifts(gg=>gg.filter(x=>x.id!==g.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fff7ed",color:"#f97316",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {showAddFehler&&(
+        <ModalWrap onClose={()=>setShowAddFehler(false)} onSave={addFehler} width={480}>
+          <div style={{fontSize:16,fontWeight:800}}>🔴 Produktionsfehler eintragen</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <select style={inp} value={fProd} onChange={e=>setFProd(e.target.value)}>
+              <option value="">— Produkt (Blank) wählen —</option>
+              {products.map(p=>(<option key={p.id} value={p.id}>{p.name}{p.buyPrice!=null?` (€${p.buyPrice.toFixed(2)}/St)`:""}</option>))}
+            </select>
+            <select style={inp} value={fGrund} onChange={e=>{setFGrund(e.target.value);setFDtf("");}}>
+              <option>Druckfehler</option>
+              <option>Stickfehler</option>
+              <option>Kaputtes Blank</option>
+            </select>
+            {fGrund==="Druckfehler"&&(
+              <select style={inp} value={fDtf} onChange={e=>setFDtf(e.target.value)}>
+                <option value="">— DTF Design wählen —</option>
+                {(dtfItems||[]).filter(d=>d.pricePerMeter).map(d=>{
+                  const p=d.pricePerMeter/Math.max(1,d.designsPerMeter||1);
+                  return <option key={d.id} value={d.id}>{d.name} (€{p.toFixed(2)}/Design)</option>;
+                })}
+              </select>
+            )}
+            {fGrund==="Stickfehler"&&(
+              <div style={{background:"#f8f8f8",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#888"}}>
+                Stickpauschale: <strong style={{color:"#111"}}>€{STICK_PAUSCHALE.toFixed(2)}</strong>
+              </div>
+            )}
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <label style={{fontSize:12,color:"#888",fontWeight:700,flexShrink:0}}>Anzahl</label>
+              <button onClick={()=>setFAnzahl(a=>Math.max(1,a-1))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800}}>−</button>
+              <span style={{fontSize:20,fontWeight:900,minWidth:30,textAlign:"center"}}>{fAnzahl}</span>
+              <button onClick={()=>setFAnzahl(a=>a+1)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800}}>+</button>
+            </div>
+            <input style={inp} placeholder="Notiz (optional)" value={fNotiz} onChange={e=>setFNotiz(e.target.value)}/>
+            {fProd&&<div style={{background:"#fef2f2",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#ef4444"}}>
+              Verlust: €{(calcFehlerPreis()*fAnzahl).toFixed(2)}
+              <span style={{fontSize:11,fontWeight:400,color:"#aaa",marginLeft:8}}>({fAnzahl} × €{calcFehlerPreis().toFixed(2)})</span>
+            </div>}
+          </div>
+        </ModalWrap>
+      )}
+      {showAddPromo&&(
+        <ModalWrap onClose={()=>setShowAddPromo(false)} onSave={addPromo} width={480}>
+          <div style={{fontSize:16,fontWeight:800}}>🎁 Promo Gift eintragen</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <input style={inp} placeholder="Name (z.B. @influencer)" value={pName} onChange={e=>setPName(e.target.value)}/>
+            <input style={inp} placeholder="Info (z.B. Hoodie Black XL)" value={pInfo} onChange={e=>setPInfo(e.target.value)}/>
+            <div style={{display:"flex",gap:10}}>
+              <div style={{flex:1,position:"relative"}}>
+                <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700}}>€</span>
+                <input style={{...inp,paddingLeft:28}} placeholder="Preis" type="number" min="0" step="0.01" value={pPreis} onChange={e=>setPPreis(e.target.value)}/>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <button onClick={()=>setPAnzahl(a=>Math.max(1,a-1))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fff7ed",color:"#f97316",fontSize:18,cursor:"pointer",fontWeight:800}}>−</button>
+                <span style={{fontSize:20,fontWeight:900,minWidth:30,textAlign:"center"}}>{pAnzahl}</span>
+                <button onClick={()=>setPAnzahl(a=>a+1)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fff7ed",color:"#f97316",fontSize:18,cursor:"pointer",fontWeight:800}}>+</button>
+              </div>
+            </div>
+            {pPreis&&<div style={{background:"#fff7ed",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#f97316"}}>Gesamt: €{((parseFloat(pPreis)||0)*pAnzahl).toFixed(2)}</div>}
+          </div>
+        </ModalWrap>
+      )}
+    </div>
+  );
+}
+
+function FinanceView({products, dtfItems=[]}){
   const [open,setOpen]=useState({});
+  const [finTab,setFinTab]=useState("blanks");
   const toggle=(id)=>setOpen(o=>({...o,[id]:!o[id]}));
   const grandTotal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
   const grandQty=products.reduce((a,p)=>a+(totalStock(p)),0);
+  const dtfTotal=(dtfItems||[]).reduce((a,d)=>{
+    if(!d.pricePerMeter) return a;
+    return a+(d.pricePerMeter/Math.max(1,d.designsPerMeter||1))*(d.stock||0);
+  },0);
   return(
     <div style={S.col10}>
-      {products.map(p=>{
+      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
+        {[["blanks","🧵 Blanks"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
+          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        ))}
+      </div>
+      {finTab==="dtf"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{background:"#111",borderRadius:12,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{fontSize:11,color:"#888",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div>
+            <div style={{fontSize:22,fontWeight:900,color:"#fff"}}>€{dtfTotal.toFixed(2)}</div>
+          </div>
+          {(dtfItems||[]).filter(d=>d.pricePerMeter).map(d=>{
+            const preisProDesign=d.pricePerMeter/Math.max(1,d.designsPerMeter||1);
+            return(
+              <div key={d.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{d.name}</div>
+                  <div style={{fontSize:11,color:"#aaa"}}>€{d.pricePerMeter?.toFixed(2)}/m · {d.designsPerMeter||1} Design/m → <strong style={{color:"#111"}}>€{preisProDesign.toFixed(2)}/Design</strong></div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:14,fontWeight:800,color:"#111"}}>€{(preisProDesign*(d.stock||0)).toFixed(2)}</div>
+                  <div style={{fontSize:11,color:"#bbb"}}>{d.stock||0} Stk</div>
+                </div>
+              </div>
+            );
+          })}
+          {(dtfItems||[]).filter(d=>!d.pricePerMeter).length>0&&(
+            <div style={{fontSize:12,color:"#bbb",textAlign:"center",padding:"8px 0"}}>
+              {(dtfItems||[]).filter(d=>!d.pricePerMeter).length} Design(s) ohne Meterpreis hinterlegt
+            </div>
+          )}
+        </div>
+      )}
+      {finTab==="blanks"&&<>{products.map(p=>{
         const isCap=p.category==="Cap";
         const qty=isCap?(p.capColors||[]).reduce((a,c)=>a+c.stock,0):Object.values(p.stock||{}).reduce((a,b)=>a+b,0);
         const tot=p.buyPrice!=null?qty*p.buyPrice:null;
@@ -1793,81 +1770,62 @@ function FinanceView({products}){
 
 // ─── Bestellbedarf View (Tab) ─────────────────────────────────────
 
-// ─── ALL MIN/MAX Modal ───────────────────────────────────────────
-function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
-  const init = {};
-  sizes.forEach(s=>{ init[s.key] = s.toOrder > 0 ? s.toOrder : 1; });
-  const [mengen, setMengen] = useState(init);
+// ─── Bestellung aufgeben Modal ────────────────────────────────────
+
+function AllBestellungModal({blank, sizes, onClose, onConfirm}){
+  const [mengen, setMengen] = useState(()=>{
+    const m={};
+    sizes.forEach(s=>{m[s.key]=s.toOrder>0?s.toOrder:1;});
+    return m;
+  });
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState("");
-  const refs = useRef({});
+  const inputRefs = useRef({});
+  const setM=(key,val)=>setMengen(m=>({...m,[key]:Math.max(1,val)}));
+  const startEdit=(key)=>{setDraft(String(mengen[key]));setEditing(key);setTimeout(()=>inputRefs.current[key]?.select(),30);};
+  const commitEdit=(key)=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)setM(key,n);setEditing(null);};
+  const handleConfirm=()=>onConfirm(mengen, blank, sizes);
 
-  const setM = (key, val) => setMengen(m => ({...m, [key]: Math.max(1, val)}));
-  const startEdit = (key) => { setDraft(String(mengen[key])); setEditing(key); setTimeout(()=>refs.current[key]?.select(), 30); };
-  const commit = (key) => { const n = parseInt(draft); if (!isNaN(n) && n >= 1) setM(key, n); setEditing(null); };
-
-  const doConfirm = () => {
-    sizes.forEach(s => {
-      const menge = mengen[s.key] || s.toOrder;
-      if (menge <= 0) return;
-      const isCapKey = s.key.startsWith("cap_");
-      const capColor = isCapKey ? (blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key) : null;
-      onDirectAdd(blank, s.key, isCapKey, capColor, menge);
-    });
-    onClose();
-  };
-
-  return (
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"}}
-      onClick={onClose}>
-      <div style={{background:"#fff",borderRadius:18,width:400,maxWidth:"95vw",maxHeight:"85vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}}
-        onClick={e=>e.stopPropagation()}>
-        {/* Header */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:800}}>📦 {blank.name}</div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={(e)=>{e.stopPropagation();doConfirm();}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✓</button>
-            <button onClick={(e)=>{e.stopPropagation();onClose();}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          </div>
-        </div>
-        {/* Sizes */}
-        <div style={{overflowY:"auto",padding:"12px 20px",display:"flex",flexDirection:"column",gap:8,flex:1}}>
-          {sizes.map(s => (
-            <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"10px 14px"}}>
-              <span style={{fontSize:13,fontWeight:800,color:"#444",flex:1}}>{s.label}</span>
-              <button onClick={()=>setM(s.key, mengen[s.key]-1)}
-                style={{width:34,height:34,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
-              {editing===s.key
-                ? <input ref={el=>refs.current[s.key]=el} type="number" value={draft}
-                    onChange={e=>setDraft(e.target.value)}
-                    onBlur={()=>commit(s.key)}
-                    onKeyDown={e=>{if(e.key==="Enter")commit(s.key);if(e.key==="Escape")setEditing(null);}}
-                    style={{width:60,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
-                : <span onDoubleClick={()=>startEdit(s.key)}
-                    style={{width:60,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"pointer",userSelect:"none"}}>
-                    {mengen[s.key]}
-                  </span>
-              }
-              <button onClick={()=>setM(s.key, mengen[s.key]+1)}
-                style={{width:34,height:34,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
-            </div>
-          ))}
-        </div>
-        {/* Footer */}
-        <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0}}>
-          <div style={{fontSize:12,color:"#aaa",marginBottom:8,textAlign:"right"}}>
-            Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
-          </div>
-          <button onClick={(e)=>{e.stopPropagation();doConfirm();}}
-            style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-            Zur Bestellliste hinzufügen →
-          </button>
-        </div>
+  return(
+    <ModalWrap onClose={onClose} width={400} footer={<button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>Zur Bestellliste hinzufügen →</button>}>
+      <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
+      <div style={{background:"#f8f8f8",borderRadius:12,padding:"12px 14px"}}>
+        <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
+        <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{blank.color||blank.category}</div>
       </div>
-    </div>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {sizes.map(s=>(
+          <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"10px 14px"}}>
+            <span style={{fontSize:13,fontWeight:800,color:"#444",flex:1}}>{s.label}</span>
+            <button type="button" onClick={()=>setM(s.key,mengen[s.key]-1)}
+              style={{width:34,height:34,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
+            {editing===s.key
+              ? <input ref={el=>inputRefs.current[s.key]=el} type="number" inputMode="numeric" value={draft}
+                  onChange={e=>setDraft(e.target.value)}
+                  onBlur={()=>commitEdit(s.key)}
+                  onKeyDown={e=>{if(e.key==="Enter")commitEdit(s.key);if(e.key==="Escape")setEditing(null);}}
+                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
+              : <span onDoubleClick={()=>startEdit(s.key)}
+                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"text"}}>
+                  {mengen[s.key]}
+                </span>
+            }
+            <button type="button" onClick={()=>setM(s.key,mengen[s.key]+1)}
+              style={{width:34,height:34,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize:12,color:"#aaa",fontWeight:600,textAlign:"right"}}>
+        Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
+      </div>
+      <div style={{position:"sticky",bottom:0,background:"#fff",paddingTop:8}}>
+        <button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+          Zur Bestellliste hinzufügen →
+        </button>
+      </div>
+    </ModalWrap>
   );
 }
-
 
 function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, isDtf, onClose, onConfirm}){
   const dpm = blank?.designsPerMeter||1;
@@ -2033,53 +1991,12 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
-
-function AllButtons({blank, relKeys, sizeNeeds, alreadyOrdered, allOrdered, onOpen}){
-  const openKeys = relKeys.filter(k=>!alreadyOrdered(k));
-
-  const minSizes = openKeys.map(key=>{
-    const needed = sizeNeeds[key]||0;
-    const isCapKey = key.startsWith("cap_");
-    const capColor = isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
-    const avail = isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
-    const label = isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
-    return {key, label, toOrder: Math.max(0, needed-avail)};
-  }).filter(s=>s.toOrder>0);
-
-  const maxSizes = openKeys.map(key=>{
-    const needed = sizeNeeds[key]||0;
-    const isCapKey = key.startsWith("cap_");
-    const capColor = isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
-    const avail = isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
-    const minStockVal = isCapKey?0:((blank.minStock||{})[key]||0);
-    const label = isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
-    return {key, label, toOrder: Math.max(0, needed+minStockVal-avail)};
-  }).filter(s=>s.toOrder>0);
-
-  return(
-    <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
-      <button type="button"
-        disabled={allOrdered||minSizes.length===0}
-        style={{padding:"6px 12px",borderRadius:9,border:"1px solid #fecaca",background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1}}
-        onClick={()=>{ if(!allOrdered&&minSizes.length>0) onOpenAllModal({blank,sizes:minSizes}); }}>
-        ALL MIN
-      </button>
-      <button type="button"
-        disabled={allOrdered||maxSizes.length===0}
-        style={{padding:"6px 12px",borderRadius:9,border:"1px solid #fed7aa",background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1}}
-        onClick={()=>{ if(!allOrdered&&maxSizes.length>0) onOpenAllModal({blank,sizes:maxSizes}); }}>
-        ALL MAX
-      </button>
-    </div>
-  );
-}
-
-function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,onOpenAllModal}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser}){
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
-  const [csvSelected,setCsvSelected]=useState({});
-
+  const [allModal,setAllModal]=useState(null);
+  const allModalRef=useRef(null);
   // allModal managed locally, rendered via portal pattern at top of return
   const bedarfMap={};
   const breakdownMap={};
@@ -2137,8 +2054,35 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     return {dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit};
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
+  const handleAllConfirm=(mengen)=>{
+    const modal=allModalRef.current;
+    if(!modal)return;
+    // If called from green checkmark (no mengen arg), use confirmFn which has latest state
+    if(!mengen && allModalRef.confirmFn){ allModalRef.confirmFn(); return; }
+    const data=mengen||{};
+    modal.sizes.forEach(s=>{
+      const menge=data[s.key]||s.toOrder;
+      if(!menge||menge<=0)return;
+      const isCapKey=s.key.startsWith("cap_");
+      const capColor=isCapKey?(modal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
+      onDirectAdd(modal.blank,s.key,isCapKey,capColor,menge);
+    });
+    allModalRef.current=null;
+    setAllModal(null);
+  };
   return(
     <div style={S.col12}>
+      {allModal&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={()=>{allModalRef.current=null;setAllModal(null);}}>
+          <div style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:480,maxHeight:"90dvh",display:"flex",flexDirection:"column",boxShadow:"0 -4px 40px rgba(0,0,0,0.18)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
+              <button onClick={handleAllConfirm} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✓</button>
+              <button onClick={()=>{allModalRef.current=null;setAllModal(null);}} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>✕</button>
+            </div>
+            <AllBestellungModalInner sizes={allModal.sizes} blank={allModal.blank} onConfirm={handleAllConfirm} allModalRef={allModalRef}/>
+          </div>
+        </div>
+      )}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
@@ -2193,9 +2137,9 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           {!hasAnyMissing
             ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
-                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS",csvSelected)}
+                <button onClick={()=>exportStanleyStellaCsv(bedarfMap,isCapMap,products,currentUser?.name||"GKBS")}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
-                  ⬇ CSV Export
+                  ⬇ Stanley/Stella CSV
                 </button>
               </div>
           }
@@ -2213,19 +2157,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             const alreadyOrdered=(key)=>(bestellungen||[]).some(b=>!b.isDtf&&b.status==="offen"&&b.produktId===blankId&&b.sizeKey===key);
             const allOrdered=relKeys.every(k=>alreadyOrdered(k));
             const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
-            // CSV selection helpers (only for Stanley/Stella products)
-            const hasStCode = !!blank.stProductId;
-            const productKeys = relKeys.map(k=>blankId+"__"+k);
-            const allCsvSelected = hasStCode && productKeys.every(k=>csvSelected[k]);
-            const someCsvSelected = hasStCode && productKeys.some(k=>csvSelected[k]);
-            const toggleProduct = () => {
-              const next = !allCsvSelected;
-              setCsvSelected(s=>{ const n={...s}; productKeys.forEach(k=>{ if(next) n[k]=true; else delete n[k]; }); return n; });
-            };
-            const toggleKey = (key) => {
-              const ck = blankId+"__"+key;
-              setCsvSelected(s=>{ const n={...s}; if(n[ck]) delete n[ck]; else n[ck]=true; return n; });
-            };
             const minSizes=openKeys.map(key=>{
               const needed=sizeNeeds[key]||0;
               const isCapKey=key.startsWith("cap_");
@@ -2248,20 +2179,16 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
-                  {hasStCode&&<button type="button" onClick={toggleProduct} title="Für CSV auswählen"
-                    style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
-                    CSV
-                  </button>}
                   {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allOrdered||minSizes.length===0}
                       style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
-                      onClick={()=>{if(!allOrdered&&minSizes.length>0)onOpenAllModal({blank,sizes:minSizes});}}>
+                      onClick={()=>{if(!allOrdered&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
                       ALL MIN
                     </button>
                     <button type="button" disabled={allOrdered||maxSizes.length===0}
                       style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
-                      onClick={()=>{if(!allOrdered&&maxSizes.length>0)onOpenAllModal({blank,sizes:maxSizes});}}>
+                      onClick={()=>{if(!allOrdered&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
                       ALL MAX
                     </button>
                   </div>
@@ -2288,10 +2215,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                             <div style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
                             {minStockVal>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStockVal} Stk</div>}
                           </div>
-                          {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}} title="Für CSV auswählen"
-                            style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
-                            CSV
-                          </button>}
                           <button type="button" disabled={ordered} onClick={(e)=>{e.stopPropagation();if(!ordered)onBestellen(blank,key,isCapKey,capColor,toOrder);}}
                             style={{background:ordered?"#f0f0f0":ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:56,border:`1px solid ${ordered?"#ddd":ok?"#bbf7d0":"#fecaca"}`,cursor:ordered?"not-allowed":"pointer",flexShrink:0,opacity:ordered?0.5:1}}>
                             <div style={{fontSize:9,color:ordered?"#bbb":ok?"#16a34a":"#ef4444",fontWeight:700}}>{ordered?"✓":"MIN"}</div>
@@ -2891,10 +2814,11 @@ function AppInner({currentUser,onLogout}){
 
   // ─── PDF Export ───────────────────────────────────────────────
 
-  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
+  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["verluste","📉 Verluste"],["finance","💶 Finanzen"]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
-  const [allModal,setAllModal]=useState(null);
+  const [verluste,setVerluste]=useLocalStorage("verluste",[]);
+  const [promoGifts,setPromoGifts]=useLocalStorage("promoGifts",[]);
   const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
   const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
@@ -2946,7 +2870,6 @@ function AppInner({currentUser,onLogout}){
         else{setDtfItems(d=>d.map(x=>x.id===item.id?item:x));log(`DTF bearbeitet: ${item.name}`);}
         setShowDtfModal(false);
       }}/>}
-    {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={directAddBestellung}/>}
     {bestellModal&&<BestellungAufgebenModal blank={bestellModal.blank} sizeKey={bestellModal.key} isCapKey={bestellModal.isCapKey} capColor={bestellModal.capColor} toOrder={bestellModal.toOrder} isDtf={bestellModal.isDtf||false} onClose={()=>setBestellModal(null)} onConfirm={handleBestellungConfirm}/>}
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
@@ -3026,6 +2949,7 @@ function AppInner({currentUser,onLogout}){
         </div>
 
         {/* Finance */}
+        {view==="verluste"&&<VerlustView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerluste} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
           onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
@@ -3035,19 +2959,11 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView
-          prods={prods} products={products} dtfItems={dtfItems}
-          bestellungen={bestellungen}
-          onBestellen={handleBestellen}
-          onDirectAdd={directAddBestellung}
-          currentUser={currentUser}
-          onOpenAllModal={setAllModal}
-          onBestellenDtf={(dtf,menge)=>{
-            const dpm=dtf.designsPerMeter||1;
-            const meter=dpm>1?Math.ceil(menge/dpm):null;
-            setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
-          }}
-        />}
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} onBestellen={handleBestellen} onBestellenDtf={(dtf,menge)=>{
+  const dpm=dtf.designsPerMeter||1;
+  const meter=dpm>1?Math.ceil(menge/dpm):null;
+  setBestellModal({blank:{...dtf,supplierUrl:"",category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
+}}/>}
 
         {/* Production */}
         {view==="production"&&(
