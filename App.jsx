@@ -205,6 +205,12 @@ const STANLEY_STELLA_PRESETS = [
 
 // ─── Stanley/Stella CSV Export ────────────────────────────────────
 function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvSelected) {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const yyyy = now.getFullYear();
+  const time = now.toTimeString().slice(0,8).replace(/:/g,"");
+  const fullName = `GKBS_${projectName}_${dd}${mm}${yyyy}_${time}`;
   const rows = [];
   rows.push("ProductId,Quantity,UnitOfMeasureId,VariantId,Project");
   const sizeMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
@@ -241,12 +247,6 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2,"0");
-  const mm = String(now.getMonth()+1).padStart(2,"0");
-  const yyyy = now.getFullYear();
-  const time = now.toTimeString().slice(0,8).replace(/:/g,"");
-  const fullName = `GKBS_${projectName}_${dd}${mm}${yyyy}_${time}`;
   a.download = fullName+".csv";
   a.click();
   URL.revokeObjectURL(url);
