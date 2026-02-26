@@ -2911,7 +2911,8 @@ function AppInner({currentUser,onLogout}){
     {wareneingangModal&&<WareneingangModal bestellung={wareneingangModal} onClose={()=>setWareneingangModal(null)} onConfirm={(m)=>handleWareneingang(wareneingangModal,m)}/>}
 
       {/* ── Header ── */}
-      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",padding:mobile?"12px 14px":"16px 24px",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 8px rgba(0,0,0,0.06)"}}>
+      <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
+        <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -2960,22 +2961,23 @@ function AppInner({currentUser,onLogout}){
             </>}
           </div>
         </div>
+        {/* Tab bar */}
+        <div style={{overflowX:"auto",padding:mobile?"4px 14px 10px":"4px 24px 12px",marginTop:4}}>
+          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
+            {TABS.map(([v,lbl])=>(
+              <button key={v} onClick={()=>setView(v)}
+                style={{padding:mobile?"8px 14px":"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
+                {mobile?lbl.split(" ")[0]:lbl}
+                {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
+                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div style={{padding:mobile?"12px 12px 100px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
 
-
-        {/* Tab bar */}
-        <div style={{display:"flex",gap:3,marginBottom:mobile?14:18,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content",position:"sticky",top:mobile?53:61,zIndex:90,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
-          {TABS.map(([v,lbl])=>(
-            <button key={v} onClick={()=>setView(v)}
-              style={{padding:mobile?"8px 14px":"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
-              {mobile?lbl.split(" ")[0]:lbl}
-              {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
-              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-            </button>
-          ))}
-        </div>
 
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
