@@ -1492,7 +1492,7 @@ function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
 
 
 // ─── Verluste View ───────────────────────────────────────────────
-function VerlustView({products, dtfItems, verluste, setVerluste, promoGifts, setPromoGifts}){
+function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setPromoGifts}){
   const [tab, setTab] = useState("fehler");
   const [showAddFehler, setShowAddFehler] = useState(false);
   const [showAddPromo, setShowAddPromo] = useState(false);
@@ -1543,19 +1543,9 @@ function VerlustView({products, dtfItems, verluste, setVerluste, promoGifts, set
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <div style={{background:"#111",borderRadius:14,padding:"14px 18px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div>
-          <div style={{fontSize:11,color:"#888",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div>
-          <div style={{fontSize:28,fontWeight:900,color:"#fff",lineHeight:1.1}}>€{(totalFehler+totalPromo).toFixed(2)}</div>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
-          <div style={{fontSize:11,color:"#ef4444",fontWeight:700}}>🔴 Fehler: €{totalFehler.toFixed(2)}</div>
-          <div style={{fontSize:11,color:"#f97316",fontWeight:700}}>🎁 Promo: €{totalPromo.toFixed(2)}</div>
-        </div>
-      </div>
-      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["fehler","🔴 Produktionsfehler"],["promo","🎁 Promo Gifts"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+      <div style={{display:"flex",gap:6,background:"#111",borderRadius:12,padding:4}}>
+        {[["fehler","Produktionsfehler"],["promo","Promo Gifts"]].map(([v,lbl])=>(
+          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#fff",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {tab==="fehler"&&(
@@ -1664,11 +1654,15 @@ function VerlustView({products, dtfItems, verluste, setVerluste, promoGifts, set
           </div>
         </ModalWrap>
       )}
+      <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Fehler: −€{totalFehler.toFixed(2)} · Promo: −€{totalPromo.toFixed(2)}</div></div>
+        <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>−€{(totalFehler+totalPromo).toFixed(2)}</div>
+      </div>
     </div>
   );
 }
 
-function FinanceView({products, dtfItems=[]}){
+function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGifts=[], setPromoGifts}){
   const [open,setOpen]=useState({});
   const [finTab,setFinTab]=useState("blanks");
   const toggle=(id)=>setOpen(o=>({...o,[id]:!o[id]}));
@@ -1680,17 +1674,13 @@ function FinanceView({products, dtfItems=[]}){
   },0);
   return(
     <div style={S.col10}>
-      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["blanks","🧵 Blanks"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+      <div style={{display:"flex",gap:6,background:"#111",borderRadius:12,padding:4}}>
+        {[["blanks","Blanks"],["dtf","DTF"],["verluste","Verluste"]].map(([v,lbl])=>(
+          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#fff",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {finTab==="dtf"&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{background:"#111",borderRadius:12,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div style={{fontSize:11,color:"#888",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div>
-            <div style={{fontSize:22,fontWeight:900,color:"#fff"}}>€{dtfTotal.toFixed(2)}</div>
-          </div>
           {(dtfItems||[]).filter(d=>d.pricePerMeter).map(d=>{
             const preisProDesign=d.pricePerMeter/Math.max(1,d.designsPerMeter||1);
             return(
@@ -1711,6 +1701,10 @@ function FinanceView({products, dtfItems=[]}){
               {(dtfItems||[]).filter(d=>!d.pricePerMeter).length} Design(s) ohne Meterpreis hinterlegt
             </div>
           )}
+          <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{(dtfItems||[]).filter(d=>d.pricePerMeter).reduce((a,d)=>a+(d.stock||0),0)} Stück total</div></div>
+            <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{dtfTotal.toFixed(2)}</div>
+          </div>
         </div>
       )}
       {finTab==="blanks"&&<>{products.map(p=>{
@@ -1761,6 +1755,20 @@ function FinanceView({products, dtfItems=[]}){
         <div style={{fontSize:32,fontWeight:900,color:"#fff"}}>€{grandTotal.toFixed(2)}</div>
       </div>
       </>}
+      {finTab==="verluste"&&(()=>{
+        const STICK_PAUSCHALE=1.60;
+        const getDtfPreis=(dtf)=>dtf?.pricePerMeter?dtf.pricePerMeter/Math.max(1,dtf.designsPerMeter||1):0;
+        const calcFehlerPreis=(fProd,fGrund,fDtf,products,dtfItems)=>{
+          const prod=products.find(p=>p.id===fProd);
+          const dtf=(dtfItems||[]).find(d=>d.id===fDtf);
+          const blankPreis=prod?.buyPrice||0;
+          if(fGrund==="Kaputtes Blank") return blankPreis;
+          if(fGrund==="Stickfehler") return blankPreis+STICK_PAUSCHALE;
+          if(fGrund==="Druckfehler") return blankPreis+getDtfPreis(dtf);
+          return blankPreis;
+        };
+        return <VerlustTab products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerluste} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>;
+      })()}
     </div>
   );
 }
@@ -2815,7 +2823,7 @@ function AppInner({currentUser,onLogout}){
 
   // ─── PDF Export ───────────────────────────────────────────────
 
-  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["verluste","📉 Verluste"],["finance","💶 Finanzen"]];
+  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["dtf","🖨 DTF"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
@@ -2952,8 +2960,7 @@ function AppInner({currentUser,onLogout}){
         </div>
 
         {/* Finance */}
-        {view==="verluste"&&<VerlustView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
-        {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems}/>}
+        {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
           onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
           onDelete={id=>{const item=dtfItems.find(x=>x.id===id);setDtfItems(d=>d.filter(x=>x.id!==id));if(item)log(`DTF gelöscht: ${item.name}`);}}
