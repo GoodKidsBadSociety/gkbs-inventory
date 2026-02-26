@@ -1323,7 +1323,7 @@ function ProductModal({categories,initial,onClose,onSave}){
               {!presetProduct ? (
                 <div style={{display:"flex",flexDirection:"column",gap:0}}>
                   <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"10px 14px 6px"}}>ARTIKEL WÄHLEN</div>
-                  {STANLEY_STELLA_PRESETS.filter(p=>p.category===(showPresets==="Bags"?"Tasche":showPresets==="T-Shirts"?"T-Shirt":showPresets==="Hoodies"?"Hoodie":"Crewneck")).map(p=>(
+                  {STANLEY_STELLA_PRESETS.filter(p=>p.category===showPresets).map(p=>(
                     <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
                       style={{padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                       <div style={{flex:1}}>
