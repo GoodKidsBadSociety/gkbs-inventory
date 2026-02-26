@@ -7,7 +7,16 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.5.9";
+const APP_VERSION = "v2.6.0";
+const ONLINE_EXCLUSIVE_PRODUCTS = [
+  "CHROME LOOSE FIT T-SHIRT",
+  "BURNING POLICE CAR LOOSE FIT T-SHIRT",
+  "BLACKMAIL LOOSE FIT T-SHIRT",
+  "CAPTCHA BASTARDS LOOSE FIT T-SHIRT",
+  "SPRAYED VAN LOOSE FIT T-SHIRT",
+  "13:12 LOOSE FIT T-SHIRT"
+];
+
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
