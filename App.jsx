@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.0.8";
+const APP_VERSION = "v2.0.9";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -594,7 +594,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
         <span style={{fontSize:14,color:"#555",fontWeight:800,width:36}}>{size}</span>
         {editing?(
           <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
-            onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
+            data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
             style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
         ):(
           <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
@@ -615,7 +615,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
       <span style={{fontSize:14,color:"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
-          onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
+          data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
           style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
       ):(
         <span onDoubleClick={startEdit} style={{fontSize:28,fontWeight:900,color:sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
@@ -1058,21 +1058,24 @@ function ArchivedCard({prod,blank,onDelete}){
 // ─── Modals ───────────────────────────────────────────────────────
 function ModalWrap({onClose,onSave,children,footer,width=600}){
   const mobile=useIsMobile();
-  // ESC via window (works even if nothing focused inside modal)
+  const onSaveRef=useRef(onSave);
+  const onCloseRef=useRef(onClose);
+  useEffect(()=>{onSaveRef.current=onSave;},[onSave]);
+  useEffect(()=>{onCloseRef.current=onClose;},[onClose]);
   useEffect(()=>{
-    const handler=(e)=>{if(e.key==="Escape")onClose();};
+    const handler=(e)=>{
+      if(e.key==="Escape"){onCloseRef.current();return;}
+      if(e.key==="Enter"&&!e.isComposing){
+        const tag=document.activeElement?.tagName;
+        if(tag==="TEXTAREA"||tag==="SELECT")return;
+        // skip if focused element is an inline-edit input (has data-inlineedit)
+        if(document.activeElement?.dataset?.inlineedit)return;
+        if(onSaveRef.current){e.preventDefault();onSaveRef.current();}
+      }
+    };
     window.addEventListener("keydown",handler);
     return()=>window.removeEventListener("keydown",handler);
-  },[onClose]);
-  const handleModalKeyDown=(e)=>{
-    if(e.key==="Enter"&&!e.isComposing){
-      const tag=document.activeElement?.tagName;
-      const type=document.activeElement?.type;
-      if(tag==="TEXTAREA"||tag==="SELECT")return;
-      // for number inputs: only save if not in an inline-edit widget
-      if(onSave){e.preventDefault();onSave();}
-    }
-  };
+  },[]);
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:300,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
       <div style={{
@@ -1084,7 +1087,7 @@ function ModalWrap({onClose,onSave,children,footer,width=600}){
         display:"flex",
         flexDirection:"column",
         boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
-      }} onClick={e=>e.stopPropagation()} onKeyDown={handleModalKeyDown}>
+      }} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
           {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
           <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
@@ -1114,7 +1117,7 @@ function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
       <button type="button" onClick={onDec} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
       {editing
         ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
-            onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==="Enter"){e.stopPropagation();commit();}if(e.key==="Escape")setEditing(false);}}
+            onChange={e=>setDraft(e.target.value)} onBlur={commit} data-inlineedit="1" onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
             style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",border:"none",background:"transparent",outline:"none"}}/>
         : <span onDoubleClick={startEdit} style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",cursor:"text"}}>{value}</span>
       }
@@ -1646,7 +1649,7 @@ function DtfStockInput({value, onChange}){
         ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             onChange={e=>setDraft(e.target.value)}
             onBlur={commit}
-            onKeyDown={e=>{if(e.key==="Enter"){e.stopPropagation();commit();}if(e.key==="Escape")setEditing(false);}}
+            data-inlineedit="1" onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
             style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,border:"2px solid #3b82f6",borderRadius:12,padding:"10px 8px",outline:"none",background:"#fff"}}/>
         : <span onDoubleClick={startEdit} style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,color:"#111",cursor:"text",padding:"10px 8px",borderRadius:12,border:"2px solid transparent",display:"inline-block"}}
             title="Doppelklick zum Bearbeiten">{value}</span>
@@ -1667,7 +1670,7 @@ function DtfStockNum({value, onChange}){
     ? <input ref={ref} type="number" inputMode="numeric" value={draft}
         onChange={e=>setDraft(e.target.value)}
         onBlur={commit}
-        onKeyDown={e=>{if(e.key==="Enter"){e.stopPropagation();commit();}if(e.key==="Escape")setEditing(false);}}
+        data-inlineedit="1" onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
         style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,border:"2px solid #3b82f6",borderRadius:12,padding:"8px",outline:"none",background:"#fff"}}/>
     : <span onDoubleClick={start} style={{fontSize:32,fontWeight:900,color:"#111",cursor:"text",display:"inline-block",minWidth:60,textAlign:"center"}} title="Doppelklick zum Bearbeiten">{value}</span>;
 }
