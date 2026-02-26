@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.72
+// GKBS INVENTORY v1.73
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.72";
+const APP_VERSION = "v1.73";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1554,6 +1554,42 @@ function FinanceView({products}){
 // ─── Bestellbedarf View (Tab) ─────────────────────────────────────
 
 // ─── Bestellung aufgeben Modal ────────────────────────────────────
+
+function AllBestellungModal({blank, sizes, onClose, onConfirm}){
+  // sizes = [{key, label, toOrder}]
+  const total = sizes.reduce((a,s)=>a+s.toOrder, 0);
+  const [menge, setMenge] = useState(total > 0 ? total : 1);
+  const inputRef = useRef(null);
+  useEffect(()=>{ setTimeout(()=>inputRef.current?.select(), 50); }, []);
+  return(
+    <ModalWrap onClose={onClose} width={380} onSave={()=>onConfirm(menge)}>
+      <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
+      <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
+        <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
+        <div style={{fontSize:12,color:"#888",marginTop:4,display:"flex",flexWrap:"wrap",gap:4}}>
+          {sizes.map(s=>(
+            <span key={s.key} style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:700}}>
+              {s.label} · {s.toOrder} Stk
+            </span>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GESAMTMENGE</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
+          <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
+          <input ref={inputRef} type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
+            style={{width:80,textAlign:"center",fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
+          <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
+        </div>
+      </div>
+      <button onClick={()=>onConfirm(menge)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+        Zur Bestellliste hinzufügen →
+      </button>
+    </ModalWrap>
+  );
+}
+
 function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, isDtf, onClose, onConfirm}){
   const dpm = blank?.designsPerMeter||1;
   const isMeter = isDtf && dpm>1;
@@ -1722,6 +1758,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onB
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
+  const [allModal,setAllModal]=useState(null);
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -1778,8 +1815,20 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onB
     return {dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit};
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
+  const handleAllConfirm=(menge)=>{
+    if(!allModal)return;
+    // Call onBestellen for each size proportionally (or as one combined entry)
+    // We open one modal and then call onBestellen per size with its original toOrder
+    allModal.sizes.forEach(s=>{
+      const isCapKey=s.key.startsWith("cap_");
+      const capColor=isCapKey?(allModal.blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===s.key):null;
+      onBestellen(allModal.blank,s.key,isCapKey,capColor,s.toOrder);
+    });
+    setAllModal(null);
+  };
   return(
     <div style={S.col12}>
+      {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onConfirm={handleAllConfirm}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
@@ -1859,21 +1908,40 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onB
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
                   {blank.supplierUrl&&<a href={blank.supplierUrl.startsWith("http")?blank.supplierUrl:"https://"+blank.supplierUrl} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",fontSize:12,color:"#3b82f6",fontWeight:700}}>↗ Bestellen</a>}
-                  <button type="button" disabled={allOrdered}
-                    style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,opacity:allOrdered?0.6:1}}
-                    onClick={()=>{
-                      if(allOrdered)return;
-                      relKeys.forEach(key=>{
-                        if(alreadyOrdered(key))return;
+                  <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
+                    {(()=>{
+                      const openKeys=relKeys.filter(k=>!alreadyOrdered(k));
+                      const minSizes=openKeys.map(key=>{
+                        const needed=sizeNeeds[key]||0;
+                        const isCapKey=key.startsWith("cap_");
+                        const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+                        const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+                        const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+                        return {key,label,toOrder:Math.max(0,needed-avail)};
+                      }).filter(s=>s.toOrder>0);
+                      const maxSizes=openKeys.map(key=>{
                         const needed=sizeNeeds[key]||0;
                         const isCapKey=key.startsWith("cap_");
                         const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
                         const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
                         const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
-                        const toOrderWithMin=Math.max(0,needed+minStockVal-avail);
-                        if(toOrderWithMin>0)onBestellen(blank,key,isCapKey,capColor,toOrderWithMin);
-                      });
-                    }}>{allOrdered?"✓ bestellt":"ALL"}</button>
+                        const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+                        return {key,label,toOrder:Math.max(0,needed+minStockVal-avail)};
+                      }).filter(s=>s.toOrder>0);
+                      return(<>
+                        <button type="button" disabled={allOrdered||minSizes.length===0}
+                          style={{padding:"6px 12px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
+                          onClick={()=>{if(!allOrdered&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
+                          ALL MIN
+                        </button>
+                        <button type="button" disabled={allOrdered||maxSizes.length===0}
+                          style={{padding:"6px 12px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
+                          onClick={()=>{if(!allOrdered&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
+                          ALL MAX
+                        </button>
+                      </>);
+                    })()}
+                  </div>
                 </div>
                 <div style={S.col6}>
                   {relKeys.map(key=>{
