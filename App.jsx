@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.3.2";
+const APP_VERSION = "v2.4.0";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -2100,6 +2100,335 @@ function ScrollTopButton(){
   );
 }
 
+
+// ─── Shopify View ─────────────────────────────────────────────────
+function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd, onSetBlankStock, sheetsUrl}){
+  const mobile = useIsMobile();
+  const [tab, setTab] = useState("products");
+  const [shopifyProds, setShopifyProds] = useState([]);
+  const [shopifyOrders, setShopifyOrders] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [tokenInput, setTokenInput] = useState("");
+  const [syncMsg, setSyncMsg] = useState(null);
+  const [linkModal, setLinkModal] = useState(null);
+
+  const apiFetch = async (action, params="") => {
+    const r = await fetch(`${sheetsUrl}?action=${action}${params}`, {redirect:"follow"});
+    return JSON.parse(await r.text());
+  };
+  const apiPost = async (body) => {
+    const r = await fetch(sheetsUrl, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(body)});
+    return JSON.parse(await r.text());
+  };
+
+  const loadAll = async () => {
+    setLoading(true); setError(null);
+    try {
+      const [d1, locs, linksData] = await Promise.all([
+        apiFetch("shopify_products"),
+        apiFetch("shopify_locations"),
+        apiFetch("shopify_links")
+      ]);
+      if(d1.error) setError(d1.error);
+      else setShopifyProds(d1.products||[]);
+      setLocations(locs.locations||[]);
+      if(linksData.links) setShopifyLinks(linksData.links);
+    } catch(e) { setError(String(e)); }
+    setLoading(false);
+  };
+
+  const loadOrders = async () => {
+    setLoading(true); setError(null);
+    try {
+      const data = await apiFetch("shopify_orders","&status=open");
+      if(data.error) setError(data.error);
+      else setShopifyOrders(data.orders||[]);
+    } catch(e) { setError(String(e)); }
+    setLoading(false);
+  };
+
+  const saveToken = async () => {
+    if(!tokenInput.trim()) return;
+    await apiPost({action:"shopify_set_token", token:tokenInput.trim()});
+    setSyncMsg("✓ Token gespeichert!");
+    setTimeout(()=>setSyncMsg(null),3000);
+    setTokenInput("");
+  };
+
+  const saveLinks = async (links) => {
+    setShopifyLinks(links);
+    await apiPost({action:"shopify_save_links", links});
+  };
+
+  const syncToShopify = async (link, qty) => {
+    setSyncMsg("⟳ Synchronisiere...");
+    const res = await apiPost({action:"shopify_set_inventory", location_id:link.shopifyLocationId, inventory_item_id:link.shopifyInventoryItemId, available:qty});
+    setSyncMsg(res.inventory_level?"✓ Bestand synchronisiert!":"⚠ Fehler beim Sync");
+    setTimeout(()=>setSyncMsg(null),4000);
+  };
+
+  const createOrderFromLine = (order, line) => {
+    const link = shopifyLinks.find(l=>l.shopifyProductId==line.product_id);
+    const blank = link ? products.find(p=>p.id===link.gkbsProductId) : null;
+    const size = (line.variant_title||"").split("/")[0].trim()||"M";
+    const newProd = {
+      id:"shopify_"+order.id+"_"+line.id, name:`${line.title} (${line.variant_title||""})`,
+      blankId:blank?.id||"", notes:`Shopify ${order.name}`, priority:"Hoch",
+      status:"Geplant", veredelung:["Drucken"], colorHex:blank?.colorHex||"#888",
+      isOnlineExclusive:true, shopifyOrderId:String(order.id), shopifyOrderName:order.name,
+      qty:{[size]:line.quantity||1}, done:{}
+    };
+    onAddProd(newProd);
+    setSyncMsg("✓ Auftrag erstellt: "+newProd.name);
+    setTimeout(()=>setSyncMsg(null),4000);
+  };
+
+  useEffect(()=>{ loadAll(); },[]);
+  useEffect(()=>{ if(tab==="orders") loadOrders(); },[tab]);
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {linkModal&&<ShopifyLinkModal prod={linkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} shopifyProds={shopifyProds} locations={locations} onSave={async(links)=>{await saveLinks(links);setLinkModal(null);}} onClose={()=>setLinkModal(null)}/>}
+
+      {/* Header */}
+      <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <div style={{width:36,height:36,borderRadius:10,background:"#96bf48",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🛍</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:15,fontWeight:800}}>Shopify Sync</div>
+          <div style={{fontSize:11,color:"#aaa"}}>goodkidsbadsociety.myshopify.com · {shopifyProds.length} Produkte</div>
+        </div>
+        {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
+        <button onClick={loadAll} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
+      </div>
+
+      {/* Token */}
+      <div style={{background:"#fffbeb",borderRadius:12,padding:"12px 16px",border:"1px solid #fde68a",display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+        <span style={{fontSize:12,color:"#92400e",fontWeight:700,flexShrink:0}}>🔑 API Token:</span>
+        <input value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="shpat_... (einmalig eintragen)" type="password"
+          style={{flex:1,minWidth:180,padding:"7px 12px",borderRadius:8,border:"1px solid #fde68a",background:"#fff",fontSize:13,outline:"none"}}/>
+        <button onClick={saveToken} style={{padding:"7px 14px",borderRadius:8,border:"none",background:"#92400e",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:13}}>Speichern</button>
+        <span style={{fontSize:10,color:"#aaa"}}>Wird im Apps Script sicher gespeichert</span>
+      </div>
+
+      {/* Sub-tabs */}
+      <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
+        {[["products","🛍 Produkte"],["orders","📦 Bestellungen"],["sync","🔄 Bestand Sync"]].map(([t,lbl])=>(
+          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        ))}
+      </div>
+
+      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#ef4444",fontSize:13}}>⚠ {error} — Token korrekt eingetragen?</div>}
+      {loading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Laden...</div>}
+
+      {/* Products */}
+      {tab==="products"&&!loading&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {shopifyProds.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte — Token eingeben und Reload klicken</div>}
+          {shopifyProds.map(sp=>{
+            const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id);
+            const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
+            return(
+              <div key={sp.id} style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:"1px solid #ebebeb",display:"flex",gap:12,alignItems:"center"}}>
+                {sp.images?.[0]?.src
+                  ?<img src={sp.images[0].src} style={{width:48,height:48,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
+                  :<div style={{width:48,height:48,borderRadius:8,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>👕</div>}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800}}>{sp.title}</div>
+                  <div style={{fontSize:11,color:"#aaa"}}>{sp.variants?.length||0} Varianten · {sp.status}</div>
+                  {gkbs&&<div style={{fontSize:11,color:"#16a34a",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
+                </div>
+                <button onClick={()=>setLinkModal({...sp,_shopifyProd:true})}
+                  style={{padding:"6px 12px",borderRadius:8,border:"1px solid",borderColor:link?"#bbf7d0":"#e8e8e8",background:link?"#f0fdf4":"#f8f8f8",color:link?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
+                  {link?"✓ Verknüpft":"🔗 Verknüpfen"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Orders */}
+      {tab==="orders"&&!loading&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {shopifyOrders.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine offenen Bestellungen</div>}
+          {shopifyOrders.map(order=>(
+            <div key={order.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
+              <div style={{padding:"12px 16px",background:"#f9f9f9",display:"flex",alignItems:"center",gap:10}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:800}}>{order.name}</div>
+                  <div style={{fontSize:11,color:"#aaa"}}>{order.customer?.first_name} {order.customer?.last_name} · {new Date(order.created_at).toLocaleDateString("de-AT")}</div>
+                </div>
+                <span style={{fontSize:11,background:order.fulfillment_status?"#f0fdf4":"#fff7ed",color:order.fulfillment_status?"#16a34a":"#f97316",borderRadius:6,padding:"3px 8px",fontWeight:700}}>
+                  {order.fulfillment_status||"Offen"}
+                </span>
+              </div>
+              {(order.line_items||[]).map(line=>{
+                const link = shopifyLinks.find(l=>l.shopifyProductId==line.product_id);
+                const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
+                const already = prods.some(p=>p.shopifyOrderId===String(order.id)&&p.name.includes(line.title));
+                return(
+                  <div key={line.id} style={{padding:"10px 16px",display:"flex",alignItems:"center",gap:10,borderTop:"1px solid #f5f5f5"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:700}}>{line.title}</div>
+                      <div style={{fontSize:11,color:"#888"}}>{line.variant_title} · {line.quantity}×</div>
+                      {gkbs&&<div style={{fontSize:10,color:"#16a34a",marginTop:1}}>Blank: {gkbs.name}</div>}
+                      {line.properties?.some(p=>p.name==="_online_exclusive")||!gkbs
+                        ?<span style={{fontSize:9,background:"#f0f9ff",color:"#0369a1",borderRadius:4,padding:"2px 5px",fontWeight:800}}>🌐 ONLINE EXCLUSIVE</span>
+                        :null}
+                    </div>
+                    {!already
+                      ?<button onClick={()=>createOrderFromLine(order,line)}
+                          style={{padding:"6px 12px",borderRadius:8,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
+                          + Auftrag
+                        </button>
+                      :<span style={{fontSize:11,color:"#16a34a",fontWeight:700,flexShrink:0}}>✓ Erstellt</span>}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Sync */}
+      {tab==="sync"&&!loading&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{background:"#f8f8f8",borderRadius:10,padding:"12px 16px",fontSize:12,color:"#888"}}>Setzt den Shopify-Bestand auf den aktuellen GKBS-Gesamtbestand. Wird auch automatisch nach jeder Produktion ausgelöst.</div>
+          {shopifyLinks.length===0&&<div style={{color:"#ccc",fontSize:14,padding:40,textAlign:"center"}}>Keine Verknüpfungen vorhanden</div>}
+          {shopifyLinks.map((link,i)=>{
+            const gkbs = products.find(p=>p.id===link.gkbsProductId);
+            if(!gkbs) return null;
+            const total = Object.values(gkbs.stock||{}).reduce((a,b)=>a+b,0);
+            return(
+              <div key={i} style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+                <SmartDot item={gkbs} size={20}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800}}>{gkbs.name}</div>
+                  <div style={{fontSize:11,color:"#aaa",marginTop:1}}>↔ {link.label}</div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0,marginRight:4}}>
+                  <div style={{fontSize:10,color:"#aaa"}}>GKBS</div>
+                  <div style={{fontSize:22,fontWeight:900,color:"#111",lineHeight:1}}>{total}</div>
+                </div>
+                <button onClick={()=>syncToShopify(link,total)} style={{padding:"8px 14px",borderRadius:9,border:"none",background:"#96bf48",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:13,flexShrink:0}}>→ Shopify</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Shopify Link Modal ────────────────────────────────────────────
+function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, locations:locsIn, onSave, onClose}){
+  const [shopifyProds,setShopifyProds] = useState(spIn||[]);
+  const [locs,setLocs] = useState(locsIn||[]);
+  const [loading,setLoading] = useState((!spIn||spIn.length===0));
+  const [selSP,setSelSP] = useState(prod?._shopifyProd?prod:null);
+  const [selVar,setSelVar] = useState(null);
+  const [selLoc,setSelLoc] = useState(null);
+  const [selGkbs,setSelGkbs] = useState(prod?._shopifyProd?null:prod?.id);
+  const isFromShopify = !!prod?._shopifyProd;
+
+  useEffect(()=>{
+    if(shopifyProds.length>0&&locs.length>0){setLoading(false);return;}
+    (async()=>{
+      setLoading(true);
+      try{
+        const [d1,d2] = await Promise.all([
+          fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse),
+          fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
+        ]);
+        if(d1.products) setShopifyProds(d1.products);
+        if(d2.locations){setLocs(d2.locations);if(d2.locations.length===1)setSelLoc(d2.locations[0]);}
+        if(isFromShopify) setSelSP(prod);
+      }catch(e){}
+      setLoading(false);
+    })();
+  },[]);
+
+  const canSave = selSP&&selVar&&selLoc&&(isFromShopify?selGkbs:true);
+
+  const doSave = () => {
+    if(!canSave) return;
+    const gkbsId = isFromShopify?selGkbs:prod?.id;
+    const newLink = {
+      gkbsProductId:gkbsId,
+      shopifyProductId:String(selSP.id),
+      shopifyVariantId:String(selVar.id),
+      shopifyInventoryItemId:String(selVar.inventory_item_id),
+      shopifyLocationId:String(selLoc.id),
+      label:`${selSP.title} – ${selVar.title}`
+    };
+    onSave([...links.filter(l=>l.gkbsProductId!==gkbsId),newLink]);
+  };
+
+  return(
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={onClose}>
+      <div style={{background:"#fff",borderRadius:18,width:460,maxWidth:"95vw",maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontSize:16,fontWeight:800}}>🔗 Shopify verknüpfen</div>
+            <div style={{fontSize:12,color:"#aaa",marginTop:2}}>{prod?.name||prod?.title}</div>
+          </div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+        </div>
+        <div style={{overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:14,flex:1}}>
+          {loading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Lade Shopify Daten...</div>}
+          {!loading&&<>
+            {isFromShopify&&<div>
+              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GKBS PRODUKT (Blank)</div>
+              <select value={selGkbs||""} onChange={e=>setSelGkbs(e.target.value)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none"}}>
+                <option value="">-- Blank wählen --</option>
+                {products.map(p=><option key={p.id} value={p.id}>{p.name} ({p.category})</option>)}
+              </select>
+            </div>}
+            {!isFromShopify&&<div>
+              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SHOPIFY PRODUKT</div>
+              <select value={selSP?.id||""} onChange={e=>{const sp=shopifyProds.find(p=>p.id==e.target.value);setSelSP(sp||null);setSelVar(null);}} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none"}}>
+                <option value="">-- Shopify Produkt --</option>
+                {shopifyProds.map(sp=><option key={sp.id} value={sp.id}>{sp.title}</option>)}
+              </select>
+            </div>}
+            {selSP&&<div>
+              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {(selSP.variants||[]).map(v=>(
+                  <button key={v.id} type="button" onClick={()=>setSelVar(v)}
+                    style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selVar?.id===v.id?"#111":"#e8e8e8"}`,background:selVar?.id===v.id?"#111":"#f8f8f8",color:selVar?.id===v.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+                    <span>{v.title}</span><span style={{fontSize:11,opacity:0.6}}>Lager: {v.inventory_quantity}</span>
+                  </button>
+                ))}
+              </div>
+            </div>}
+            {locs.length>1&&<div>
+              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STANDORT</div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {locs.map(loc=>(
+                  <button key={loc.id} type="button" onClick={()=>setSelLoc(loc)}
+                    style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selLoc?.id===loc.id?"#111":"#e8e8e8"}`,background:selLoc?.id===loc.id?"#111":"#f8f8f8",color:selLoc?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left"}}>
+                    {loc.name}
+                  </button>
+                ))}
+              </div>
+            </div>}
+          </>}
+        </div>
+        <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0,display:"flex",gap:10}}>
+          <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+          <button type="button" onClick={doSave} disabled={!canSave}
+            style={{flex:2,padding:13,borderRadius:10,border:"none",background:canSave?"#16a34a":"#e0e0e0",color:canSave?"#fff":"#bbb",cursor:canSave?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
+            ✓ Verknüpfen & Speichern
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────
 
 
@@ -3073,6 +3402,8 @@ function AppInner({currentUser,onLogout}){
   const [search,setSearch]=useState("");
   const [view,setView]=useState("production");
   const [inventoryTab,setInventoryTab]=useState("textil");
+  const [shopifyLinks,setShopifyLinks]=useState([]);
+  const [shopifyLinkModal,setShopifyLinkModal]=useState(null); // prod object to link
   const [prodSubView,setProdSubView]=useState("Alle");
   const [showProdModal,setShowProdModal]=useState(false);
   const [showPAModal,setShowPAModal]=useState(false);
@@ -3188,6 +3519,18 @@ function AppInner({currentUser,onLogout}){
       }
     }
     setConfirmProduce(null);
+    // Check if blank has Shopify link — if not, prompt to link
+    if(prod.blankId){
+      const hasLink=(shopifyLinks||[]).some(l=>l.gkbsProductId===prod.blankId);
+      if(!hasLink){
+        const blank=products.find(p=>p.id===prod.blankId);
+        if(blank) setTimeout(()=>setShopifyLinkModal({...blank,_prod:prod,_totalProduced:totalDone}),600);
+      } else {
+        // Auto-push produced qty to Shopify
+        const link=(shopifyLinks||[]).find(l=>l.gkbsProductId===prod.blankId);
+        if(link) shopifyAdjustInventory(link,totalDone);
+      }
+    }
   };
 
 
@@ -3195,7 +3538,25 @@ function AppInner({currentUser,onLogout}){
 
   // ─── PDF Export ───────────────────────────────────────────────
 
-  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"]];
+  // ─── Shopify Inventory Push ───────────────────────────────────
+  const shopifyAdjustInventory = async (link, qty) => {
+    if(!SHEETS_URL||!link) return;
+    try {
+      await fetch(SHEETS_URL, {
+        method:"POST", redirect:"follow",
+        headers:{"Content-Type":"text/plain"},
+        body: JSON.stringify({
+          action:"shopify_adjust_inventory",
+          location_id: link.shopifyLocationId,
+          inventory_item_id: link.shopifyInventoryItemId,
+          available_adjustment: qty
+        })
+      });
+      log(`Shopify Bestand +${qty} für: ${link.label||link.shopifyProductId}`);
+    } catch(e) { console.warn("Shopify push failed",e); }
+  };
+
+  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"],["shopify","🛍 Shopify"]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
@@ -3320,6 +3681,9 @@ function AppInner({currentUser,onLogout}){
       <div style={{padding:mobile?"12px 12px 100px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
 
 
+        {/* Shopify */}
+        {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={SHEETS_URL}/>}
+        {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={(links)=>{setShopifyLinks(links);setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
