@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.78
+// GKBS INVENTORY v1.79
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v1.78";
+const APP_VERSION = "v1.79";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -855,7 +855,7 @@ function ArchivedCard({prod,blank,onDelete}){
 }
 
 // ─── Modals ───────────────────────────────────────────────────────
-function ModalWrap({onClose,onSave,children,width=600}){
+function ModalWrap({onClose,onSave,children,footer,width=600}){
   const mobile=useIsMobile();
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.4)",zIndex:100,display:"flex",alignItems:mobile?"flex-end":"center",justifyContent:"center"}} onClick={onClose}>
@@ -869,15 +869,16 @@ function ModalWrap({onClose,onSave,children,width=600}){
         flexDirection:"column",
         boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",
       }} onClick={e=>e.stopPropagation()}>
-        {/* Sticky header – always visible, never clipped */}
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
           {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
           <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
         </div>
-        {/* Scrollable content - flex:1 means it shrinks when keyboard appears, header stays visible */}
-        <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px env(safe-area-inset-bottom, 24px)":"16px 26px 26px",display:"flex",flexDirection:"column",gap:14,flex:1,minHeight:0}}>
+        <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px 8px":"16px 26px 16px",display:"flex",flexDirection:"column",gap:14,flex:1,minHeight:0}}>
           {children}
         </div>
+        {footer&&<div style={{padding:mobile?"12px 16px env(safe-area-inset-bottom,16px)":"12px 26px 20px",flexShrink:0,borderTop:"1px solid #f0f0f0"}}>
+          {footer}
+        </div>}
       </div>
     </div>
   );
@@ -1570,7 +1571,7 @@ function AllBestellungModal({blank, sizes, onClose, onConfirm}){
   const handleConfirm=()=>onConfirm(mengen);
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={handleConfirm}>
+    <ModalWrap onClose={onClose} width={400} onSave={handleConfirm} footer={<button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>Zur Bestellliste hinzufügen →</button>}>
       <div style={{fontSize:17,fontWeight:800}}>📦 Bestellung aufgeben</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"12px 14px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
@@ -1589,7 +1590,7 @@ function AllBestellungModal({blank, sizes, onClose, onConfirm}){
                   onKeyDown={e=>{if(e.key==="Enter")commitEdit(s.key);if(e.key==="Escape")setEditing(null);}}
                   style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
               : <span onDoubleClick={()=>startEdit(s.key)}
-                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"text",borderBottom:"2px solid transparent"}}>
+                  style={{width:64,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"text"}}>
                   {mengen[s.key]}
                 </span>
             }
@@ -1598,12 +1599,14 @@ function AllBestellungModal({blank, sizes, onClose, onConfirm}){
           </div>
         ))}
       </div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 2px"}}>
-        <span style={{fontSize:12,color:"#aaa",fontWeight:600}}>Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong></span>
+      <div style={{fontSize:12,color:"#aaa",fontWeight:600,textAlign:"right"}}>
+        Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
       </div>
-      <button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-        Zur Bestellliste hinzufügen →
-      </button>
+      <div style={{position:"sticky",bottom:0,background:"#fff",paddingTop:8}}>
+        <button onClick={handleConfirm} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+          Zur Bestellliste hinzufügen →
+        </button>
+      </div>
     </ModalWrap>
   );
 }
