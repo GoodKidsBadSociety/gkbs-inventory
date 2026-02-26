@@ -413,7 +413,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:0,position:"relative",height:110}}>
       <div style={{width:20,height:20,borderRadius:"50%",background:"transparent",flexShrink:0}}/>
-      <span style={{fontSize:10,color:"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
+      <span style={{fontSize:14,color:"#666",fontWeight:900,lineHeight:1.2}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
@@ -1543,9 +1543,9 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <div style={{display:"flex",gap:6,background:"#111",borderRadius:12,padding:4}}>
+      <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
         {[["fehler","🔴 Produktionsfehler"],["promo","🎁 Promo Gifts"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#fff",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {tab==="fehler"&&(
@@ -1674,9 +1674,9 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   },0);
   return(
     <div style={S.col10}>
-      <div style={{display:"flex",gap:6,background:"#111",borderRadius:12,padding:4}}>
+      <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
         {[["blanks","🧵 Blanks"],["dtf","🖨 DTF"],["verluste","📉 Verluste"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#fff",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {finTab==="dtf"&&(
