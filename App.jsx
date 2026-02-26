@@ -1270,7 +1270,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
                 </div>
               </div>
             )}
-            <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:8"}}>
+            <div style={{padding:"10px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:8}}>
               <button type="button" onClick={()=>setOpen(false)} style={{flex:1,padding:"8px",borderRadius:8,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:13}}>Abbrechen</button>
               <button type="button" onClick={doConfirm} disabled={!selProd||!selLoc}
                 style={{flex:2,padding:"8px",borderRadius:8,border:"none",background:selProd&&selLoc?"#16a34a":"#e0e0e0",color:selProd&&selLoc?"#fff":"#bbb",cursor:selProd&&selLoc?"pointer":"not-allowed",fontWeight:800,fontSize:13}}>
