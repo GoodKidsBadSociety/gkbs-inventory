@@ -124,6 +124,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STTU788",
+    category: "T-Shirt",
     name: "Freestyler",
     productId: "STTU788",
     fit: "Unisex · Relaxed Fit · 240 GSM",
@@ -154,6 +155,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STTU073",
+    category: "T-Shirt",
     name: "Freestyler Vintage",
     productId: "STTU073",
     fit: "Unisex · Relaxed Fit · 240 GSM",
@@ -170,6 +172,7 @@ const STANLEY_STELLA_PRESETS = [
   },
   {
     id: "STTU171",
+    category: "T-Shirt",
     name: "Sparker 2.0",
     productId: "STTU171",
     fit: "Unisex · Relaxed Fit · 215 GSM",
