@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.2.1";
+const APP_VERSION = "v2.2.3";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
 const LOW_STOCK = 3;
@@ -1280,12 +1280,18 @@ function ProductModal({categories,initial,onClose,onSave}){
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
 
   const applyPreset = (preset, colorObj) => {
-    setName(preset.name + " · " + colorObj.name);
+    const newCat = preset.category || presetCat;
+    setCategory(newCat);
+    setName(preset.name);
     setColor(colorObj.name);
     setColorHex(colorObj.hex);
-    setStProductId(preset.productId);
-    setStColorCode(colorObj.code);
+    setStProductId(preset.productId||preset.id||"");
+    setStColorCode(colorObj.code||"");
     if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
+    // Tasche & Cap: load ALL colors from preset as capColors
+    if(["Cap","Tasche"].includes(newCat)){
+      setCapColors(preset.colors.map(c=>({id:mkId(),name:c.name,hex:c.hex,stColorCode:c.code||"",stock:0,minStock:0})));
+    }
     setShowPresets(false);
     setPresetProduct(null);
   };
@@ -1320,19 +1326,22 @@ function ProductModal({categories,initial,onClose,onSave}){
           {showPresets&&!presetProduct&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>(
-                <button key={p.id} type="button" onClick={()=>setPresetProduct(p)}
+                <button key={p.id} type="button"
+                  onClick={()=>{ if(["Tasche","Cap"].includes(presetCat)){applyPreset(p,p.colors[0]);}else{setPresetProduct(p);} }}
                   style={{width:"100%",padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
-                    <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit}</div>
+                    <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit} · {p.colors.length} Farben</div>
                   </div>
-                  <span style={{color:"#bbb"}}>›</span>
+                  {["Tasche","Cap"].includes(presetCat)
+                    ? <span style={{fontSize:11,background:"#dcfce7",color:"#16a34a",borderRadius:6,padding:"2px 8px",fontWeight:700}}>Alle laden</span>
+                    : <span style={{color:"#bbb"}}>›</span>}
                 </button>
               ))}
             </div>
           )}
-          {/* Color picker */}
-          {showPresets&&presetProduct&&(
+          {/* Color picker - only for T-Shirt/Hoodie/Crewneck */}
+          {showPresets&&presetProduct&&!["Tasche","Cap"].includes(presetCat)&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
                 <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
