@@ -7,9 +7,9 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.2.3";
+const APP_VERSION = "v2.2.4";
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
-const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Other"];
+const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
 const PRESET_COLORS = ["#000000","#ffffff","#e5e5e5","#6b7280","#3b82f6","#10b981","#ef4444","#f97316","#eab308","#8b5cf6","#ec4899","#a16207","#1e3a5f","#d4a574"];
 const STATUS_STYLE = {"Geplant":{bg:"#f0f0f0",color:"#666"},"In Produktion":{bg:"#fef9c3",color:"#a16207"},"Fertig":{bg:"#dcfce7",color:"#16a34a"}};
@@ -355,9 +355,9 @@ const STANLEY_STELLA_PRESETS = [
       {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:21.63},
     ]
   },
-  // ── Taschen ───────────────────────────────────────────────────
+  // ── Bags ───────────────────────────────────────────────────────
   {
-    id:"STAU760", category:"Tasche", name:"Tote Bag", fit:"Unisex · One Size · 300g",
+    id:"STAU760", category:"Bag", name:"Tote Bag", fit:"Unisex · One Size · 300g",
     colors:[
       {code:"C007",name:"Natural",hex:"#f0e8cc",price:2.94},
       {code:"C001",name:"White",hex:"#f5f5f5",price:2.94},
@@ -367,7 +367,7 @@ const STANLEY_STELLA_PRESETS = [
     ]
   },
   {
-    id:"STAU117", category:"Tasche", name:"Shopping Bag 2.0", fit:"Unisex · One Size · 400g",
+    id:"STAU117", category:"Bag", name:"Shopping Bag 2.0", fit:"Unisex · One Size · 400g",
     colors:[
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:4.62},
       {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:4.62},
@@ -379,6 +379,53 @@ const STANLEY_STELLA_PRESETS = [
       {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:4.62},
       {code:"C112",name:"Latte",hex:"#c8a878",price:4.62},
       {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:4.62},
+    ]
+  },
+  // ─── Beechfield Caps ─────────────────────────────────────────────
+  {
+    id:"BC653", category:"Cap", name:"Dad Cap", fit:"One Size · 80g · 100% Chino cotton",
+    productId:"", // Beechfield - no ST code, skip CSV
+    colors:[
+      {code:"",name:"Beige",hex:"#e8dcc8",price:2.91},
+      {code:"",name:"Black",hex:"#111111",price:2.91},
+      {code:"",name:"Bottle Green",hex:"#1a4a2a",price:2.91},
+      {code:"",name:"Classic Red",hex:"#cc2222",price:2.91},
+      {code:"",name:"Desert Sand",hex:"#c8a878",price:2.91},
+      {code:"",name:"Lavender",hex:"#b8a0cc",price:2.91},
+      {code:"",name:"Navy",hex:"#1a2a4a",price:2.91},
+      {code:"",name:"Olive Green",hex:"#5a6a2a",price:2.91},
+      {code:"",name:"Pastel Blue",hex:"#aaccee",price:2.91},
+      {code:"",name:"Pastel Lemon",hex:"#eeeea0",price:2.91},
+      {code:"",name:"Pastel Mint",hex:"#a0e8c0",price:2.91},
+      {code:"",name:"Pastel Pink",hex:"#f0c0cc",price:2.91},
+      {code:"",name:"Peach",hex:"#f0a888",price:2.91},
+      {code:"",name:"True Pink",hex:"#e8589a",price:2.91},
+      {code:"",name:"White",hex:"#f5f5f5",price:2.91},
+    ]
+  },
+  {
+    id:"BC655", category:"Cap", name:"Vintage Dad Cap", fit:"One Size · 93g · 100% Brushed washed cotton",
+    productId:"", // Beechfield - no ST code, skip CSV
+    colors:[
+      {code:"",name:"Vintage Black",hex:"#2a2a2a",price:3.40},
+      {code:"",name:"Vintage Bottle Green",hex:"#2a5a3a",price:3.40},
+      {code:"",name:"Vintage Brown",hex:"#5a3a1a",price:3.40},
+      {code:"",name:"Vintage Cornflower",hex:"#6a8acc",price:3.40},
+      {code:"",name:"Vintage Denim",hex:"#5a7a9a",price:3.40},
+      {code:"",name:"Vintage Dusky Pink",hex:"#e0a0a8",price:3.40},
+      {code:"",name:"Vintage Grey",hex:"#8a8a8a",price:3.40},
+      {code:"",name:"Vintage Jungle Camo",hex:"#4a5a3a",price:3.40},
+      {code:"",name:"Vintage Light Blue",hex:"#aac8e0",price:3.40},
+      {code:"",name:"Vintage Light Denim",hex:"#8aaac0",price:3.40},
+      {code:"",name:"Vintage Mustard",hex:"#c8a020",price:3.40},
+      {code:"",name:"Vintage Olive",hex:"#6a7a3a",price:3.40},
+      {code:"",name:"Vintage Orange",hex:"#e07030",price:3.40},
+      {code:"",name:"Vintage Peach",hex:"#e8a888",price:3.40},
+      {code:"",name:"Vintage Red",hex:"#aa3030",price:3.40},
+      {code:"",name:"Vintage Sage Green",hex:"#8aaa8a",price:3.40},
+      {code:"",name:"Vintage Sand",hex:"#d8c8a0",price:3.40},
+      {code:"",name:"Vintage Stone",hex:"#a09880",price:3.40},
+      {code:"",name:"Vintage True Pink",hex:"#e06090",price:3.40},
     ]
   },
 ];
@@ -1271,8 +1318,8 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [stock,setStock]=useState(initial?.stock||mkQty());
   const [minStock,setMinStock]=useState(initial?.minStock||mkQty());
   const [capColors,setCapColors]=useState(initial?.capColors||[{id:mkId(),name:"Black",hex:"#111111",stock:0}]);
-  // Cap-style (color variants, no sizes): Cap and Tasche categories
-  const CAP_STYLE_CATS=["Cap","Tasche"];
+  // Cap-style (color variants, no sizes): Cap and Bag categories
+  const CAP_STYLE_CATS=["Cap","Bag"];
   const isCap=CAP_STYLE_CATS.includes(category);
   const [showPresets, setShowPresets] = useState(false);
   const [presetProduct, setPresetProduct] = useState(null);
@@ -1288,8 +1335,8 @@ function ProductModal({categories,initial,onClose,onSave}){
     setStProductId(preset.productId||preset.id||"");
     setStColorCode(colorObj.code||"");
     if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
-    // Tasche & Cap: load ALL colors from preset as capColors
-    if(["Cap","Tasche"].includes(newCat)){
+    // Bag & Cap: load ALL colors from preset as capColors
+    if(["Cap","Bag"].includes(newCat)){
       setCapColors(preset.colors.map(c=>({id:mkId(),name:c.name,hex:c.hex,stColorCode:c.code||"",stock:0,minStock:0})));
     }
     setShowPresets(false);
@@ -1310,7 +1357,7 @@ function ProductModal({categories,initial,onClose,onSave}){
           {/* Category buttons */}
           {!presetProduct&&(
             <div style={{display:"flex",gap:6}}>
-              {["T-Shirt","Hoodie","Crewneck","Tasche"].map(cat=>(
+              {["T-Shirt","Hoodie","Crewneck","Cap","Bag"].map(cat=>(
                 <button key={cat} type="button"
                   onClick={()=>{setPresetCat(cat);setShowPresets(true);}}
                   style={{flex:1,padding:"8px 4px",borderRadius:10,border:"none",
@@ -1327,13 +1374,13 @@ function ProductModal({categories,initial,onClose,onSave}){
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>(
                 <button key={p.id} type="button"
-                  onClick={()=>{ if(["Tasche","Cap"].includes(presetCat)){applyPreset(p,p.colors[0]);}else{setPresetProduct(p);} }}
+                  onClick={()=>{ if(["Bag","Cap"].includes(presetCat)){applyPreset(p,p.colors[0]);}else{setPresetProduct(p);} }}
                   style={{width:"100%",padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
                     <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit} · {p.colors.length} Farben</div>
                   </div>
-                  {["Tasche","Cap"].includes(presetCat)
+                  {["Bag","Cap"].includes(presetCat)
                     ? <span style={{fontSize:11,background:"#dcfce7",color:"#16a34a",borderRadius:6,padding:"2px 8px",fontWeight:700}}>Alle laden</span>
                     : <span style={{color:"#bbb"}}>›</span>}
                 </button>
@@ -1341,7 +1388,7 @@ function ProductModal({categories,initial,onClose,onSave}){
             </div>
           )}
           {/* Color picker - only for T-Shirt/Hoodie/Crewneck */}
-          {showPresets&&presetProduct&&!["Tasche","Cap"].includes(presetCat)&&(
+          {showPresets&&presetProduct&&!["Bag","Cap"].includes(presetCat)&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
                 <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
