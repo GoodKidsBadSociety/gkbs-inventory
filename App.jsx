@@ -2808,6 +2808,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
   const [linkModal, setLinkModal] = useState(null);
   const [prodSearch, setProdSearch] = useState("");
   const [expandedProds, setExpandedProds] = useState({});
+  const [orderSubTab, setOrderSubTab] = useState("oe"); // "oe" | "all"
   const toggleExpand = (id) => setExpandedProds(prev=>({...prev,[id]:!prev[id]}));
 
   const apiFetch = async (action, params="") => {
@@ -2928,11 +2929,9 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
     const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
     const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);
     const unfulfilled=shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled");
-    const count = orderFilter==="all"
-      ? unfulfilled.reduce((a,o)=>a+(o.line_items||[]).reduce((b,l)=>b+(l.quantity||0),0),0)
-      : unfulfilled.reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);
+    const count = unfulfilled.reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);
     setShopifyBadge(count);
-  },[shopifyOrders,orderFilter]);
+  },[shopifyOrders]);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -3149,13 +3148,19 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
       {/* Orders */}
       {tab==="orders"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {/* Order sub-tabs */}
+          <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:10,padding:3}}>
+            {[["oe","Online Exclusive"],["all","Alle Orders"]].map(([v,lbl])=>(
+              <button key={v} onClick={()=>setOrderSubTab(v)} style={{flex:1,padding:"7px 14px",borderRadius:8,border:"none",background:orderSubTab===v?"#fff":"transparent",color:orderSubTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:12,boxShadow:orderSubTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+            ))}
+          </div>
           {(()=>{
             const normalize=(t)=>t.toUpperCase().replace(/\s+/g," ").trim().split(" - ")[0].trim();
             const isOE=(t)=>ONLINE_EXCLUSIVE_PRODUCTS.map(normalize).includes(normalize(t));
-            const displayOrders = orderFilter==="all"
+            const displayOrders = orderSubTab==="all"
               ? shopifyOrders.filter(o=>o.line_items?.length>0)
               : shopifyOrders.map(o=>({...o,line_items:(o.line_items||[]).filter(l=>isOE(l.title))})).filter(o=>o.line_items.length>0);
-            if(displayOrders.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>{orderFilter==="all"?"Keine offenen Bestellungen":"Keine Online Exclusive Bestellungen"}</div>;
+            if(displayOrders.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>{orderSubTab==="all"?"Keine offenen Bestellungen":"Keine Online Exclusive Bestellungen"}</div>;
             return displayOrders.map(order=>(
             <div key={order.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
               <div style={{padding:"12px 16px",background:"#f9f9f9",display:"flex",alignItems:"center",gap:10}}>
@@ -3903,15 +3908,33 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 }
 
 // ─── Google Sheets Setup Modal ────────────────────────────────────
-function SheetsSetupModal({onClose}){
+function SheetsSetupModal({onClose, sheetsUrl}){
+  const [shopifyStatus,setShopifyStatus]=useState(null); // null=loading, true=connected, false=error, string=error msg
+  useEffect(()=>{
+    if(!sheetsUrl)return;
+    fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.connected?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
+      .catch(()=>setShopifyStatus(false));
+  },[sheetsUrl]);
   return(
     <ModalWrap onClose={onClose} width={400}>
-      <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Google Sheets</div>
+      <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Verbindungen</div>
+      {/* Google Sheets */}
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <span style={{fontSize:28}}>✓</span>
+        <IC_CLOUD size={24} color="#1a9a50"/>
         <div>
-          <div style={{fontSize:14,fontWeight:800,color:"#1a9a50"}}>Verbunden</div>
-          <div style={{fontSize:12,color:"#555",marginTop:2}}>Alle Änderungen werden automatisch gespeichert.</div>
+          <div style={{fontSize:14,fontWeight:800,color:"#1a9a50"}}>Google Sheets</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>Verbunden — automatisch gespeichert</div>
+        </div>
+      </div>
+      {/* Shopify */}
+      <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>
+            {shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden — Credentials prüfen"}
+          </div>
         </div>
       </div>
       <button type="button" onClick={onClose} style={{width:"100%",padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>OK</button>
@@ -4130,7 +4153,7 @@ function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSe
 
       {/* Tabs */}
       <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:9,padding:3,marginTop:4}}>
-        {[["account","Account"],["display","Anzeige"],["log","Activity Log"]].map(([v,lbl])=>(
+        {[["account","Account"],["display","Shopify Orders"],["log","Activity Log"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:7,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>
             {lbl}
           </button>
@@ -4932,7 +4955,7 @@ function AppInner({currentUser,onLogout}){
         </div>
       )}
       {confirmProduce&&<ConfirmProduceModal prod={confirmProduce} blank={products.find(p=>p.id===confirmProduce.blankId)} onConfirm={handleProduceConfirm} onCancel={()=>setConfirmProduce(null)}/>}
-      {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)}/>}
+      {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)} sheetsUrl={sheetsUrl}/>}
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
     {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
     {showSettings&&<SettingsModal currentUser={currentUser} onClose={()=>setShowSettings(false)} onUpdateUser={updateUser} settings={appSettings} onUpdateSettings={updateSettings} sheetsUrl={sheetsUrl}/>}
@@ -4955,9 +4978,8 @@ function AppInner({currentUser,onLogout}){
             <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#e84142"}}>GKBS</div>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</span>
-              {syncStatus==="loading"&&<span style={{fontSize:10,color:"#f08328",fontWeight:600}}>· Laden...</span>}
-              {syncStatus==="saving"&&<span style={{fontSize:10,color:"#f08328",fontWeight:600}}>· Speichern...</span>}
-              {syncStatus==="ok"&&<span style={{width:6,height:6,borderRadius:"50%",background:"#1a9a50",display:"inline-block"}}/>}
+              {(syncStatus==="loading"||syncStatus==="saving")&&<span style={{width:7,height:7,borderRadius:"50%",background:"#f08328",display:"inline-block",boxShadow:"0 0 4px #f08328"}}/>}
+              {syncStatus==="ok"&&<span style={{width:7,height:7,borderRadius:"50%",background:"#1a9a50",display:"inline-block"}}/>}
               {syncStatus==="error"&&<span style={{fontSize:10,color:"#e84142",fontWeight:600}}>· Fehler</span>}
               {syncStatus==="demo"&&<span style={{fontSize:9,color:"#fff",fontWeight:800,background:"#f08328",borderRadius:4,padding:"2px 6px",letterSpacing:0.5}}>DEMO</span>}
             </div>
