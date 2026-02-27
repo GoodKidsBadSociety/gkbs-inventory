@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.0.0";
+const APP_VERSION = "v3.1.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -22,6 +22,11 @@ const ONLINE_EXCLUSIVE_PRODUCTS = [
 const F_HEAD = "'Archivo', sans-serif";
 const F_BODY = "'Space Grotesk', sans-serif";
 const F_HEAD_STYLE = { fontFamily: F_HEAD, fontStretch: "125%" };
+
+// ─── Shopify Cache (5min TTL) ────────────────────────────────────
+const _shopCache={};
+function shopCacheGet(key){const e=_shopCache[key];if(!e)return null;if(Date.now()-e.ts>300000){delete _shopCache[key];return null;}return e.data;}
+function shopCacheSet(key,data){_shopCache[key]={data,ts:Date.now()};}
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -696,7 +701,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   }
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1}}>
-      <span style={{...F_HEAD_STYLE,fontSize:28,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{size}</span>
+      <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
@@ -818,7 +823,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   }
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"transparent"}`}}>
-      <span style={{...F_HEAD_STYLE,fontSize:28,color:"#666",fontWeight:800}}>{size}</span>
+      <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{size}</span>
       <span style={{position:"absolute",top:5,right:6,fontSize:9,color:sCol(avail),fontWeight:700}}>{avail}</span>
       <div style={{textAlign:"center",lineHeight:1}}>
         <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
@@ -1065,7 +1070,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             const soll=(prod.qty||{})[size]||0,done=(prod.done||{})[size]||0,avail=(blank?.stock??{})[size]??0;
             if(soll===0&&done===0)return(
               <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#fafafa",borderRadius:12,padding:"8px 4px",opacity:0.3}}>
-                <span style={{...F_HEAD_STYLE,fontSize:28,color:"#bbb",fontWeight:800}}>{size}</span>
+                <span style={{...F_HEAD_STYLE,fontSize:16,color:"#bbb",fontWeight:800}}>{size}</span>
                 <span style={{fontSize:32,fontWeight:900,color:"#ddd",lineHeight:1}}>—</span>
               </div>
             );
@@ -2190,11 +2195,13 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   const [shopOpen,setShopOpen]=useState({});
   const loadShopify=async()=>{
     if(!sheetsUrl)return;
+    const cached=shopCacheGet("shopify_products");
+    if(cached){setShopProds(cached);return;}
     setShopLoading(true);
     try{
       const r=await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"});
       const d=JSON.parse(await r.text());
-      if(d.products) setShopProds(d.products);
+      if(d.products){setShopProds(d.products);shopCacheSet("shopify_products",d.products);}
     }catch(e){}
     setShopLoading(false);
   };
@@ -2257,7 +2264,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
             return(
               <div key={d.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{d.name}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:13,fontWeight:800,color:"#111"}}>{d.name}</div>
                   <div style={{fontSize:11,color:"#aaa"}}>€{d.pricePerMeter?.toFixed(2)}/m · {d.designsPerMeter||1} Design/m → <strong style={{color:"#111"}}>€{preisProDesign.toFixed(2)}/Design</strong></div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
@@ -2289,7 +2296,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               <span style={{fontSize:12,color:"#bbb"}}>{isOpen?"▾":"▸"}</span>
               <SmartDot item={p} size={20}/>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
+                <div style={{...F_HEAD_STYLE,fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
                 <div style={{fontSize:11,color:"#aaa"}}>{p.color||p.category}</div>
               </div>
               <span style={{fontSize:11,background:"#f0f0f0",color:"#555",borderRadius:6,padding:"2px 8px",fontWeight:700,flexShrink:0}}>{p.category}</span>
@@ -2399,7 +2406,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
 const RESTOCK_MIN = {XXS:2,XS:2,S:3,M:4,L:5,XL:4,XXL:2,XXXL:1};
 const RESTOCK_DEFAULT = 5;
 
-function RestockView({sheetsUrl}){
+function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const mobile = useIsMobile();
   const [shopProds,setShopProds]=useState([]);
   const [loading,setLoading]=useState(false);
@@ -2407,9 +2414,11 @@ function RestockView({sheetsUrl}){
 
   useEffect(()=>{
     if(!sheetsUrl)return;
+    const cached=shopCacheGet("shopify_products");
+    if(cached){setShopProds(cached);return;}
     setLoading(true);
     fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{const d=JSON.parse(t);if(d.products)setShopProds(d.products);})
+      .then(r=>r.text()).then(t=>{const d=JSON.parse(t);if(d.products){setShopProds(d.products);shopCacheSet("shopify_products",d.products);}})
       .catch(()=>{})
       .finally(()=>setLoading(false));
   },[sheetsUrl]);
@@ -2477,6 +2486,33 @@ function RestockView({sheetsUrl}){
                 <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
               </div>
             </div>
+            {/* Linked blank info + Auftrag button */}
+            {(()=>{
+              const link=shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id));
+              const blank=link?products.find(p=>p.id===link.gkbsProductId):null;
+              if(!blank) return null;
+              const dtf=(dtfItems||[]).find(d=>(blank.veredelung||[]).includes("Drucken")&&d.linkedProducts?.includes(blank.id));
+              return <div style={{padding:"0 18px 10px",display:"flex",alignItems:"center",gap:8}}>
+                <div style={{fontSize:11,color:"#888",flex:1}}>
+                  <IC_LINK size={11} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
+                  {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
+                </div>
+                <button onClick={()=>{
+                  const qty={};lowVars.forEach(v=>{const sz=parseSize(v.title);const szLabel=sz||v.title.split("/")[0].trim();const min=sz?RESTOCK_MIN[sz]:RESTOCK_DEFAULT;const deficit=min-(v.inventory_quantity||0);qty[szLabel]=Math.max(1,deficit);});
+                  if(onAddProd)onAddProd({
+                    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+                    name:"Restock: "+sp.title,blankId:blank.id,
+                    qty,done:{},status:"Offen",priority:"Hoch",
+                    veredelung:blank.veredelung||[],
+                    dtfDesignId:dtf?.id||null,dtfDesignName:dtf?.name||null,
+                    shopifyProductLink:null,
+                    createdAt:new Date().toISOString()
+                  });
+                }} style={{padding:"6px 14px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:12,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                  <IC_PROD size={12} color="#fff"/> Auftrag
+                </button>
+              </div>;
+            })()}
             {/* Size cells */}
             <div style={{padding:"0 18px 16px",display:"flex",gap:6,flexWrap:"wrap"}}>
               {allVars.map(v=>{
@@ -2493,7 +2529,7 @@ function RestockView({sheetsUrl}){
                     borderRadius:12,padding:"8px 8px",flex:1,minWidth:mobile?70:80,maxWidth:120,
                     display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",height:92,position:"relative"
                   }}>
-                    <span style={{...F_HEAD_STYLE,fontSize:28,color:isLow?"#9a3412":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
+                    <span style={{...F_HEAD_STYLE,fontSize:mobile?18:15,color:isLow?"#9a3412":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
                     <div style={{display:"flex",alignItems:"baseline",gap:2}}>
                       <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isLow?"#f97316":qty===0?"#ef4444":"#16a34a",lineHeight:1}}>{qty}</span>
                       <span style={{fontSize:11,fontWeight:700,color:"#bbb"}}>/{min}</span>
@@ -2530,7 +2566,7 @@ function ScrollTopButton(){
 
 
 // ─── Shopify View ─────────────────────────────────────────────────
-function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd, onSetBlankStock, sheetsUrl}){
+function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopifyBadge, onAddProd, onSetBlankStock, sheetsUrl}){
   const mobile = useIsMobile();
   const [tab, setTab] = useState("products");
   const [shopifyProds, setShopifyProds] = useState([]);
@@ -2656,6 +2692,14 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
 
   useEffect(()=>{ checkConnection().then(()=>loadAll()); },[]);
   useEffect(()=>{ if(tab==="orders") loadOrders(); },[tab]);
+  // Update parent badge with OE order qty
+  useEffect(()=>{
+    if(!setShopifyBadge) return;
+    const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);
+    const count=shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);
+    setShopifyBadge(count);
+  },[shopifyOrders]);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -2707,7 +2751,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
           </div>
         </div>
         {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
-        <button onClick={()=>{checkConnection();loadAll();}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#555"/> Reload</button>
+        <button onClick={()=>{checkConnection();loadAll(true);loadOrders(true);}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#555"/> Reload</button>
       </div>
 
       {/* Sub-tabs */}
@@ -2933,8 +2977,8 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
   },[]);
 
   const canSave = linkLevel==="color"
-    ? selSP&&selLoc&&(isFromShopify?selGkbs:true)
-    : selSP&&selVar&&selLoc&&(isFromShopify?selGkbs:true);
+    ? selSP&&(isFromShopify?selGkbs:true)
+    : selSP&&selVar&&(isFromShopify?selGkbs:true);
 
   const doSave = () => {
     if(!canSave) return;
@@ -3117,9 +3161,9 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
                     onChange={e=>setDraft(e.target.value)}
                     onBlur={()=>commit(s.key)}
                     onKeyDown={e=>{if(e.key==="Enter")commit(s.key);if(e.key==="Escape")setEditing(null);}}
-                    style={{width:60,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
+                    style={{...F_HEAD_STYLE,width:60,textAlign:"center",fontSize:22,fontWeight:900,border:"2px solid #3b82f6",borderRadius:9,padding:"4px",outline:"none"}}/>
                 : <span onDoubleClick={()=>startEdit(s.key)}
-                    style={{width:60,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"pointer",userSelect:"none"}}>
+                    style={{...F_HEAD_STYLE,width:60,textAlign:"center",fontSize:22,fontWeight:900,color:"#111",cursor:"pointer",userSelect:"none"}}>
                     {mengen[s.key]}
                   </span>
               }
@@ -3245,7 +3289,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
       </div>
       {offene.length === 0 && (
         <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>subTab==="dtf"?<IC_PRINT size={40} color="#ccc"/>:<IC_BOX size={40} color="#ccc"/></div>
+          {subTab==="dtf"?<IC_PRINT size={40} color="#ccc"/>:<IC_BOX size={40} color="#ccc"/>}
           Keine offenen Bestellungen
         </div>
       )}
@@ -3483,14 +3527,14 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allOrdered||minSizes.length===0}
-                      style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:12,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca"}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fef2f2",color:allOrdered?"#bbb":"#ef4444",fontSize:11,fontWeight:800,cursor:allOrdered||minSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||minSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
                       onClick={()=>{if(!allOrdered&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
-                      ALL MIN
+                      MIN
                     </button>
                     <button type="button" disabled={allOrdered||maxSizes.length===0}
-                      style={{padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:12,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa"}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allOrdered?"#e0e0e0":"#fff7ed",color:allOrdered?"#bbb":"#f97316",fontSize:11,fontWeight:800,cursor:allOrdered||maxSizes.length===0?"not-allowed":"pointer",opacity:allOrdered||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa",letterSpacing:0.5}}
                       onClick={()=>{if(!allOrdered&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
-                      ALL MAX
+                      MAX
                     </button>
                   </div>
                 </div>
@@ -4045,6 +4089,7 @@ function AppInner({currentUser,onLogout}){
   const [shopifyLinks,setShopifyLinks]=useState([]);
   const [shopifyLinkModal,setShopifyLinkModal]=useState(null); // prod object to link
   const [prodMainTab,setProdMainTab]=useState("auftraege");
+  const [shopifyBadge,setShopifyBadge]=useState(0);
   const [prodSubView,setProdSubView]=useState("Alle");
   const [showProdModal,setShowProdModal]=useState(false);
   const [showPAModal,setShowPAModal]=useState(false);
@@ -4291,31 +4336,26 @@ function AppInner({currentUser,onLogout}){
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-          <div>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div>{mobile&&syncStatus==="saving"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#f97316",animation:"pulse 1s infinite",flexShrink:0,alignSelf:"center"}}/>}{mobile&&syncStatus==="ok"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#16a34a",flexShrink:0,alignSelf:"center"}}/>}</div>
-              <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:30,height:30,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:12,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {currentUser.avatar}
-              </button>
-            </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
             {!mobile&&<div style={{fontSize:12,color:"#bbb",fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
-              Inventory Management
-              {syncStatus==="loading"&&<span style={{color:"#f97316"}}>⟳ Laden...</span>}
-              {syncStatus==="saving"&&<span style={{color:"#f97316"}}>⟳ Speichern...</span>}
-              {syncStatus==="ok"&&<span style={{color:"#16a34a"}}>✓ Gespeichert</span>}
-              {syncStatus==="error"&&<span style={{color:"#ef4444"}}>⚠ Sync Fehler</span>}
-              {!sheetsUrl&&<span style={{color:"#bbb",cursor:"pointer",textDecoration:"underline"}} onClick={()=>setShowSheetsSetup(true)}>Google Sheets einrichten →</span>}
+              {syncStatus==="loading"&&<span style={{color:"#f97316"}}>Laden...</span>}
+              {syncStatus==="saving"&&<span style={{color:"#f97316"}}>Speichern...</span>}
+              {syncStatus==="ok"&&<span style={{color:"#16a34a"}}>Gespeichert</span>}
+              {syncStatus==="error"&&<span style={{color:"#ef4444"}}>Sync Fehler</span>}
             </div>}
+            {mobile&&syncStatus==="saving"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#f97316",animation:"pulse 1s infinite",flexShrink:0}}/>}
+            {mobile&&syncStatus==="ok"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#16a34a",flexShrink:0}}/>}
           </div>
           <div style={{display:"flex",gap:6,alignItems:"center"}}>
             {/* Sheets */}
-            <button onClick={()=>setShowSheetsSetup(true)} style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:sheetsUrl?"#f0fdf4":"#fff",color:sheetsUrl?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>
-              <IC_CLOUD size={14} color={sheetsUrl?"#16a34a":"#555"}/>{!mobile&&(sheetsUrl?" Verbunden":" Sheets")}
+            <button onClick={()=>setShowSheetsSetup(true)} title={sheetsUrl?"Verbunden":"Sheets einrichten"} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:sheetsUrl?"#f0fdf4":"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <IC_CLOUD size={14} color={sheetsUrl?"#16a34a":"#ccc"}/>
             </button>
             {/* Undo */}
             <button onClick={undo} disabled={!canUndo} title="Rückgängig"
-              style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",fontWeight:700,fontSize:mobile?12:13,display:"flex",alignItems:"center",gap:4}}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>{!mobile&&` Undo`}{canUndo&&<span style={{fontSize:10,color:"#bbb",fontWeight:500}}>({historyRef.current.length})</span>}
+              style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
             </button>
 {view==="inventory"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
@@ -4333,6 +4373,9 @@ function AppInner({currentUser,onLogout}){
             {view==="finance"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
             </>}
+            <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              {currentUser.avatar}
+            </button>
           </div>
         </div>
         </div>
@@ -4346,6 +4389,7 @@ function AppInner({currentUser,onLogout}){
                 {lbl}
                 {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
                 {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+                {v==="shopify"&&shopifyBadge>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
               </button>
             ))}
           </div>
@@ -4356,7 +4400,7 @@ function AppInner({currentUser,onLogout}){
 
 
         {/* Shopify */}
-        {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={SHEETS_URL}/>}
+        {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={SHEETS_URL}/>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);try{await fetch(SHEETS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={SHEETS_URL}/>}
@@ -4384,7 +4428,7 @@ function AppInner({currentUser,onLogout}){
               ))}
             </div>
 
-            {prodMainTab==="restock"&&<RestockView sheetsUrl={SHEETS_URL}/>}
+            {prodMainTab==="restock"&&<RestockView sheetsUrl={SHEETS_URL} products={products} dtfItems={dtfItems} shopifyLinks={shopifyLinks} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Restock Auftrag: ${p.name}`);}}/>}
 
             {prodMainTab==="auftraege"&&<>
             {/* Filters – scrollable on mobile */}
@@ -4424,7 +4468,7 @@ function AppInner({currentUser,onLogout}){
             {/* Archive */}
             <div style={{marginTop:4}}>
               <button onClick={()=>setShowArchive(o=>!o)} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:12,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,width:"100%"}}>
-                <span>{showArchive?"▾":"▸"}</span><span>📁 Archiv</span>
+                <span>{showArchive?"▾":"▸"}</span><IC_FOLDER size={14} color="#555"/> <span>Archiv</span>
                 <span style={{background:"#e8e8e8",color:"#666",borderRadius:20,padding:"2px 9px",fontSize:11,fontWeight:800,marginLeft:"auto"}}>{archivedProdsArr.length}</span>
               </button>
               {showArchive&&(
@@ -4500,6 +4544,7 @@ function AppInner({currentUser,onLogout}){
               <span style={{fontSize:9,fontWeight:700}}>{lbl}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
               {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
             </button>
           ))}
         </div>
