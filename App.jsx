@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.6";
+const APP_VERSION = "v3.3.7";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2412,14 +2412,14 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
 function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDefault, onConfirm, onClose}){
   const mobile = useIsMobile();
   const parseSize = (title) => {
-    const s = (title||"").split("/")[0].trim().toUpperCase();
-    if(restockMin[s]!==undefined) return s;
+    const parts = (title||"").split("/").map(p=>p.trim().toUpperCase());
+    for(const p of parts){ if(restockMin[p]!==undefined) return p; }
     return null;
   };
   const initQty = {};
   (variants||[]).forEach(v=>{
     const sz = parseSize(v.title);
-    const label = sz || v.title.split("/")[0].trim();
+    const label = sz || v.title.split("/").pop().trim();
     const min = sz ? restockMin[sz] : restockDefault;
     const current = v.inventory_quantity||0;
     const deficit = Math.max(0, min - current);
@@ -2439,7 +2439,7 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
         <div style={{overflowY:"auto",padding:"16px 20px",flex:1}}>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {Object.entries(qty).map(([label, val])=>{
-              const v = (variants||[]).find(x=>(parseSize(x.title)||x.title.split("/")[0].trim())===label);
+              const v = (variants||[]).find(x=>(parseSize(x.title)||x.title.split("/").pop().trim())===label);
               const current = v?.inventory_quantity||0;
               const min = restockMin[label.toUpperCase()]!==undefined ? restockMin[label.toUpperCase()] : restockDefault;
               return(
@@ -2492,10 +2492,10 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
       .finally(()=>setLoading(false));
   },[sheetsUrl]);
 
-  // Parse size from variant title (first segment before " / ")
+  // Parse size from variant title (check all segments)
   const parseSize = (title) => {
-    const s = (title||"").split("/")[0].trim().toUpperCase();
-    if(RESTOCK_MIN[s]!==undefined) return s;
+    const parts = (title||"").split("/").map(p=>p.trim().toUpperCase());
+    for(const p of parts){ if(RESTOCK_MIN[p]!==undefined) return p; }
     return null;
   };
 
@@ -2597,7 +2597,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                   <div style={{padding:"6px 18px 14px",display:"flex",gap:6,flexWrap:"wrap"}}>
                     {cvars.map(v=>{
                       const size = parseSize(v.title);
-                      const sizeLabel = size || v.title.split("/")[0].trim();
+                      const sizeLabel = size || v.title.split("/").pop().trim();
                       const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
                       const qty = v.inventory_quantity||0;
                       const isOut = qty===0;
@@ -2952,7 +2952,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                         const colorLink = shopifyLinks.find(l=>l.shopifyProductId==String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
                         return(
                           <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:ci%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
-                            <IC_PAINT size={11} color="#3b82f6"/>
+                            <IC_PAINT size={11} color="#888"/>
                             <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{color==="_default_"?"Default":color}</div>
                             <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
                             <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
@@ -2975,7 +2975,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                         <div key={color}>
                           {/* Color group header */}
                           {hasMultipleColors&&<div style={{display:"flex",alignItems:"center",padding:"8px 16px",background:"#fafafa",borderTop:"1px solid #f0f0f0",gap:8}}>
-                            <IC_PAINT size={12} color="#3b82f6"/>
+                            <IC_PAINT size={12} color="#888"/>
                             <div style={{flex:1,minWidth:0}}>
                               <span style={{fontSize:12,fontWeight:800,color:"#333"}}>{color}</span>
                               {linkedGkbs&&<span style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginLeft:8}}><IC_LINK size={9} color="#3b82f6"/> {linkedGkbs.name}</span>}
@@ -4627,7 +4627,7 @@ function AppInner({currentUser,onLogout}){
           <div style={S.col12}>
             {/* Sub-tabs: Aufträge / Restock */}
             <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
-              {[["auftraege","Aufträge"],["restock","Restock"]].map(([t,lbl])=>(
+              {[["auftraege","Aufträge"],["restock","Restock Empfehlungen"]].map(([t,lbl])=>(
                 <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
