@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.4.0";
+const APP_VERSION = "v3.5.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -30,9 +30,9 @@ function shopCacheSet(key,data){_shopCache[key]={data,ts:Date.now()};}
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 const LOW_STOCK = 3;
-const PRESET_COLORS = ["#000000","#ffffff","#e5e5e5","#6b7280","#3b82f6","#10b981","#ef4444","#f97316","#eab308","#8b5cf6","#ec4899","#a16207","#1e3a5f","#d4a574"];
-const STATUS_STYLE = {"Geplant":{bg:"#f0f0f0",color:"#666"},"In Produktion":{bg:"#fef9c3",color:"#a16207"},"Fertig":{bg:"#dcfce7",color:"#16a34a"}};
-const PRIORITY = {"Hoch":{bg:"#fef2f2",color:"#ef4444",dot:"#ef4444"},"Mittel":{bg:"#fff7ed",color:"#f97316",dot:"#f97316"},"Niedrig":{bg:"#f0f0f0",color:"#888",dot:"#bbb"}};
+const PRESET_COLORS = ["#000000","#ffffff","#e5e5e5","#6b7280","#584053","#10b981","#F97B4F","#e5a23c","#eab308","#8b5cf6","#ec4899","#a16207","#1e3a5f","#d4a574"];
+const STATUS_STYLE = {"Geplant":{bg:"#ece8e1",color:"#6e5e68"},"In Produktion":{bg:"#fef9c3",color:"#a16207"},"Fertig":{bg:"#e6f3f1",color:"#5fa8a0"}};
+const PRIORITY = {"Hoch":{bg:"#fde9e2",color:"#F97B4F",dot:"#F97B4F"},"Mittel":{bg:"#fef5e6",color:"#e5a23c",dot:"#e5a23c"},"Niedrig":{bg:"#ece8e1",color:"#8a7d84",dot:"#b5adb0"}};
 const VEREDELUNG_TYPES = ["Drucken","Sticken"];
 const mkQty = () => Object.fromEntries(DEFAULT_SIZES.map(s=>[s,0]));
 const mkId = () => Math.random().toString(36).slice(2,8);
@@ -86,7 +86,7 @@ const STANLEY_STELLA_PRESETS = [
   {
     id:"STTU169", category:"T-Shirt", name:"Creator 2.0", fit:"Unisex · Medium Fit · 180g",
     colors:[
-      {code:"C001",name:"White",hex:"#f5f5f5",price:3.83},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:3.83},
       {code:"C018",name:"Off White",hex:"#f0ede4",price:3.83},
       {code:"C504",name:"Vintage White",hex:"#ede8dc",price:3.83},
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:3.83},
@@ -144,7 +144,7 @@ const STANLEY_STELLA_PRESETS = [
     id:"STTU788", category:"T-Shirt", name:"Freestyler", fit:"Unisex · Relaxed Fit · 240g",
     colors:[
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:7.88},
-      {code:"C001",name:"White",hex:"#f5f5f5",price:7.88},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:7.88},
       {code:"C089",name:"Aloe",hex:"#8db49a",price:8.35},
       {code:"C002",name:"Black",hex:"#111111",price:8.35},
       {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:8.35},
@@ -185,7 +185,7 @@ const STANLEY_STELLA_PRESETS = [
     colors:[
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:5.83},
       {code:"C018",name:"Off White",hex:"#f0ede4",price:5.83},
-      {code:"C001",name:"White",hex:"#f5f5f5",price:5.83},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:5.83},
       {code:"C089",name:"Aloe",hex:"#8db49a",price:6.62},
       {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:6.62},
       {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:6.62},
@@ -215,7 +215,7 @@ const STANLEY_STELLA_PRESETS = [
     colors:[
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:16.75},
       {code:"C018",name:"Off White",hex:"#f0ede4",price:16.75},
-      {code:"C001",name:"White",hex:"#f5f5f5",price:16.75},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:16.75},
       {code:"C089",name:"Aloe",hex:"#8db49a",price:16.75},
       {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:16.75},
       {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:16.75},
@@ -268,7 +268,7 @@ const STANLEY_STELLA_PRESETS = [
   {
     id:"STSU797", category:"Hoodie", name:"Cooper Dry", fit:"Unisex · Oversized · 400g",
     colors:[
-      {code:"C001",name:"White",hex:"#f5f5f5",price:24.89},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:24.89},
       {code:"C089",name:"Aloe",hex:"#8db49a",price:24.89},
       {code:"C002",name:"Black",hex:"#111111",price:24.89},
       {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:24.89},
@@ -287,7 +287,7 @@ const STANLEY_STELLA_PRESETS = [
     id:"STSU209", category:"Hoodie", name:"Slammer 2.0", fit:"Unisex · Oversized · 350g",
     colors:[
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:19.85},
-      {code:"C001",name:"White",hex:"#f5f5f5",price:19.85},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:19.85},
       {code:"C002",name:"Black",hex:"#111111",price:19.85},
       {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:19.85},
       {code:"C361",name:"Cream",hex:"#f0e8c0",price:19.85},
@@ -320,7 +320,7 @@ const STANLEY_STELLA_PRESETS = [
     id:"STSU208", category:"Crewneck", name:"Radder 2.0", fit:"Unisex · Oversized · 350g",
     colors:[
       {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:15.65},
-      {code:"C001",name:"White",hex:"#f5f5f5",price:15.65},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:15.65},
       {code:"C002",name:"Black",hex:"#111111",price:15.65},
       {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:15.65},
       {code:"C361",name:"Cream",hex:"#f0e8c0",price:15.65},
@@ -351,7 +351,7 @@ const STANLEY_STELLA_PRESETS = [
   {
     id:"STSU798", category:"Crewneck", name:"Ledger Dry", fit:"Unisex · Oversized · 400g",
     colors:[
-      {code:"C001",name:"White",hex:"#f5f5f5",price:19.48},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:19.48},
       {code:"C089",name:"Aloe",hex:"#8db49a",price:19.48},
       {code:"C002",name:"Black",hex:"#111111",price:19.48},
       {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:19.48},
@@ -379,7 +379,7 @@ const STANLEY_STELLA_PRESETS = [
     id:"STAU760", category:"Bag", name:"Tote Bag", fit:"Unisex · One Size · 300g",
     colors:[
       {code:"C007",name:"Natural",hex:"#f0e8cc",price:2.94},
-      {code:"C001",name:"White",hex:"#f5f5f5",price:2.94},
+      {code:"C001",name:"White",hex:"#f5f2ed",price:2.94},
       {code:"C002",name:"Black",hex:"#111111",price:2.94},
       {code:"C591",name:"Midnight Blue",hex:"#1a1a4a",price:2.94},
       {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:2.94},
@@ -419,7 +419,7 @@ const STANLEY_STELLA_PRESETS = [
       {code:"",name:"Pastel Pink",hex:"#f0c0cc",price:2.91},
       {code:"",name:"Peach",hex:"#f0a888",price:2.91},
       {code:"",name:"True Pink",hex:"#e8589a",price:2.91},
-      {code:"",name:"White",hex:"#f5f5f5",price:2.91},
+      {code:"",name:"White",hex:"#f5f2ed",price:2.91},
     ]
   },
   {
@@ -512,26 +512,26 @@ const S = {
   row10: {display:"flex",alignItems:"center",gap:10},
   row12: {display:"flex",alignItems:"center",gap:12},
   sizeTag: {fontSize:13,fontWeight:800,color:"#444",width:36},
-  secLabel: {fontSize:11,color:"#bbb",marginBottom:8,fontWeight:700,letterSpacing:0.8},
+  secLabel: {fontSize:11,color:"#b5adb0",marginBottom:8,fontWeight:700,letterSpacing:0.8},
   printH: {fontSize:22,fontWeight:900,marginBottom:2,letterSpacing:-0.5},
-  printSub: {fontSize:11,color:"#888",marginBottom:16},
+  printSub: {fontSize:11,color:"#8a7d84",marginBottom:16},
   cardHdr: {display:"flex",alignItems:"center",gap:10,marginBottom:12},
-  pill: (ok)=>({background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52}),
-  pillNum: (ok)=>({...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:ok?"#16a34a":"#ef4444",lineHeight:1}),
-  pillLbl: (ok)=>({fontSize:9,color:ok?"#16a34a":"#ef4444",fontWeight:700}),
+  pill: (ok)=>({background:ok?"#e6f3f1":"#fde9e2",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52}),
+  pillNum: (ok)=>({...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:ok?"#5fa8a0":"#F97B4F",lineHeight:1}),
+  pillLbl: (ok)=>({fontSize:9,color:ok?"#5fa8a0":"#F97B4F",fontWeight:700}),
 };
 
 // ─── Style tokens ─────────────────────────────────────────────────
-const R="#ef4444",OR="#f97316",GR="#16a34a",GY="#bbb";
+const R="#F97B4F",OR="#e5a23c",GR="#5fa8a0",GY="#b5adb0";
 const sCol=(v,lo=LOW_STOCK)=>v===0?R:v<=lo?OR:"#111";
-const capBg=(c,a)=>c?"#f0fdf4":a?"#fff7ed":"#f8f8f8";
-const capBd=(c,a)=>`1px solid ${c?"#bbf7d0":a?"#fed7aa":"transparent"}`;
+const capBg=(c,a)=>c?"#f0fdf4":a?"#fef5e6":"#f5f2ed";
+const capBd=(c,a)=>`1px solid ${c?"#bbf7d0":a?"#f5deb0":"transparent"}`;
 const btn=(w,red=false,dis=false)=>({width:w,height:w,borderRadius:7,border:"none",
-  background:red?(dis?"#f0f0f0":"#fee2e2"):(dis?"#f0f0f0":"#dcfce7"),
-  color:red?(dis?"#ccc":R):(dis?"#ccc":GR),
+  background:red?(dis?"#ece8e1":"#fde9e2"):(dis?"#ece8e1":"#e6f3f1"),
+  color:red?(dis?"#c8c0c4":R):(dis?"#c8c0c4":GR),
   fontSize:w>30?22:w>25?18:14,cursor:dis?"not-allowed":"pointer",
   display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800});
-const iconBtn=(red=false)=>({width:38,height:38,borderRadius:10,border:"none",background:red?"#fef2f2":"#f0f0f0",
+const iconBtn=(red=false)=>({width:38,height:38,borderRadius:10,border:"none",background:red?"#fde9e2":"#ece8e1",
   color:red?R:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,fontSize:16,fontWeight:800});
 const PENCIL=()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 const CHECK=()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
@@ -546,7 +546,7 @@ const IC_SHOP=({size=16,color="currentColor"})=><svg width={size} height={size} 
 const IC_PRINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
 const IC_STITCH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m18.5 2-5 5M12 7l-1.5 1.5"/><path d="M3.27 13.22A5 5 0 0 0 2 16.5V22h5.5a5 5 0 0 0 3.28-1.27l.22-.22"/><path d="m14.5 9.5-5 5"/></svg>;
 const IC_CHECK_CIRCLE=({size=16,color="#22c55e"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
-const IC_WARN=({size=16,color="#ef4444"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
+const IC_WARN=({size=16,color="#F97B4F"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
 const IC_LOSS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>;
 const IC_CLOCK=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
 const IC_LINK=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
@@ -567,11 +567,11 @@ const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:
 const DEMO_PRODUCTS = [
   {id:"1",name:"Classic Logo Tee",category:"T-Shirt",color:"Black",colorHex:"#111111",buyPrice:12.50,stock:{XXS:2,XS:5,S:3,M:18,L:10,XL:4,XXL:2,XXXL:1},minStock:{XXS:2,XS:5,S:10,M:10,L:8,XL:5,XXL:3,XXXL:2}},
   {id:"2",name:"Natur Loose Fit Tee",category:"T-Shirt",color:"Natural",colorHex:"#e8dcc8",buyPrice:14.00,stock:{XXS:0,XS:2,S:3,M:5,L:4,XL:2,XXL:0,XXXL:0},minStock:{XXS:2,XS:3,S:5,M:5,L:5,XL:3,XXL:2,XXXL:1}},
-  {id:"3",name:"Heavy Cap",category:"Cap",colorHex:"#222222",buyPrice:8.00,capColors:[{id:"c1",name:"Black",hex:"#111111",stock:5},{id:"c2",name:"White",hex:"#f5f5f5",stock:3},{id:"c3",name:"Navy",hex:"#1e3a5f",stock:2}]},
+  {id:"3",name:"Heavy Cap",category:"Cap",colorHex:"#222222",buyPrice:8.00,capColors:[{id:"c1",name:"Black",hex:"#111111",stock:5},{id:"c2",name:"White",hex:"#f5f2ed",stock:3},{id:"c3",name:"Navy",hex:"#1e3a5f",stock:2}]},
 ];
 const DEMO_PRODS = [
   {id:"p1",name:"Gemeindebau T-Shirt",blankId:"2",status:"Geplant",priority:"Hoch",notes:"SS25 Drop",veredelung:["Drucken"],designUrl:"",colorHex:"#e8dcc8",photos:[],isCapOrder:false,qty:{XXS:0,XS:0,S:5,M:5,L:3,XL:2,XXL:0,XXXL:0},done:{XXS:0,XS:0,S:0,M:0,L:0,XL:0,XXL:0,XXXL:0}},
-  {id:"p2",name:"GKBS Logo Cap",blankId:"3",status:"Geplant",priority:"Mittel",notes:"",veredelung:["Sticken"],designUrl:"",colorHex:"#222222",photos:[],isCapOrder:true,capColors:[{id:"o1",name:"Black",hex:"#111111",qty:5,done:0},{id:"o2",name:"White",hex:"#f5f5f5",qty:3,done:0}]},
+  {id:"p2",name:"GKBS Logo Cap",blankId:"3",status:"Geplant",priority:"Mittel",notes:"",veredelung:["Sticken"],designUrl:"",colorHex:"#222222",photos:[],isCapOrder:true,capColors:[{id:"o1",name:"Black",hex:"#111111",qty:5,done:0},{id:"o2",name:"White",hex:"#f5f2ed",qty:3,done:0}]},
 ];
 
 
@@ -606,8 +606,8 @@ function PriorityBadge({priority}){
   return <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,background:s.bg,color:s.color,borderRadius:20,padding:"3px 9px",fontWeight:800}}><span style={{width:6,height:6,borderRadius:"50%",background:s.dot,display:"inline-block"}}/>{priority}</span>;
 }
 function VeredBadge({type}){
-  const styles={"Drucken":{bg:"#eff6ff",color:"#3b82f6"},"Sticken":{bg:"#fdf4ff",color:"#a855f7"}};
-  const s=styles[type]||{bg:"#f0f0f0",color:"#666"};
+  const styles={"Drucken":{bg:"#f0eaee",color:"#584053"},"Sticken":{bg:"#f4eef6",color:"#8b6894"}};
+  const s=styles[type]||{bg:"#ece8e1",color:"#6e5e68"};
   return <span style={{fontSize:11,background:s.bg,color:s.color,borderRadius:6,padding:"3px 8px",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}>{type==="Drucken"?<IC_PRINT size={12} color={s.color}/>:<IC_STITCH size={12} color={s.color}/>}{type}</span>;
 }
 
@@ -634,35 +634,35 @@ function CapColorEditor({colors,onChange,mode,showMinStock=false}){
   return(
     <div style={S.col8}>
       {colors.map(c=>(
-        <div key={c.id} style={{background:"#f8f8f8",borderRadius:12,padding:"10px 12px",display:"flex",flexDirection:"column",gap:8}}>
+        <div key={c.id} style={{background:"#f5f2ed",borderRadius:12,padding:"10px 12px",display:"flex",flexDirection:"column",gap:8}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <input type="color" value={c.hex} onChange={e=>update(c.id,"hex",e.target.value)} style={{width:36,height:36,borderRadius:"50%",border:"2px solid #444",cursor:"pointer",padding:2,flexShrink:0}}/>
             <input style={{...inp,flex:1,minWidth:80}} value={c.name} onChange={e=>update(c.id,"name",e.target.value)} placeholder="Name"/>
-            <button type="button" onClick={()=>remove(c.id)} style={{background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:20,padding:"0 2px",lineHeight:1,flexShrink:0}}>✕</button>
+            <button type="button" onClick={()=>remove(c.id)} style={{background:"none",border:"none",color:"#c8c0c4",cursor:"pointer",fontSize:20,padding:"0 2px",lineHeight:1,flexShrink:0}}>✕</button>
           </div>
           <div style={{display:"flex",gap:8}}>
             <div style={{flex:1}}>
-              <div style={{fontSize:9,fontWeight:700,color:"#aaa",letterSpacing:0.8,marginBottom:4}}>BESTAND</div>
+              <div style={{fontSize:9,fontWeight:700,color:"#b5adb0",letterSpacing:0.8,marginBottom:4}}>BESTAND</div>
               <div style={{display:"flex",alignItems:"center",gap:6,background:"#fff",borderRadius:8,padding:"6px 10px",border:"1px solid #e8e8e8"}}>
-                <button type="button" onClick={()=>adj(c.id,field,-1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                <button type="button" onClick={()=>adj(c.id,field,-1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
                 <span style={{fontSize:18,fontWeight:900,color:"#111",flex:1,textAlign:"center"}}>{c[field]||0}</span>
-                <button type="button" onClick={()=>adj(c.id,field,1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                <button type="button" onClick={()=>adj(c.id,field,1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
               </div>
             </div>
             {showMinStock&&(
               <div style={{flex:1}}>
-                <div style={{fontSize:9,fontWeight:700,color:"#aaa",letterSpacing:0.8,marginBottom:4}}>SOLLBESTAND</div>
+                <div style={{fontSize:9,fontWeight:700,color:"#b5adb0",letterSpacing:0.8,marginBottom:4}}>SOLLBESTAND</div>
                 <div style={{display:"flex",alignItems:"center",gap:6,background:"#fff",borderRadius:8,padding:"6px 10px",border:"1px solid #e8e8e8"}}>
-                  <button type="button" onClick={()=>adj(c.id,"minStock",-1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fef3c7",color:"#d97706",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-                  <span style={{fontSize:18,fontWeight:900,color:"#d97706",flex:1,textAlign:"center"}}>{c.minStock||0}</span>
-                  <button type="button" onClick={()=>adj(c.id,"minStock",1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fef3c7",color:"#d97706",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                  <button type="button" onClick={()=>adj(c.id,"minStock",-1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fef5e6",color:"#e5a23c",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                  <span style={{fontSize:18,fontWeight:900,color:"#e5a23c",flex:1,textAlign:"center"}}>{c.minStock||0}</span>
+                  <button type="button" onClick={()=>adj(c.id,"minStock",1)} style={{width:28,height:28,borderRadius:6,border:"none",background:"#fef5e6",color:"#e5a23c",fontSize:16,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
                 </div>
               </div>
             )}
           </div>
         </div>
       ))}
-      <button type="button" onClick={addColor} style={{padding:"12px",borderRadius:10,border:"2px dashed #d0d0d0",background:"#fafafa",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14,textAlign:"center"}}>+ Farbe hinzufügen</button>
+      <button type="button" onClick={addColor} style={{padding:"12px",borderRadius:10,border:"2px dashed #d0d0d0",background:"#f8f5f0",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14,textAlign:"center"}}>+ Farbe hinzufügen</button>
     </div>
   );
 }
@@ -680,16 +680,16 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
 
   if(mobile){
     return(
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:10,padding:"8px 12px",position:"relative",opacity:isOut?0.6:1}}>
-        <span style={{...F_HEAD_STYLE,fontSize:22,color:isOut?"#bbb":"#555",fontWeight:800,width:44}}>{size}</span>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:isOut?"#ece8e1":"#f5f2ed",borderRadius:10,padding:"8px 12px",position:"relative",opacity:isOut?0.6:1}}>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:isOut?"#b5adb0":"#5e5058",fontWeight:800,width:44}}>{size}</span>
         {editing?(
           <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
-            style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
+            style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#b5adb0":sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
         ):(
-          <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
+          <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#b5adb0":sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
             {value}
-            {minVal>0&&<span style={{fontSize:10,color:belowMin?"#ef4444":"#bbb",fontWeight:700,marginLeft:3}}>/{minVal}</span>}
+            {minVal>0&&<span style={{fontSize:10,color:belowMin?"#F97B4F":"#b5adb0",fontWeight:700,marginLeft:3}}>/{minVal}</span>}
           </span>
         )}
         <div style={{display:"flex",gap:6}}>
@@ -700,16 +700,16 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1}}>
-      <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{size}</span>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#ece8e1":"#f5f2ed",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1}}>
+      <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#b5adb0":"#6e5e68",fontWeight:800,lineHeight:1}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
-          style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
+          style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#b5adb0":sCol(value),lineHeight:1,border:"none",background:"transparent",outline:"none",textAlign:"center",width:"100%"}}/>
       ):(
-        <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
+        <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#b5adb0":sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
       )}
-      {minVal>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:belowMin?"#ef4444":"#bbb",fontWeight:700}}>/{minVal}</span>}
+      {minVal>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:belowMin?"#F97B4F":"#b5adb0",fontWeight:700}}>/{minVal}</span>}
       <div style={{display:"flex",gap:4}}>
         <button onClick={onDec} style={btn(30,true)}>−</button>
         <button onClick={onInc} style={btn(30)}>+</button>
@@ -721,7 +721,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
 
 
 // ─── PieDot – pie chart circle for any capColors array ──────────
-function PieDot({capColors,fallbackHex="#888",size=28,valueKey="stock"}){
+function PieDot({capColors,fallbackHex="#8a7d84",size=28,valueKey="stock"}){
   const allColorsRaw=(capColors||[]);
   // For qty-based views, only show colors that have qty>0
   const allColors=valueKey==="qty"?allColorsRaw.filter(c=>(c[valueKey]||0)>0):allColorsRaw;
@@ -781,7 +781,7 @@ function CapStockNum({value, soll, color, onSet, fontSize=28}){
         style={{...F_HEAD_STYLE,width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/>
     : <span onDoubleClick={start} style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1,cursor:onSet?"text":"default"}} title={onSet?"Doppelklick zum Bearbeiten":""}>{value}</span>;
   return soll!==undefined
-    ? <span style={{lineHeight:1}}>{display}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>
+    ? <span style={{lineHeight:1}}>{display}<span style={{fontSize:fontSize*0.6,color:"#b5adb0",fontWeight:700}}>/{soll}</span></span>
     : display;
 }
 
@@ -792,14 +792,14 @@ function ProdCellNum({value, soll, color, onSet, fontSize=28}){
   const ref = useRef(null);
   const start = () => { setDraft(String(value)); setEditing(true); setTimeout(()=>ref.current?.select(),30); };
   const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onSet&&onSet(n); setEditing(false); };
-  if(!onSet) return <span style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1}}>{value}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>;
+  if(!onSet) return <span style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1}}>{value}<span style={{fontSize:fontSize*0.6,color:"#b5adb0",fontWeight:700}}>/{soll}</span></span>;
   return editing
     ? <><input ref={ref} type="number" inputMode="numeric" value={draft}
         onChange={e=>setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
-        style={{...F_HEAD_STYLE,width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/><span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></>
-    : <span onDoubleClick={start} style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1,cursor:"text"}} title="Doppelklick zum Bearbeiten">{value}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>;
+        style={{...F_HEAD_STYLE,width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/><span style={{fontSize:fontSize*0.6,color:"#b5adb0",fontWeight:700}}>/{soll}</span></>
+    : <span onDoubleClick={start} style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1,cursor:"text"}} title="Doppelklick zum Bearbeiten">{value}<span style={{fontSize:fontSize*0.6,color:"#b5adb0",fontWeight:700}}>/{soll}</span></span>;
 }
 
 function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
@@ -808,8 +808,8 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   const color=complete?GR:atLimit?OR:"#111";
   if(mobile){
     return(
-      <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"10px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
-        <span style={{...F_HEAD_STYLE,fontSize:22,color:"#555",fontWeight:800,width:44,flexShrink:0}}>{size}</span>
+      <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fef5e6":"#f5f2ed",borderRadius:12,padding:"10px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#f5deb0":"#ece8e1"}`}}>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:"#5e5058",fontWeight:800,width:44,flexShrink:0}}>{size}</span>
         <div style={{flex:1,textAlign:"center"}}>
           <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
         </div>
@@ -822,8 +822,8 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"transparent"}`}}>
-      <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{size}</span>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fef5e6":"#f5f2ed",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#f5deb0":"transparent"}`}}>
+      <span style={{...F_HEAD_STYLE,fontSize:16,color:"#6e5e68",fontWeight:800}}>{size}</span>
       <span style={{position:"absolute",top:5,right:6,fontSize:9,color:sCol(avail),fontWeight:700}}>{avail}</span>
       <div style={{textAlign:"center",lineHeight:1}}>
         <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
@@ -832,8 +832,8 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
         <button onClick={onDec} style={btn(30,true)}>−</button>
         <button onClick={onInc} disabled={disabled} style={btn(30,false,disabled)}>+</button>
       </div>
-      {complete&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#16a34a"}}>✓</span>}
-      {atLimit&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#f97316"}}>⚠</span>}
+      {complete&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#5fa8a0"}}>✓</span>}
+      {atLimit&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#e5a23c"}}>⚠</span>}
     </div>
   );
 }
@@ -851,19 +851,19 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
     <div style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
       {/* Header */}
       <div style={S.row10}>
-        {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0}}>⠿</div>}
+        {!mobile&&<div style={{cursor:"grab",color:"#c8c0c4",fontSize:16,flexShrink:0}}>⠿</div>}
         <SmartDot item={product} size={mobile?24:28}/>
         <div style={{flex:1,minWidth:0}}>
           <div style={{...F_HEAD_STYLE,fontSize:mobile?15:17,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{product.name}</div>
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
-            {product.color&&<span style={{fontSize:11,color:"#aaa"}}>{product.color}</span>}
-            {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category==="Bag"?"BAG":"CAP"}</span>}
+            {product.color&&<span style={{fontSize:11,color:"#b5adb0"}}>{product.color}</span>}
+            {isCap&&<span style={{fontSize:10,background:"#ece8e1",color:"#6e5e68",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category==="Bag"?"BAG":"CAP"}</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
             <div style={{...F_HEAD_STYLE,fontSize:mobile?26:30,fontWeight:900,color:"#111",lineHeight:1}}>{total}</div>
-            <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>TOTAL</div>
+            <div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>TOTAL</div>
           </div>
           <div style={S.col4}>
             <button onClick={onDelete} style={iconBtn(true)}>✕</button>
@@ -877,9 +877,9 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           {(product.capColors||[]).filter(c=>c.stock>0).map(c=>{
             const isLow=c.stock<=LOW_STOCK;
             return(
-              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110}}>
+              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f5f2ed",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
-                <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
+                <span style={{fontSize:10,color:"#5e5058",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <CapStockNum value={c.stock} color={sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
                 <div style={{display:"flex",gap:4}}>
                   <button onClick={()=>adjCap(c.id,-1)} style={btn(30,true)}>−</button>
@@ -960,18 +960,18 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       {/* ── Header ── */}
       <div style={{padding:mobile?"16px 16px 0":"16px 20px 0"}}>
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
-          {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0,marginTop:12}}>⠿</div>}
+          {!mobile&&<div style={{cursor:"grab",color:"#c8c0c4",fontSize:16,flexShrink:0,marginTop:12}}>⠿</div>}
           <SmartDot item={prod} size={mobile?36:44}/>
           <div style={{flex:1,minWidth:0}}>
             <div style={{...F_HEAD_STYLE,fontSize:mobile?17:20,fontWeight:800,color:"#111",letterSpacing:-0.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
-            <div style={{fontSize:12,color:"#aaa",marginTop:3,fontWeight:500}}>
+            <div style={{fontSize:12,color:"#b5adb0",marginTop:3,fontWeight:500}}>
               {blank&&<span style={{display:"inline-flex",alignItems:"center",gap:3}}><ColorDot hex={blank.colorHex} size={10}/>{blank.name}</span>}
               {!blank&&<span>Kein Blank</span>}
             </div>
           </div>
           <div style={{display:"flex",gap:6,flexShrink:0}}>
-            <button onClick={onEdit} style={{width:38,height:38,borderRadius:10,border:"none",background:"#f5f5f5",color:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><PENCIL/></button>
-            <button onClick={onDelete} style={{width:38,height:38,borderRadius:10,border:"none",background:"#fef2f2",color:"#ef4444",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
+            <button onClick={onEdit} style={{width:38,height:38,borderRadius:10,border:"none",background:"#f5f2ed",color:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><PENCIL/></button>
+            <button onClick={onDelete} style={{width:38,height:38,borderRadius:10,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
           </div>
         </div>
 
@@ -979,14 +979,14 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
         <div style={{display:"flex",gap:6,marginTop:14,flexWrap:"wrap",alignItems:"center"}}>
           <PriorityBadge priority={prod.priority}/>
           {(prod.veredelung||[]).map(v=><VeredBadge key={v} type={v}/>)}
-          {prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#f0fdf4",color:"#16a34a",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#16a34a"}}/>Shopify</span>}
-          {!prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#ef4444"}}/>Shopify</span>}
+          {prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#f0fdf4",color:"#5fa8a0",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#5fa8a0"}}/>Shopify</span>}
+          {!prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#fde9e2",color:"#F97B4F",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#F97B4F"}}/>Shopify</span>}
         </div>
 
         {/* Notes + Design link */}
         {(prod.notes||prod.designUrl)&&<div style={{marginTop:8,display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-          {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic"}}>{prod.notes}</div>}
-          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-flex",alignItems:"center",gap:3}}><IC_LINK size={11} color="#3b82f6"/> Design</a>}
+          {prod.notes&&<div style={{fontSize:11,color:"#b5adb0",fontStyle:"italic"}}>{prod.notes}</div>}
+          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#584053",display:"inline-flex",alignItems:"center",gap:3}}><IC_LINK size={11} color="#584053"/> Design</a>}
         </div>}
 
 
@@ -1006,13 +1006,13 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       {totalQty>0&&(
         <div style={{padding:mobile?"8px 16px 4px":"8px 20px 4px"}}>
           <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:6,justifyContent:"flex-end"}}>
-            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:allDone?"#16a34a":"#111",lineHeight:1}}>{totalDone}</span>
-            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#ccc",lineHeight:1}}>/{totalQty}</span>
+            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:allDone?"#5fa8a0":"#111",lineHeight:1}}>{totalDone}</span>
+            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#c8c0c4",lineHeight:1}}>/{totalQty}</span>
           </div>
-          <div style={{height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden"}}>
-            <div style={{height:4,background:allDone?"#16a34a":"#16a34a",borderRadius:4,width:`${progress}%`,transition:"width 0.3s"}}/>
+          <div style={{height:4,background:"#ece8e1",borderRadius:4,overflow:"hidden"}}>
+            <div style={{height:4,background:allDone?"#5fa8a0":"#5fa8a0",borderRadius:4,width:`${progress}%`,transition:"width 0.3s"}}/>
           </div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#ccc",fontWeight:600,marginTop:4}}>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#c8c0c4",fontWeight:600,marginTop:4}}>
             <span>{progress}% erledigt</span><span>{totalQty-totalDone} verbleibend</span>
           </div>
         </div>
@@ -1031,9 +1031,9 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             return(
               <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:capBg(complete,atLimit&&!complete),borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,border:capBd(complete,atLimit&&!complete),position:"relative"}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
-                <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
+                <span style={{fontSize:10,color:"#5e5058",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <div style={{lineHeight:1,textAlign:"center"}}>
-                  <CapStockNum value={c.done} soll={c.qty} color={complete?"#16a34a":atLimit?"#f97316":"#111"} fontSize={mobile?24:28} onSet={prod.status!=="Fertig"?v=>onUpdate({...prod,capColors:(prod.capColors||[]).map(x=>x.id===c.id?{...x,done:Math.min(max,Math.max(0,v))}:x)})  :null}/>
+                  <CapStockNum value={c.done} soll={c.qty} color={complete?"#5fa8a0":atLimit?"#e5a23c":"#111"} fontSize={mobile?24:28} onSet={prod.status!=="Fertig"?v=>onUpdate({...prod,capColors:(prod.capColors||[]).map(x=>x.id===c.id?{...x,done:Math.min(max,Math.max(0,v))}:x)})  :null}/>
                 </div>
                 <div style={{fontSize:9,color:sCol(avail,3),fontWeight:700}}>↓{avail}</div>
                 {prod.status!=="Fertig"&&(
@@ -1043,7 +1043,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
                   </div>
                 )}
                 {complete&&<span style={{position:"absolute",top:3,right:5,fontSize:9}}>✓</span>}
-                {atLimit&&!complete&&<span style={{position:"absolute",top:3,right:5,fontSize:9,color:"#f97316"}}>⚠</span>}
+                {atLimit&&!complete&&<span style={{position:"absolute",top:3,right:5,fontSize:9,color:"#e5a23c"}}>⚠</span>}
               </div>
             );
           })}
@@ -1063,9 +1063,9 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           {DEFAULT_SIZES.map(size=>{
             const soll=(prod.qty||{})[size]||0,done=(prod.done||{})[size]||0,avail=(blank?.stock??{})[size]??0;
             if(soll===0&&done===0)return(
-              <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#fafafa",borderRadius:12,padding:"8px 4px",opacity:0.3}}>
-                <span style={{...F_HEAD_STYLE,fontSize:16,color:"#bbb",fontWeight:800}}>{size}</span>
-                <span style={{fontSize:32,fontWeight:900,color:"#ddd",lineHeight:1}}>—</span>
+              <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#f8f5f0",borderRadius:12,padding:"8px 4px",opacity:0.3}}>
+                <span style={{...F_HEAD_STYLE,fontSize:16,color:"#b5adb0",fontWeight:800}}>{size}</span>
+                <span style={{fontSize:32,fontWeight:900,color:"#d8d0d4",lineHeight:1}}>—</span>
               </div>
             );
             const lim=done>=maxDone(size);
@@ -1079,22 +1079,22 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       {/* ── Actions ── */}
       <div style={{padding:mobile?"8px 16px 16px":"8px 20px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap",borderTop:"1px solid #f0f0f0"}}>
         <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-          {!fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:fOk?"#dcfce7":"#fee2e2",color:fOk?"#16a34a":"#ef4444",border:`1px solid ${fOk?"#bbf7d0":"#fecaca"}`}}>
-            {fOk?<IC_CHECK_CIRCLE size={13} color="#16a34a"/>:<IC_WARN size={13} color="#ef4444"/>} Blanks ({blankNeeded}/{blankAvail})
+          {!fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:fOk?"#e6f3f1":"#fde9e2",color:fOk?"#5fa8a0":"#F97B4F",border:`1px solid ${fOk?"#bbf7d0":"#f5c4b8"}`}}>
+            {fOk?<IC_CHECK_CIRCLE size={13} color="#5fa8a0"/>:<IC_WARN size={13} color="#F97B4F"/>} Blanks ({blankNeeded}/{blankAvail})
           </span>}
-          {fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:"#f5f5f5",color:"#bbb",border:"1px solid #e8e8e8"}}>— Kein Blank</span>}
+          {fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:"#f5f2ed",color:"#b5adb0",border:"1px solid #e8e8e8"}}>— Kein Blank</span>}
           {dtfItem&&(()=>{
             const needed=totalQty;
             const avail=dtfItem.stock||0;
             const ok=avail>=needed;
-            return <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:ok?"#dcfce7":"#fee2e2",color:ok?"#16a34a":"#ef4444",border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`}}>
-              {ok?<IC_CHECK_CIRCLE size={13} color="#16a34a"/>:<IC_WARN size={13} color="#ef4444"/>} DTF ({needed}/{avail})
+            return <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:ok?"#e6f3f1":"#fde9e2",color:ok?"#5fa8a0":"#F97B4F",border:`1px solid ${ok?"#bbf7d0":"#f5c4b8"}`}}>
+              {ok?<IC_CHECK_CIRCLE size={13} color="#5fa8a0"/>:<IC_WARN size={13} color="#F97B4F"/>} DTF ({needed}/{avail})
             </span>;
           })()}
         </div>
         <div style={{display:"flex",gap:6}}>
-          {prod.status!=="Fertig"&&<button onClick={onConfirmProduce} style={{padding:"9px 18px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14,display:"flex",alignItems:"center",gap:6}}><CHECK/>Bestätigen</button>}
-          {prod.status==="Fertig"&&<span style={{fontSize:12,color:"#16a34a",fontWeight:700}}>✓ Abgeschlossen</span>}
+          {prod.status!=="Fertig"&&<button onClick={onConfirmProduce} style={{padding:"9px 18px",borderRadius:9,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14,display:"flex",alignItems:"center",gap:6}}><CHECK/>Bestätigen</button>}
+          {prod.status==="Fertig"&&<span style={{fontSize:12,color:"#5fa8a0",fontWeight:700}}>✓ Abgeschlossen</span>}
         </div>
       </div>
     </div>
@@ -1108,17 +1108,17 @@ function ArchivedCard({prod,blank,onDelete}){
   const totalQty=totalProdQty(prod);
   const activeSizes=DEFAULT_SIZES.filter(s=>((prod.qty||{})[s]||0)>0);
   return(
-    <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
+    <div style={{background:"#f8f5f0",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
       {/* Header row – clickable */}
       <div onClick={()=>setOpen(o=>!o)} style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",userSelect:"none"}}>
-        <span style={{fontSize:11,color:"#ccc",width:12}}>{open?"▾":"▸"}</span>
+        <span style={{fontSize:11,color:"#c8c0c4",width:12}}>{open?"▾":"▸"}</span>
         <SmartDot item={prod} size={20}/>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:13,fontWeight:700,color:"#555"}}>{prod.name}</div>
-          <div style={{fontSize:11,color:"#bbb"}}>{blank?.name} · {totalQty} Stk</div>
+          <div style={{fontSize:13,fontWeight:700,color:"#5e5058"}}>{prod.name}</div>
+          <div style={{fontSize:11,color:"#b5adb0"}}>{blank?.name} · {totalQty} Stk</div>
         </div>
-        {prod.completedAt&&<span style={{fontSize:10,color:"#bbb",textAlign:"right",lineHeight:1.4}}><span style={{display:"block"}}>{new Date(prod.completedAt).toLocaleDateString("de-AT")}</span><span style={{display:"block",fontWeight:700}}>{new Date(prod.completedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span></span>}
-        <button onClick={e=>{e.stopPropagation();onDelete();}} style={{width:28,height:28,borderRadius:7,border:"1px solid #e8e8e8",background:"#f0f0f0",color:"#ef4444",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
+        {prod.completedAt&&<span style={{fontSize:10,color:"#b5adb0",textAlign:"right",lineHeight:1.4}}><span style={{display:"block"}}>{new Date(prod.completedAt).toLocaleDateString("de-AT")}</span><span style={{display:"block",fontWeight:700}}>{new Date(prod.completedAt).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span></span>}
+        <button onClick={e=>{e.stopPropagation();onDelete();}} style={{width:28,height:28,borderRadius:7,border:"1px solid #e8e8e8",background:"#ece8e1",color:"#F97B4F",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
       </div>
       {/* Expanded detail */}
       {open&&(
@@ -1126,11 +1126,11 @@ function ArchivedCard({prod,blank,onDelete}){
           {isCap?(
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {(prod.capColors||[]).map(cc=>(
-                <div key={cc.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:10,padding:"8px 10px",minWidth:60,flex:1}}>
+                <div key={cc.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f5f2ed",borderRadius:10,padding:"8px 10px",minWidth:60,flex:1}}>
                   <div style={{width:16,height:16,borderRadius:"50%",background:cc.hex,border:"2px solid #444"}}/>
-                  <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center"}}>{cc.name}</span>
+                  <span style={{fontSize:10,color:"#5e5058",fontWeight:800,textAlign:"center"}}>{cc.name}</span>
                   <span style={{fontSize:22,fontWeight:900,color:"#111",lineHeight:1}}>{cc.qty}</span>
-                  <span style={{fontSize:9,color:"#bbb",fontWeight:700}}>STK</span>
+                  <span style={{fontSize:9,color:"#b5adb0",fontWeight:700}}>STK</span>
                 </div>
               ))}
             </div>
@@ -1140,16 +1140,16 @@ function ArchivedCard({prod,blank,onDelete}){
                 const qty=(prod.qty||{})[size]||0;
                 const done=(prod.done||{})[size]||0;
                 return(
-                  <div key={size} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:8,padding:"7px 12px"}}>
-                    <span style={{fontSize:12,fontWeight:800,color:"#555",width:36}}>{size}</span>
-                    <span style={{fontSize:18,fontWeight:900,color:"#111",flex:1}}>{qty} <span style={{fontSize:10,color:"#bbb",fontWeight:400}}>Stk</span></span>
-                    {done>0&&<span style={{fontSize:10,color:"#16a34a",fontWeight:700}}>✓ {done} erledigt</span>}
+                  <div key={size} style={{display:"flex",alignItems:"center",gap:10,background:"#f5f2ed",borderRadius:8,padding:"7px 12px"}}>
+                    <span style={{fontSize:12,fontWeight:800,color:"#5e5058",width:36}}>{size}</span>
+                    <span style={{fontSize:18,fontWeight:900,color:"#111",flex:1}}>{qty} <span style={{fontSize:10,color:"#b5adb0",fontWeight:400}}>Stk</span></span>
+                    {done>0&&<span style={{fontSize:10,color:"#5fa8a0",fontWeight:700}}>✓ {done} erledigt</span>}
                   </div>
                 );
               })}
             </div>
           )}
-          {prod.notes&&<div style={{fontSize:11,color:"#aaa",fontStyle:"italic",marginTop:8}}>📝 {prod.notes}</div>}
+          {prod.notes&&<div style={{fontSize:11,color:"#b5adb0",fontStyle:"italic",marginTop:8}}>📝 {prod.notes}</div>}
         </div>
       )}
     </div>
@@ -1194,8 +1194,8 @@ function ModalWrap({onClose,onSave,children,footer,width=600}){
         zIndex:301,
       }} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,padding:"16px 16px 8px",flexShrink:0,borderBottom:"1px solid #f0f0f0"}}>
-          {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
-          <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
+          {onSave&&<button onClick={onSave} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#5fa8a0",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✓</button>}
+          <button onClick={onClose} style={{width:36,height:36,borderRadius:"50%",border:"none",background:"#F97B4F",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,lineHeight:1,flexShrink:0}}>✕</button>
         </div>
         <div style={{overflowY:"auto",WebkitOverflowScrolling:"touch",padding:mobile?"14px 16px 8px":"16px 26px 16px",display:"flex",flexDirection:"column",gap:14,flex:1,minHeight:0}}>
           {children}
@@ -1217,17 +1217,17 @@ function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
   const startEdit=()=>{setDraft(String(value));setEditing(true);setTimeout(()=>{inputRef.current?.select();},30);};
   const commit=()=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)onSet(n);setEditing(false);};
   return(
-    <div style={{display:"flex",alignItems:"center",gap:10,background:over?"#fef2f2":"#f8f8f8",borderRadius:10,padding:"8px 12px",border:`1px solid ${over?"#fecaca":"transparent"}`}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,background:over?"#fde9e2":"#f5f2ed",borderRadius:10,padding:"8px 12px",border:`1px solid ${over?"#f5c4b8":"transparent"}`}}>
       <span style={S.sizeTag}>{size}</span>
-      <span style={{fontSize:11,color:"#aaa",flex:1}}>Lager: {avail}</span>
-      <button type="button" onClick={onDec} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+      <span style={{fontSize:11,color:"#b5adb0",flex:1}}>Lager: {avail}</span>
+      <button type="button" onClick={onDec} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
       {editing
         ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             onChange={e=>setDraft(e.target.value)} onBlur={commit} data-inlineedit="1" onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
-            style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",border:"none",background:"transparent",outline:"none"}}/>
-        : <span onDoubleClick={startEdit} style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:36,textAlign:"center",cursor:"text"}}>{value}</span>
+            style={{fontSize:20,fontWeight:900,color:over?"#F97B4F":"#111",width:36,textAlign:"center",border:"none",background:"transparent",outline:"none"}}/>
+        : <span onDoubleClick={startEdit} style={{fontSize:20,fontWeight:900,color:over?"#F97B4F":"#111",width:36,textAlign:"center",cursor:"text"}}>{value}</span>
       }
-      <button type="button" onClick={onInc} style={{width:32,height:32,borderRadius:8,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+      <button type="button" onClick={onInc} style={{width:32,height:32,borderRadius:8,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
     </div>
   );
 }
@@ -1296,12 +1296,12 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
     <div>
       {/* Trigger */}
       <button type="button" onClick={load}
-        style={{width:"100%",padding:"11px 14px",borderRadius:10,border:`1.5px solid ${value?"#bbf7d0":"#e8e8e8"}`,background:value?"#f0fdf4":"#f8f8f8",color:value?"#16a34a":"#888",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+        style={{width:"100%",padding:"11px 14px",borderRadius:10,border:`1.5px solid ${value?"#bbf7d0":"#e8e3dd"}`,background:value?"#f0fdf4":"#f5f2ed",color:value?"#5fa8a0":"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
         {loading?"⟳ Laden...": value
           ? <><span style={{flex:1}}>✓ {value.title}</span><span style={{fontSize:11,opacity:0.6}}>({value.variants?.length} Varianten)</span></>
           : <span style={{flex:1}}>Shopify Produkt auswählen...</span>}
-        {value && <span onClick={clear} style={{fontSize:16,color:"#ef4444",lineHeight:1,padding:"0 4px"}}>✕</span>}
-        {!value && <span style={{fontSize:12,color:"#bbb"}}>{open?"▲":"▼"}</span>}
+        {value && <span onClick={clear} style={{fontSize:16,color:"#F97B4F",lineHeight:1,padding:"0 4px"}}>✕</span>}
+        {!value && <span style={{fontSize:12,color:"#b5adb0"}}>{open?"▲":"▼"}</span>}
       </button>
 
       {/* Inline expanded list — no absolute positioning */}
@@ -1313,15 +1313,15 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
               style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1px solid #e8e8e8",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
           <div style={{maxHeight:220,overflowY:"auto"}}>
-            {filtered.length===0 && <div style={{padding:20,color:"#ccc",textAlign:"center",fontSize:13}}>Keine Treffer</div>}
+            {filtered.length===0 && <div style={{padding:20,color:"#c8c0c4",textAlign:"center",fontSize:13}}>Keine Treffer</div>}
             {filtered.map(sp=>(
               <div key={sp.id} onClick={()=>select(sp)}
-                style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid #f5f5f5",display:"flex",alignItems:"center",gap:10,background:"#fff"}}
+                style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid #eee9e2",display:"flex",alignItems:"center",gap:10,background:"#fff"}}
                 onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"}
                 onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
                 {sp.images?.[0]?.src
                   ?<img src={sp.images[0].src} style={{width:28,height:28,borderRadius:5,objectFit:"cover",flexShrink:0}} alt=""/>
-                  :<div style={{width:28,height:28,borderRadius:5,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={14} color="#aaa"/></div>}
+                  :<div style={{width:28,height:28,borderRadius:5,background:"#ece8e1",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={14} color="#b5adb0"/></div>}
                 <span style={{fontSize:13,fontWeight:600}}>{sp.title}</span>
               </div>
             ))}
@@ -1330,7 +1330,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
             <div style={{padding:"8px 14px",borderTop:"1px solid #f0f0f0",display:"flex",gap:6,flexWrap:"wrap"}}>
               {locations.map(loc=>(
                 <button key={loc.id} type="button" onClick={()=>{selLocRef.current=loc;}}
-                  style={{padding:"4px 10px",borderRadius:7,border:`1.5px solid ${selLocRef.current?.id===loc.id?"#111":"#e8e8e8"}`,background:selLocRef.current?.id===loc.id?"#111":"#f8f8f8",color:selLocRef.current?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:12}}>
+                  style={{padding:"4px 10px",borderRadius:7,border:`1.5px solid ${selLocRef.current?.id===loc.id?"#111":"#e8e3dd"}`,background:selLocRef.current?.id===loc.id?"#111":"#f5f2ed",color:selLocRef.current?.id===loc.id?"#fff":"#5e5058",cursor:"pointer",fontWeight:700,fontSize:12}}>
                   {loc.name}
                 </button>
               ))}
@@ -1373,7 +1373,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const fileRef=useRef();
   const blank=products.find(p=>p.id===blankId);
   const isCap=blank?.category==="Cap";
-  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
+  const inp={background:"#f5f2ed",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
   const doSaveProd = () => {
@@ -1381,20 +1381,20 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
     onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors,shopifyProductLink:shopifyProductLink||null});
   };
   return(
-    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSaveProd()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{editing?"✓ Speichern":"✓ Anlegen"}</button></div>}>
+    <ModalWrap onClose={onClose} onSave={doSaveProd} width={640} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSaveProd()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{editing?"✓ Speichern":"✓ Anlegen"}</button></div>}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Auftrag bearbeiten":"Neuer Produktionsauftrag"}</div>
       <input style={inp} placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
       <input style={inp} placeholder="Notiz (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/>
       <div>
         <div style={S.secLabel}>PRIORITÄT</div>
         <div style={{display:"flex",gap:6}}>
-          {["Hoch","Mittel","Niedrig"].map(p=>{const s=PRIORITY[p];return <button key={p} type="button" onClick={()=>setPriority(p)} style={{flex:1,padding:"10px",borderRadius:9,border:`1.5px solid ${priority===p?s.dot:"#e8e8e8"}`,background:priority===p?s.bg:"#fff",color:priority===p?s.color:"#999",cursor:"pointer",fontWeight:700,fontSize:13}}>{p}</button>;})}
+          {["Hoch","Mittel","Niedrig"].map(p=>{const s=PRIORITY[p];return <button key={p} type="button" onClick={()=>setPriority(p)} style={{flex:1,padding:"10px",borderRadius:9,border:`1.5px solid ${priority===p?s.dot:"#e8e3dd"}`,background:priority===p?s.bg:"#fff",color:priority===p?s.color:"#9a9094",cursor:"pointer",fontWeight:700,fontSize:13}}>{p}</button>;})}
         </div>
       </div>
       <div>
         <div style={S.secLabel}>VEREDELUNG</div>
         <div style={{display:"flex",gap:8}}>
-          {VEREDELUNG_TYPES.map(v=>{const active=veredelung.includes(v);const sc={"Drucken":{ac:"#3b82f6",bg:"#eff6ff"},"Sticken":{ac:"#a855f7",bg:"#fdf4ff"}}[v];return <button key={v} type="button" onClick={()=>toggleV(v)} style={{flex:1,padding:"11px",borderRadius:10,border:`1.5px solid ${active?sc.ac:"#e8e8e8"}`,background:active?sc.bg:"#fff",color:active?sc.ac:"#999",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>{v==="Drucken"?<><IC_PRINT size={12} color={active?"#3b82f6":"#999"}/> Drucken</>:<><IC_STITCH size={12} color={active?"#a855f7":"#999"}/> Sticken</>}</button>;})}
+          {VEREDELUNG_TYPES.map(v=>{const active=veredelung.includes(v);const sc={"Drucken":{ac:"#584053",bg:"#f0eaee"},"Sticken":{ac:"#8b6894",bg:"#f4eef6"}}[v];return <button key={v} type="button" onClick={()=>toggleV(v)} style={{flex:1,padding:"11px",borderRadius:10,border:`1.5px solid ${active?sc.ac:"#e8e3dd"}`,background:active?sc.bg:"#fff",color:active?sc.ac:"#9a9094",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>{v==="Drucken"?<><IC_PRINT size={12} color={active?"#584053":"#9a9094"}/> Drucken</>:<><IC_STITCH size={12} color={active?"#8b6894":"#9a9094"}/> Sticken</>}</button>;})}
 
         {veredelung.includes("Drucken")&&dtfItems.length>0&&<div>
           <div style={S.secLabel}>DTF TRANSFER VERKNÜPFEN</div>
@@ -1412,10 +1412,10 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
         <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
           {photos.map((src,i)=><div key={i} style={{position:"relative"}}>
               <img src={src} alt="" onClick={()=>setModalLightbox(src)} style={{width:64,height:64,objectFit:"cover",borderRadius:10,border:"1px solid #ebebeb",cursor:"zoom-in"}}/>
-              <button type="button" onClick={()=>setPhotos(ps=>ps.filter((_,j)=>j!==i))} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:"50%",border:"none",background:"#ef4444",color:"#fff",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
+              <button type="button" onClick={()=>setPhotos(ps=>ps.filter((_,j)=>j!==i))} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:"50%",border:"none",background:"#F97B4F",color:"#fff",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
             </div>)}
           <Lightbox src={modalLightbox} onClose={()=>setModalLightbox(null)}/>
-          {photos.length<5&&<button type="button" onClick={()=>fileRef.current.click()} style={{width:64,height:64,borderRadius:10,border:"2px dashed #e8e8e8",background:"#fafafa",color:"#bbb",cursor:"pointer",fontSize:24,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
+          {photos.length<5&&<button type="button" onClick={()=>fileRef.current.click()} style={{width:64,height:64,borderRadius:10,border:"2px dashed #e8e8e8",background:"#f8f5f0",color:"#b5adb0",cursor:"pointer",fontSize:24,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
           <input ref={fileRef} type="file" accept="image/*" multiple style={{display:"none"}} onChange={handlePhotos}/>
         </div>
       </div>
@@ -1431,26 +1431,26 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
             <option key={p.id} value={p.id}>{p.name}{p.color?" · "+p.color:""} · {p.category}</option>
           ))}
         </select>
-        {blank&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"#f8f8f8",border:"1px solid #e8e8e8"}}>
+        {blank&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"#f5f2ed",border:"1px solid #e8e8e8"}}>
           <SmartDot item={blank} size={20}/>
-          <div><div style={{fontSize:13,fontWeight:700}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color||""} · {blank.category}</div></div>
+          <div><div style={{fontSize:13,fontWeight:700}}>{blank.name}</div><div style={{fontSize:11,color:"#b5adb0"}}>{blank.color||""} · {blank.category}</div></div>
         </div>}
       </div>
       {isCap?(
         <div>
           <div style={S.secLabel}>FARBEN & MENGEN</div>
           <div style={S.col6}>
-            {capColors.length===0&&<div style={{fontSize:12,color:"#bbb",padding:"10px",textAlign:"center"}}>Keine Farben im Bestandsprodukt hinterlegt</div>}
+            {capColors.length===0&&<div style={{fontSize:12,color:"#b5adb0",padding:"10px",textAlign:"center"}}>Keine Farben im Bestandsprodukt hinterlegt</div>}
             {capColors.map(cc=>{
               const avail=(blank?.capColors||[]).find(bc=>bc.id===cc.id)?.stock||0;
               const over=(cc.qty||0)>avail;
               return(
-                <div key={cc.id} style={{display:"flex",alignItems:"center",gap:10,background:over?"#fef2f2":"#f8f8f8",borderRadius:10,padding:"10px 12px",border:`1px solid ${over?"#fecaca":"transparent"}`}}>
+                <div key={cc.id} style={{display:"flex",alignItems:"center",gap:10,background:over?"#fde9e2":"#f5f2ed",borderRadius:10,padding:"10px 12px",border:`1px solid ${over?"#f5c4b8":"transparent"}`}}>
                   <div style={{width:24,height:24,borderRadius:"50%",background:cc.hex,border:"2px solid #444",flexShrink:0}}/>
                   <span style={{fontSize:13,fontWeight:700,color:"#333",flex:1}}>{cc.name}</span>
-                  <span style={{fontSize:11,color:"#aaa"}}>Lager: <b style={{color:avail===0?"#ef4444":avail<=3?"#f97316":"#111"}}>{avail}</b></span>
+                  <span style={{fontSize:11,color:"#b5adb0"}}>Lager: <b style={{color:avail===0?"#F97B4F":avail<=3?"#e5a23c":"#111"}}>{avail}</b></span>
                   <button type="button" onClick={()=>setCapColors(cs=>cs.map(x=>x.id===cc.id?{...x,qty:Math.max(0,(x.qty||0)-1)}:x))} style={btn(32,true)}>−</button>
-                  <span style={{fontSize:20,fontWeight:900,color:over?"#ef4444":"#111",width:30,textAlign:"center"}}>{cc.qty||0}</span>
+                  <span style={{fontSize:20,fontWeight:900,color:over?"#F97B4F":"#111",width:30,textAlign:"center"}}>{cc.qty||0}</span>
                   <button type="button" onClick={()=>setCapColors(cs=>cs.map(x=>x.id===cc.id?{...x,qty:(x.qty||0)+1}:x))} style={btn(32)}>+</button>
                 </div>
               );
@@ -1502,7 +1502,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [showPresets, setShowPresets] = useState(false);
   const [presetProduct, setPresetProduct] = useState(null);
   const [presetCat, setPresetCat] = useState("T-Shirt");
-  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
+  const inp={background:"#f5f2ed",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
 
   const applyPreset = (preset, colorObj) => {
     const newCat = preset.category || presetCat;
@@ -1526,7 +1526,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSave()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>✓ Hinzufügen</button></div>}>
+    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSave()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>✓ Hinzufügen</button></div>}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
@@ -1541,7 +1541,7 @@ function ProductModal({categories,initial,onClose,onSave}){
                   style={{flex:1,padding:"8px 4px",border:"none",background:"transparent",
                     borderBottom:showPresets&&presetCat===cat?"2px solid #111":"2px solid transparent",
                     marginBottom:-2,
-                    color:showPresets&&presetCat===cat?"#111":"#aaa",
+                    color:showPresets&&presetCat===cat?"#111":"#b5adb0",
                     fontWeight:showPresets&&presetCat===cat?800:600,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>
                   {cat}
                 </button>
@@ -1557,11 +1557,11 @@ function ProductModal({categories,initial,onClose,onSave}){
                   style={{width:"100%",padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
-                    <div style={{fontSize:11,color:"#aaa"}}>{p.id} · {p.fit} · {p.colors.length} Farben</div>
+                    <div style={{fontSize:11,color:"#b5adb0"}}>{p.id} · {p.fit} · {p.colors.length} Farben</div>
                   </div>
                   {["Bag","Cap"].includes(presetCat)
-                    ? <span style={{fontSize:11,background:"#dcfce7",color:"#16a34a",borderRadius:6,padding:"2px 8px",fontWeight:700}}>Alle laden</span>
-                    : <span style={{color:"#bbb"}}>›</span>}
+                    ? <span style={{fontSize:11,background:"#e6f3f1",color:"#5fa8a0",borderRadius:6,padding:"2px 8px",fontWeight:700}}>Alle laden</span>
+                    : <span style={{color:"#b5adb0"}}>›</span>}
                 </button>
               ))}
             </div>
@@ -1570,7 +1570,7 @@ function ProductModal({categories,initial,onClose,onSave}){
           {showPresets&&presetProduct&&!["Bag","Cap"].includes(presetCat)&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
-                <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
+                <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#8a7d84",fontSize:13}}>‹ zurück</button>
                 <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{presetProduct.name}</div>
               </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:12,maxHeight:220,overflowY:"auto"}}>
@@ -1579,7 +1579,7 @@ function ProductModal({categories,initial,onClose,onSave}){
                     title={c.name+" ("+c.code+")"}
                     style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 10px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",cursor:"pointer",minWidth:72,flex:"0 0 auto"}}>
                     <div style={{width:28,height:28,borderRadius:"50%",background:c.hex,border:"2px solid #e0e0e0",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.15)"}}/>
-                    <div style={{fontSize:9,fontWeight:700,color:"#555",textAlign:"center",lineHeight:1.2}}>{c.name}</div>
+                    <div style={{fontSize:9,fontWeight:700,color:"#5e5058",textAlign:"center",lineHeight:1.2}}>{c.name}</div>
                   </button>
                 ))}
               </div>
@@ -1591,7 +1591,7 @@ function ProductModal({categories,initial,onClose,onSave}){
       <input style={inp} placeholder="Produktname" value={name} onChange={e=>setName(e.target.value)}/>
       <div style={{display:"flex",gap:10}}>
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
-        <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
+        <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#b5adb0",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
       </div>
       {!isCap&&(
         <div style={S.col8}>
@@ -1641,19 +1641,19 @@ function ProductModal({categories,initial,onClose,onSave}){
 function CategoryModal({categories,onClose,onSave}){
   const [cats,setCats]=useState([...categories]);
   const [newCat,setNewCat]=useState("");
-  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,outline:"none"};
+  const inp={background:"#f5f2ed",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,outline:"none"};
   return(
     <ModalWrap onClose={onClose} width={380}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>Kategorien</div>
       <div style={{display:"flex",flexDirection:"column",gap:7}}>
-        {cats.map((c,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f8f8",borderRadius:10,padding:"10px 12px"}}><span style={{flex:1,fontSize:14,fontWeight:600}}>{c}</span><button type="button" onClick={()=>setCats(cats.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:18}}>✕</button></div>)}
+        {cats.map((c,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f5f2ed",borderRadius:10,padding:"10px 12px"}}><span style={{flex:1,fontSize:14,fontWeight:600}}>{c}</span><button type="button" onClick={()=>setCats(cats.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"#c8c0c4",cursor:"pointer",fontSize:18}}>✕</button></div>)}
       </div>
       <div style={{display:"flex",gap:8}}>
         <input style={{...inp,flex:1}} placeholder="Neue Kategorie..." value={newCat} onChange={e=>setNewCat(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&newCat.trim()){setCats([...cats,newCat.trim()]);setNewCat("");}}}/>
         <button type="button" onClick={()=>{if(newCat.trim()){setCats([...cats,newCat.trim()]);setNewCat("");}}} style={{padding:"11px 16px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}>+</button>
       </div>
       <div style={{display:"flex",gap:10}}>
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
+        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
         <button type="button" onClick={()=>onSave(cats)} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Speichern</button>
       </div>
     </ModalWrap>
@@ -1663,11 +1663,11 @@ function CategoryModal({categories,onClose,onSave}){
 function DeleteConfirmModal({name,onConfirm,onCancel}){
   return(
     <ModalWrap onClose={onCancel} width={360}>
-      <div style={{width:48,height:48,borderRadius:"50%",background:"#fef2f2",display:"flex",alignItems:"center",justifyContent:"center"}}><IC_TRASH size={22} color="#ef4444"/></div>
-      <div><div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Löschen?</div><div style={{fontSize:14,color:"#888"}}><strong style={{color:"#111"}}>{name}</strong> wird dauerhaft entfernt.</div></div>
+      <div style={{width:48,height:48,borderRadius:"50%",background:"#fde9e2",display:"flex",alignItems:"center",justifyContent:"center"}}><IC_TRASH size={22} color="#F97B4F"/></div>
+      <div><div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Löschen?</div><div style={{fontSize:14,color:"#8a7d84"}}><strong style={{color:"#111"}}>{name}</strong> wird dauerhaft entfernt.</div></div>
       <div style={{display:"flex",gap:10}}>
-        <button type="button" onClick={onCancel} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#666",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
-        <button type="button" onClick={onConfirm} style={{flex:1,padding:13,borderRadius:10,border:"none",background:"#ef4444",color:"#fff",cursor:"pointer",fontWeight:800}}>Löschen</button>
+        <button type="button" onClick={onCancel} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#6e5e68",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
+        <button type="button" onClick={onConfirm} style={{flex:1,padding:13,borderRadius:10,border:"none",background:"#F97B4F",color:"#fff",cursor:"pointer",fontWeight:800}}>Löschen</button>
       </div>
     </ModalWrap>
   );
@@ -1691,35 +1691,35 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
   return(
     <ModalWrap onClose={onCancel} width={420}>
       <div style={{fontSize:16,fontWeight:800,color:"#111"}}>Abschließen & Bestand abziehen</div>
-      <div style={{fontSize:13,color:"#888",lineHeight:1.6}}>Erledigte Stücke werden von <strong style={{color:"#111"}}>{blank?.name}</strong> abgezogen:</div>
+      <div style={{fontSize:13,color:"#8a7d84",lineHeight:1.6}}>Erledigte Stücke werden von <strong style={{color:"#111"}}>{blank?.name}</strong> abgezogen:</div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        {!hasAny&&<span style={{fontSize:13,color:"#bbb"}}>Noch nichts erledigt</span>}
-        {isCap?capDoneItems.map(c=><div key={c.id} style={{background:"#f8f8f8",borderRadius:9,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}><div style={{width:16,height:16,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/><div><div style={{fontSize:10,color:"#aaa",fontWeight:700}}>{c.name}</div><div style={{fontSize:18,fontWeight:900,color:"#111"}}>{c.done}</div></div></div>)
-        :sizDoneItems.map(s=><div key={s} style={{background:"#f8f8f8",borderRadius:9,padding:"8px 12px",textAlign:"center"}}><div style={{fontSize:10,color:"#aaa",fontWeight:700}}>{s}</div><div style={{fontSize:18,fontWeight:900,color:"#111"}}>{(prod.done||{})[s]}</div></div>)}
+        {!hasAny&&<span style={{fontSize:13,color:"#b5adb0"}}>Noch nichts erledigt</span>}
+        {isCap?capDoneItems.map(c=><div key={c.id} style={{background:"#f5f2ed",borderRadius:9,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}><div style={{width:16,height:16,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/><div><div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>{c.name}</div><div style={{fontSize:18,fontWeight:900,color:"#111"}}>{c.done}</div></div></div>)
+        :sizDoneItems.map(s=><div key={s} style={{background:"#f5f2ed",borderRadius:9,padding:"8px 12px",textAlign:"center"}}><div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>{s}</div><div style={{fontSize:18,fontWeight:900,color:"#111"}}>{(prod.done||{})[s]}</div></div>)}
       </div>
 
       {/* Shopify Status */}
       {!isCap&&hasAny&&(
         hasShopify&&shopifyReady
           ?<div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
-              <span style={{width:8,height:8,borderRadius:"50%",background:"#16a34a",display:"inline-block",flexShrink:0}}/>
-              <div style={{fontSize:12,color:"#16a34a",fontWeight:700}}>Shopify Bestand wird aktualisiert: <strong>{shopifyTitle}</strong></div>
+              <span style={{width:8,height:8,borderRadius:"50%",background:"#5fa8a0",display:"inline-block",flexShrink:0}}/>
+              <div style={{fontSize:12,color:"#5fa8a0",fontWeight:700}}>Shopify Bestand wird aktualisiert: <strong>{shopifyTitle}</strong></div>
             </div>
           :hasShopify&&missingSizes.length>0
-            ?<div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:10,padding:"10px 14px"}}>
-                <div style={{fontSize:12,color:"#f97316",fontWeight:700}}>⚠ Shopify: Varianten nicht gefunden für {missingSizes.join(", ")}</div>
-                <div style={{fontSize:11,color:"#f97316",marginTop:2}}>Bestand wird nicht vollständig aktualisiert.</div>
+            ?<div style={{background:"#fef5e6",border:"1px solid #fed7aa",borderRadius:10,padding:"10px 14px"}}>
+                <div style={{fontSize:12,color:"#e5a23c",fontWeight:700}}>⚠ Shopify: Varianten nicht gefunden für {missingSizes.join(", ")}</div>
+                <div style={{fontSize:11,color:"#e5a23c",marginTop:2}}>Bestand wird nicht vollständig aktualisiert.</div>
               </div>
-            :<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
-                <span style={{width:8,height:8,borderRadius:"50%",background:"#ef4444",display:"inline-block",flexShrink:0}}/>
-                <div style={{fontSize:12,color:"#ef4444",fontWeight:700}}>Kein Shopify Produkt verknüpft — Bestand wird nicht aktualisiert.</div>
+            :<div style={{background:"#fde9e2",border:"1px solid #fecaca",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{width:8,height:8,borderRadius:"50%",background:"#F97B4F",display:"inline-block",flexShrink:0}}/>
+                <div style={{fontSize:12,color:"#F97B4F",fontWeight:700}}>Kein Shopify Produkt verknüpft — Bestand wird nicht aktualisiert.</div>
               </div>
       )}
 
-      <div style={{fontSize:12,color:"#f97316",fontWeight:600}}>⚠ Kann nicht rückgängig gemacht werden.</div>
+      <div style={{fontSize:12,color:"#e5a23c",fontWeight:600}}>⚠ Kann nicht rückgängig gemacht werden.</div>
       <div style={{display:"flex",gap:10}}>
-        <button type="button" onClick={onCancel} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#666",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
-        <button type="button" onClick={onConfirm} disabled={!hasAny} style={{flex:2,padding:13,borderRadius:10,border:"none",background:hasAny?"#111":"#f0f0f0",color:hasAny?"#fff":"#bbb",cursor:hasAny?"pointer":"not-allowed",fontWeight:800,fontSize:14}}>✓ Bestätigen</button>
+        <button type="button" onClick={onCancel} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#6e5e68",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
+        <button type="button" onClick={onConfirm} disabled={!hasAny} style={{flex:2,padding:13,borderRadius:10,border:"none",background:hasAny?"#111":"#ece8e1",color:hasAny?"#fff":"#b5adb0",cursor:hasAny?"pointer":"not-allowed",fontWeight:800,fontSize:14}}>✓ Bestätigen</button>
       </div>
     </ModalWrap>
   );
@@ -1759,19 +1759,19 @@ function BestellbedarfModal({prods,products,onClose}){
   return(
     <ModalWrap onClose={onClose} width={660}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>Bestellbedarf</div>
-      {Object.keys(bedarfMap).length===0&&<div style={{color:"#bbb",fontSize:14,textAlign:"center",padding:40}}>Keine aktiven Aufträge</div>}
+      {Object.keys(bedarfMap).length===0&&<div style={{color:"#b5adb0",fontSize:14,textAlign:"center",padding:40}}>Keine aktiven Aufträge</div>}
       {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
         const blank=products.find(p=>p.id===blankId);if(!blank)return null;
         const isCap=isCapMap[blankId]||false;
         const relKeys=Object.keys(sizeNeeds).filter(k=>(sizeNeeds[k]||0)>0);
         return(
-          <div key={blankId} style={{background:"#f8f8f8",borderRadius:14,padding:16}}>
+          <div key={blankId} style={{background:"#f5f2ed",borderRadius:14,padding:16}}>
             <div style={S.cardHdr}>
               <SmartDot item={blank} size={22}/>
-              <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
+              <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#b5adb0"}}>{blank.color} · {blank.category}</div></div>
               
               <button type="button" disabled={allOrdered}
-                style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
+                style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#ddd8d0":"#111",color:allOrdered?"#b5adb0":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
                 onClick={()=>{
                   if(allOrdered)return;
                   relKeys.forEach(key=>{
@@ -1799,28 +1799,28 @@ function BestellbedarfModal({prods,products,onClose}){
                 const ok=toOrder===0;
                 const okWithMin=toOrderWithMin===0;
                 return(
-                <div key={key} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,overflow:"hidden"}}>
+                <div key={key} style={{background:"#fff",borderRadius:10,border:`1px solid ${ok?"#bbf7d0":"#f5c4b8"}`,overflow:"hidden"}}>
                   <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                     style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",cursor:"pointer",userSelect:"none"}}>
-                    <span style={{fontSize:12,color:"#bbb",width:12}}>{openSize===`${blankId}-${key}`?"▾":"▸"}</span>
+                    <span style={{fontSize:12,color:"#b5adb0",width:12}}>{openSize===`${blankId}-${key}`?"▾":"▸"}</span>
                     {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={16}/>:null}
                     <span style={S.sizeTag}>{label}</span>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:11,color:"#888"}}>Produktion: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
-                      {minStock>0&&<div style={{fontSize:10,color:"#bbb",marginTop:1}}>Sollbestand: {minStock} Stk</div>}
+                      <div style={{fontSize:11,color:"#8a7d84"}}>Produktion: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#5fa8a0":"#F97B4F"}}>{avail}</strong></div>
+                      {minStock>0&&<div style={{fontSize:10,color:"#b5adb0",marginTop:1}}>Sollbestand: {minStock} Stk</div>}
                     </div>
                     <div style={S.pill(ok)}>
                       <div style={S.pillLbl(ok)}>PRODUKTION</div>
                       <div style={S.pillNum(ok)}>{toOrder}</div>
                     </div>
-                    {minStock>0&&<div style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`}}>
-                      <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>MAX</div>
-                      <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMin}</div>
+                    {minStock>0&&<div style={{background:okWithMin?"#e6f3f1":"#fef5e6",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#f5deb0"}`}}>
+                      <div style={{fontSize:9,color:okWithMin?"#5fa8a0":"#e5a23c",fontWeight:700}}>MAX</div>
+                      <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:okWithMin?"#5fa8a0":"#e5a23c",lineHeight:1}}>{toOrderWithMin}</div>
                     </div>}
                   </div>
                   {openSize===`${blankId}-${key}`&&(
-                    <div style={{borderTop:"1px solid #f0f0f0",padding:"8px 14px 10px 14px",background:"#fafafa",display:"flex",flexDirection:"column",gap:5}}>
-                      <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.6,marginBottom:2}}>AUFTRÄGE</div>
+                    <div style={{borderTop:"1px solid #f0f0f0",padding:"8px 14px 10px 14px",background:"#f8f5f0",display:"flex",flexDirection:"column",gap:5}}>
+                      <div style={{fontSize:10,color:"#b5adb0",fontWeight:700,letterSpacing:0.6,marginBottom:2}}>AUFTRÄGE</div>
                       {(breakdownMap[blankId]?.[key]||[]).map((item,i)=>(
                         <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
                           <ColorDot hex={item.colorHex} size={14}/>
@@ -1838,7 +1838,7 @@ function BestellbedarfModal({prods,products,onClose}){
       })}
       <div style={{display:"flex",gap:8}}>
 
-        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Schließen</button>
+        <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Schließen</button>
       </div>
     </ModalWrap>
   );
@@ -1863,12 +1863,12 @@ function DtfModal({initial, onClose, onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} width={400} onSave={save} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>save()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{initial?"✓ Speichern":"✓ Anlegen"}</button></div>}>
+    <ModalWrap onClose={onClose} width={400} onSave={save} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>save()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>{initial?"✓ Speichern":"✓ Anlegen"}</button></div>}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>{initial ? "DTF bearbeiten" : "DTF anlegen"}</div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:6}}>NAME</div>
         <input
-          style={{background:"#f8f8f8",border:"1.5px solid #e8e8e8",borderRadius:10,color:"#111",padding:"12px 14px",fontSize:15,width:"100%",outline:"none",boxSizing:"border-box"}}
+          style={{background:"#f5f2ed",border:"1.5px solid #e8e8e8",borderRadius:10,color:"#111",padding:"12px 14px",fontSize:15,width:"100%",outline:"none",boxSizing:"border-box"}}
           placeholder="z.B. Gemeindebau Front Print"
           value={name}
           onChange={e=>setName(e.target.value)}
@@ -1877,26 +1877,26 @@ function DtfModal({initial, onClose, onSave}){
         />
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STÜCKZAHL</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STÜCKZAHL</div>
         <DtfStockInput value={stock} onChange={setStock}/>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SOLLBESTAND (MIN)</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SOLLBESTAND (MIN)</div>
         <DtfStockInput value={minStock} onChange={setMinStock}/>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>DESIGNS PRO METER</div>
-        <div style={{fontSize:11,color:"#bbb",marginBottom:8}}>Wie viele Folien/Designs passen auf 1 Meter?</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>DESIGNS PRO METER</div>
+        <div style={{fontSize:11,color:"#b5adb0",marginBottom:8}}>Wie viele Folien/Designs passen auf 1 Meter?</div>
         <DtfStockInput value={designsPerMeter} onChange={v=>setDesignsPerMeter(Math.max(1,v))}/>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>PREIS PRO METER (€)</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:4}}>PREIS PRO METER (€)</div>
         <div style={{position:"relative"}}>
-          <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span>
+          <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#b5adb0",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span>
           <input type="number" min="0" step="0.01" placeholder="z.B. 10.00" value={pricePerMeter} onChange={e=>setPricePerMeter(e.target.value)}
-            style={{background:"#f8f8f8",border:"1.5px solid #e8e8e8",borderRadius:10,color:"#111",padding:"12px 14px",paddingLeft:28,fontSize:15,width:"100%",outline:"none",boxSizing:"border-box"}}/>
+            style={{background:"#f5f2ed",border:"1.5px solid #e8e8e8",borderRadius:10,color:"#111",padding:"12px 14px",paddingLeft:28,fontSize:15,width:"100%",outline:"none",boxSizing:"border-box"}}/>
         </div>
-        {pricePerPiece!=null&&<div style={{fontSize:11,color:"#3b82f6",marginTop:6,fontWeight:700}}>= €{pricePerPiece.toFixed(2)} pro Folie/Design</div>}
+        {pricePerPiece!=null&&<div style={{fontSize:11,color:"#584053",marginTop:6,fontWeight:700}}>= €{pricePerPiece.toFixed(2)} pro Folie/Design</div>}
       </div>
     </ModalWrap>
   );
@@ -1909,8 +1909,8 @@ function DtfStockInput({value, onChange}){
   const startEdit = () => { setDraft(String(value)); setEditing(true); setTimeout(()=>inputRef.current?.select(),30); };
   const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onChange(n); setEditing(false); };
   return(
-    <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center",background:"#f8f8f8",borderRadius:12,padding:"16px"}}>
-      <button type="button" onClick={()=>onChange(Math.max(0,value-1))} style={{width:44,height:44,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+    <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center",background:"#f5f2ed",borderRadius:12,padding:"16px"}}>
+      <button type="button" onClick={()=>onChange(Math.max(0,value-1))} style={{width:44,height:44,borderRadius:10,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
       {editing
         ? <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             onChange={e=>setDraft(e.target.value)}
@@ -1920,7 +1920,7 @@ function DtfStockInput({value, onChange}){
         : <span onDoubleClick={startEdit} style={{width:90,textAlign:"center",fontSize:32,fontWeight:900,color:"#111",cursor:"text",padding:"10px 8px",borderRadius:12,border:"2px solid transparent",display:"inline-block"}}
             title="Doppelklick zum Bearbeiten">{value}</span>
       }
-      <button type="button" onClick={()=>onChange(value+1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+      <button type="button" onClick={()=>onChange(value+1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
     </div>
   );
 }
@@ -1951,21 +1951,21 @@ function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
         <div style={{width:36,height:36,borderRadius:10,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_PRINT size={18} color="#fff"/></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{item.name}</div>
-          {linkedProds.length>0&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:600,marginTop:2}}>
-            <IC_LINK size={11} color="#3b82f6"/> {linkedProds.map(p=>p.name).join(", ")}
+          {linkedProds.length>0&&<div style={{fontSize:11,color:"#584053",fontWeight:600,marginTop:2}}>
+            <IC_LINK size={11} color="#584053"/> {linkedProds.map(p=>p.name).join(", ")}
           </div>}
-          {item.designsPerMeter>1&&<div style={{fontSize:11,color:"#888",marginTop:2}}><IC_RULER size={11} color="#888"/> {item.designsPerMeter} Designs/m</div>}
+          {item.designsPerMeter>1&&<div style={{fontSize:11,color:"#8a7d84",marginTop:2}}><IC_RULER size={11} color="#8a7d84"/> {item.designsPerMeter} Designs/m</div>}
         </div>
-        <button onClick={onEdit} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",fontSize:12,fontWeight:700,cursor:"pointer"}}><PENCIL/></button>
-        <button onClick={onDelete} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #fee2e2",background:"#fff",color:"#ef4444",fontSize:12,fontWeight:700,cursor:"pointer"}}>✕</button>
+        <button onClick={onEdit} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#5e5058",fontSize:12,fontWeight:700,cursor:"pointer"}}><PENCIL/></button>
+        <button onClick={onDelete} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #fee2e2",background:"#fff",color:"#F97B4F",fontSize:12,fontWeight:700,cursor:"pointer"}}>✕</button>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:16,background:"#f8f8f8",borderRadius:12,padding:"12px 16px"}}>
-        <button onClick={()=>adj(-1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+      <div style={{display:"flex",alignItems:"center",gap:16,background:"#f5f2ed",borderRadius:12,padding:"12px 16px"}}>
+        <button onClick={()=>adj(-1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
         <div style={{flex:1,textAlign:"center"}}>
           <DtfStockNum value={item.stock} onChange={v=>onUpdate({...item,stock:Math.max(0,v)})}/>
-          <div style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:2}}>STÜCK AUF LAGER</div>
+          <div style={{fontSize:10,color:"#b5adb0",fontWeight:700,marginTop:2}}>STÜCK AUF LAGER</div>
         </div>
-        <button onClick={()=>adj(1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+        <button onClick={()=>adj(1)} style={{width:44,height:44,borderRadius:10,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:24,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
       </div>
     </div>
   );
@@ -1976,8 +1976,8 @@ function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {dtfItems.length===0&&(
-        <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
-          <div style={{marginBottom:12}}><IC_PRINT size={40} color="#ccc"/></div>
+        <div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>
+          <div style={{marginBottom:12}}><IC_PRINT size={40} color="#c8c0c4"/></div>
           Noch keine DTF-Transfers angelegt
         </div>
       )}
@@ -2029,7 +2029,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
     const prod = products.find(p=>p.id===fProd);
     const dtf = dtfItems.find(d=>d.id===fDtf);
     const preisProStk = calcFehlerPreis();
-    setVerluste(v=>[{id:Date.now().toString(),produktId:prod.id,produktName:prod.name,produktHex:prod.colorHex||"#ccc",grund:fGrund,dtfName:dtf?.name||null,anzahl:fAnzahl,preisProStk,gesamt:preisProStk*fAnzahl,notiz:fNotiz,datum:new Date().toISOString()},...v]);
+    setVerluste(v=>[{id:Date.now().toString(),produktId:prod.id,produktName:prod.name,produktHex:prod.colorHex||"#c8c0c4",grund:fGrund,dtfName:dtf?.name||null,anzahl:fAnzahl,preisProStk,gesamt:preisProStk*fAnzahl,notiz:fNotiz,datum:new Date().toISOString()},...v]);
     setFProd("");setFGrund("Druckfehler");setFDtf("");setFAnzahl(1);setFNotiz("");
     setShowAddFehler(false);
   };
@@ -2056,27 +2056,27 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
         <div style={{width:10,height:10,borderRadius:"50%",background:item.produktHex,flexShrink:0,border:"1px solid #ddd"}}/>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.produktName}</div>
-          <div style={{fontSize:11,color:"#aaa"}}>{item.grund}{item.dtfName?` + ${item.dtfName}`:""}{item.notiz?` · ${item.notiz}`:""} · {new Date(item.datum).toLocaleDateString("de-AT")}</div>
+          <div style={{fontSize:11,color:"#b5adb0"}}>{item.grund}{item.dtfName?` + ${item.dtfName}`:""}{item.notiz?` · ${item.notiz}`:""} · {new Date(item.datum).toLocaleDateString("de-AT")}</div>
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontSize:14,fontWeight:800,color:"#ef4444"}}>−€{item.gesamt.toFixed(2)}</div>
-          <div style={{fontSize:11,color:"#bbb"}}>{item.anzahl} Stk · €{(item.preisProStk||0).toFixed(2)}/St</div>
+          <div style={{fontSize:14,fontWeight:800,color:"#F97B4F"}}>−€{item.gesamt.toFixed(2)}</div>
+          <div style={{fontSize:11,color:"#b5adb0"}}>{item.anzahl} Stk · €{(item.preisProStk||0).toFixed(2)}/St</div>
         </div>
-        <button onClick={()=>setVerluste(vv=>vv.filter(x=>x.id!==item.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fee2e2",color:"#ef4444",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
+        <button onClick={()=>setVerluste(vv=>vv.filter(x=>x.id!==item.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fde9e2",color:"#F97B4F",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
       </div>
     );
     return(
       <div key={item.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
-        <IC_GIFT size={16} color="#f97316"/>
+        <IC_GIFT size={16} color="#e5a23c"/>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.name}</div>
-          <div style={{fontSize:11,color:"#aaa"}}>{item.info?`${item.info} · `:""}{new Date(item.datum).toLocaleDateString("de-AT")}</div>
+          <div style={{fontSize:11,color:"#b5adb0"}}>{item.info?`${item.info} · `:""}{new Date(item.datum).toLocaleDateString("de-AT")}</div>
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontSize:14,fontWeight:800,color:"#f97316"}}>−€{item.gesamt.toFixed(2)}</div>
-          <div style={{fontSize:11,color:"#bbb"}}>{item.anzahl} Stk · €{item.preis.toFixed(2)}/St</div>
+          <div style={{fontSize:14,fontWeight:800,color:"#e5a23c"}}>−€{item.gesamt.toFixed(2)}</div>
+          <div style={{fontSize:11,color:"#b5adb0"}}>{item.anzahl} Stk · €{item.preis.toFixed(2)}/St</div>
         </div>
-        <button onClick={()=>setPromoGifts(gg=>gg.filter(x=>x.id!==item.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fff7ed",color:"#f97316",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
+        <button onClick={()=>setPromoGifts(gg=>gg.filter(x=>x.id!==item.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fef5e6",color:"#e5a23c",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
       </div>
     );
   };
@@ -2085,12 +2085,12 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {/* Action buttons */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-        <button onClick={()=>setShowAddFehler(true)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",fontSize:12,fontWeight:800,cursor:"pointer"}}>+ Fehler</button>
-        <button onClick={()=>setShowAddPromo(true)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #fed7aa",background:"#fff7ed",color:"#f97316",fontSize:12,fontWeight:800,cursor:"pointer"}}>+ Promo</button>
-        <button onClick={()=>setGrouped(g=>!g)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #e8e8e8",background:grouped?"#f0f0f0":"#fff",color:"#555",fontSize:12,fontWeight:800,cursor:"pointer"}}>{grouped?"↕ Gemischt":"↕ Gruppiert"}</button>
+        <button onClick={()=>setShowAddFehler(true)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #fecaca",background:"#fde9e2",color:"#F97B4F",fontSize:12,fontWeight:800,cursor:"pointer"}}>+ Fehler</button>
+        <button onClick={()=>setShowAddPromo(true)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #fed7aa",background:"#fef5e6",color:"#e5a23c",fontSize:12,fontWeight:800,cursor:"pointer"}}>+ Promo</button>
+        <button onClick={()=>setGrouped(g=>!g)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #e8e8e8",background:grouped?"#ece8e1":"#fff",color:"#5e5058",fontSize:12,fontWeight:800,cursor:"pointer"}}>{grouped?"↕ Gemischt":"↕ Gruppiert"}</button>
       </div>
 
-      {allItems.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
+      {allItems.length===0&&<div style={{textAlign:"center",padding:40,color:"#c8c0c4",fontSize:14}}>Keine Einträge</div>}
 
       {!grouped&&<div style={{display:"flex",flexDirection:"column",gap:8}}>
         {allItems.map(renderItem)}
@@ -2098,11 +2098,11 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
 
       {grouped&&<>
         {verluste.length>0&&<div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{fontSize:11,fontWeight:700,color:"#ef4444",letterSpacing:0.8,padding:"4px 2px"}}>PRODUKTIONSFEHLER · −€{totalFehler.toFixed(2)}</div>
+          <div style={{fontSize:11,fontWeight:700,color:"#F97B4F",letterSpacing:0.8,padding:"4px 2px"}}>PRODUKTIONSFEHLER · −€{totalFehler.toFixed(2)}</div>
           {verluste.map(v=>renderItem({...v,_type:"fehler"}))}
         </div>}
         {promoGifts.length>0&&<div style={{display:"flex",flexDirection:"column",gap:8,marginTop:verluste.length>0?8:0}}>
-          <div style={{fontSize:11,fontWeight:700,color:"#f97316",letterSpacing:0.8,padding:"4px 2px"}}>PROMO & GIFTS · −€{totalPromo.toFixed(2)}</div>
+          <div style={{fontSize:11,fontWeight:700,color:"#e5a23c",letterSpacing:0.8,padding:"4px 2px"}}>PROMO & GIFTS · −€{totalPromo.toFixed(2)}</div>
           {promoGifts.map(g=>renderItem({...g,_type:"promo"}))}
         </div>}
       </>}
@@ -2129,25 +2129,25 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
               </select>
             )}
             {fGrund==="Stickfehler"&&(
-              <div style={{background:"#f8f8f8",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#888"}}>
+              <div style={{background:"#f5f2ed",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#8a7d84"}}>
                 Stickpauschale: <strong style={{color:"#111"}}>€{STICK_PAUSCHALE.toFixed(2)}</strong>
               </div>
             )}
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <label style={{fontSize:12,color:"#888",fontWeight:700,flexShrink:0}}>Anzahl</label>
-              <button onClick={()=>setFAnzahl(a=>Math.max(1,a-1))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:18,cursor:"pointer",fontWeight:800}}>−</button>
+              <label style={{fontSize:12,color:"#8a7d84",fontWeight:700,flexShrink:0}}>Anzahl</label>
+              <button onClick={()=>setFAnzahl(a=>Math.max(1,a-1))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:18,cursor:"pointer",fontWeight:800}}>−</button>
               <span style={{fontSize:20,fontWeight:900,minWidth:30,textAlign:"center"}}>{fAnzahl}</span>
-              <button onClick={()=>setFAnzahl(a=>a+1)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:18,cursor:"pointer",fontWeight:800}}>+</button>
+              <button onClick={()=>setFAnzahl(a=>a+1)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:18,cursor:"pointer",fontWeight:800}}>+</button>
             </div>
             <input style={inp} placeholder="Notiz (optional)" value={fNotiz} onChange={e=>setFNotiz(e.target.value)}/>
-            {fProd&&<div style={{background:"#fef2f2",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#ef4444"}}>
+            {fProd&&<div style={{background:"#fde9e2",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#F97B4F"}}>
               Verlust: €{(calcFehlerPreis()*fAnzahl).toFixed(2)}
-              <span style={{fontSize:11,fontWeight:400,color:"#aaa",marginLeft:8}}>({fAnzahl} × €{calcFehlerPreis().toFixed(2)})</span>
+              <span style={{fontSize:11,fontWeight:400,color:"#b5adb0",marginLeft:8}}>({fAnzahl} × €{calcFehlerPreis().toFixed(2)})</span>
             </div>}
           </div>
           <div style={{display:"flex",gap:10,marginTop:4}}>
-            <button type="button" onClick={()=>setShowAddFehler(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-            <button type="button" onClick={addFehler} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#ef4444",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Eintragen</button>
+            <button type="button" onClick={()=>setShowAddFehler(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+            <button type="button" onClick={addFehler} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#F97B4F",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Eintragen</button>
           </div>
         </ModalWrap>
       )}
@@ -2159,26 +2159,26 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
             <input style={inp} placeholder="Info (z.B. Hoodie Black XL)" value={pInfo} onChange={e=>setPInfo(e.target.value)}/>
             <div style={{display:"flex",gap:10}}>
               <div style={{flex:1,position:"relative"}}>
-                <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#aaa",fontSize:14,fontWeight:700}}>€</span>
+                <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#b5adb0",fontSize:14,fontWeight:700}}>€</span>
                 <input style={{...inp,paddingLeft:28}} placeholder="Preis" type="number" min="0" step="0.01" value={pPreis} onChange={e=>setPPreis(e.target.value)}/>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <button onClick={()=>setPAnzahl(a=>Math.max(1,a-1))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fff7ed",color:"#f97316",fontSize:18,cursor:"pointer",fontWeight:800}}>−</button>
+                <button onClick={()=>setPAnzahl(a=>Math.max(1,a-1))} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fef5e6",color:"#e5a23c",fontSize:18,cursor:"pointer",fontWeight:800}}>−</button>
                 <span style={{fontSize:20,fontWeight:900,minWidth:30,textAlign:"center"}}>{pAnzahl}</span>
-                <button onClick={()=>setPAnzahl(a=>a+1)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fff7ed",color:"#f97316",fontSize:18,cursor:"pointer",fontWeight:800}}>+</button>
+                <button onClick={()=>setPAnzahl(a=>a+1)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fef5e6",color:"#e5a23c",fontSize:18,cursor:"pointer",fontWeight:800}}>+</button>
               </div>
             </div>
-            {pPreis&&<div style={{background:"#fff7ed",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#f97316"}}>Gesamt: €{((parseFloat(pPreis)||0)*pAnzahl).toFixed(2)}</div>}
+            {pPreis&&<div style={{background:"#fef5e6",borderRadius:10,padding:"10px 14px",fontSize:13,fontWeight:700,color:"#e5a23c"}}>Gesamt: €{((parseFloat(pPreis)||0)*pAnzahl).toFixed(2)}</div>}
           </div>
           <div style={{display:"flex",gap:10,marginTop:4}}>
-            <button type="button" onClick={()=>setShowAddPromo(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-            <button type="button" onClick={addPromo} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#f97316",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Eintragen</button>
+            <button type="button" onClick={()=>setShowAddPromo(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+            <button type="button" onClick={addPromo} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#e5a23c",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Eintragen</button>
           </div>
         </ModalWrap>
       )}
-      <div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div><div style={{fontSize:11,color:"#999",marginTop:3}}>Fehler: −€{totalFehler.toFixed(2)} · Promo: −€{totalPromo.toFixed(2)}</div></div>
-        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#ef4444"}}>−€{(totalFehler+totalPromo).toFixed(2)}</div>
+      <div style={{background:"#ece8e1",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontSize:11,color:"#5e5058",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div><div style={{fontSize:11,color:"#9a9094",marginTop:3}}>Fehler: −€{totalFehler.toFixed(2)} · Promo: −€{totalPromo.toFixed(2)}</div></div>
+        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#F97B4F"}}>−€{(totalFehler+totalPromo).toFixed(2)}</div>
       </div>
     </div>
   );
@@ -2217,9 +2217,9 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   const shopGrandValue=shopFiltered.reduce((a,sp)=>(sp.variants||[]).reduce((b,v)=>b+(v.inventory_quantity||0)*parseFloat(v.price||0),0)+a,0);
   return(
     <div style={S.col10}>
-      <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
+      <div style={{display:"flex",gap:6,background:"#e8e3dd",borderRadius:12,padding:4}}>
         {[["dashboard","Dashboard"],["blanks","Blanks"],["dtf","DTF"],["shopify","Shopify"],["verluste","Verluste"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {finTab==="dashboard"&&(
@@ -2231,29 +2231,29 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
             return <>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>BLANKS</div></div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#9a9094",fontWeight:700,letterSpacing:0.5}}>BLANKS</div></div>
                   <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{grandTotal.toFixed(2)}</div>
-                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{grandQty} Stück</div>
+                  <div style={{fontSize:11,color:"#b5adb0",marginTop:4}}>{grandQty} Stück</div>
                 </div>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_PRINT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>DTF</div></div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_PRINT size={16} color="#111"/><div style={{fontSize:11,color:"#9a9094",fontWeight:700,letterSpacing:0.5}}>DTF</div></div>
                   <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{dtfTotal.toFixed(2)}</div>
-                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{(dtfItems||[]).reduce((a,d)=>a+(d.stock||0),0)} Stück</div>
+                  <div style={{fontSize:11,color:"#b5adb0",marginTop:4}}>{(dtfItems||[]).reduce((a,d)=>a+(d.stock||0),0)} Stück</div>
                 </div>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_SHOP size={16} color="#96bf48"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>SHOPIFY</div></div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_SHOP size={16} color="#96bf48"/><div style={{fontSize:11,color:"#9a9094",fontWeight:700,letterSpacing:0.5}}>SHOPIFY</div></div>
                   <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{shopGrandValue.toFixed(2)}</div>
-                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{shopGrandQty} Stück{shopProds.length===0?" · Laden...":""}</div>
+                  <div style={{fontSize:11,color:"#b5adb0",marginTop:4}}>{shopGrandQty} Stück{shopProds.length===0?" · Laden...":""}</div>
                 </div>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_LOSS size={16} color="#ef4444"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>VERLUSTE</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#ef4444"}}>−€{verlusteTotal.toFixed(2)}</div>
-                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{verluste.length+promoGifts.length} Einträge</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_LOSS size={16} color="#F97B4F"/><div style={{fontSize:11,color:"#9a9094",fontWeight:700,letterSpacing:0.5}}>VERLUSTE</div></div>
+                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#F97B4F"}}>−€{verlusteTotal.toFixed(2)}</div>
+                  <div style={{fontSize:11,color:"#b5adb0",marginTop:4}}>{verluste.length+promoGifts.length} Einträge</div>
                 </div>
               </div>
-              <div style={{background:"#dcfce7",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0"}}>
+              <div style={{background:"#e6f3f1",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0"}}>
                 <div>
-                  <div style={{fontSize:12,color:"#16a34a",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
+                  <div style={{fontSize:12,color:"#5fa8a0",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
                   <div style={{fontSize:11,color:"#86efac",marginTop:4}}>Blanks + DTF + Shopify − Verluste</div>
                 </div>
                 <div style={{...F_HEAD_STYLE,fontSize:38,fontWeight:900,color:"#111"}}>€{allTotal.toFixed(2)}</div>
@@ -2270,23 +2270,23 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               <div key={d.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{...F_HEAD_STYLE,fontSize:13,fontWeight:800,color:"#111"}}>{d.name}</div>
-                  <div style={{fontSize:11,color:"#aaa"}}>€{d.pricePerMeter?.toFixed(2)}/m · {d.designsPerMeter||1} Design/m → <strong style={{color:"#111"}}>€{preisProDesign.toFixed(2)}/Design</strong></div>
+                  <div style={{fontSize:11,color:"#b5adb0"}}>€{d.pricePerMeter?.toFixed(2)}/m · {d.designsPerMeter||1} Design/m → <strong style={{color:"#111"}}>€{preisProDesign.toFixed(2)}/Design</strong></div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:14,fontWeight:800,color:"#111"}}>€{(preisProDesign*(d.stock||0)).toFixed(2)}</div>
-                  <div style={{fontSize:11,color:"#bbb"}}>{d.stock||0} Stk</div>
+                  <div style={{fontSize:11,color:"#b5adb0"}}>{d.stock||0} Stk</div>
                 </div>
               </div>
             );
           })}
           {(dtfItems||[]).filter(d=>!d.pricePerMeter).length>0&&(
-            <div style={{fontSize:12,color:"#bbb",textAlign:"center",padding:"8px 0"}}>
+            <div style={{fontSize:12,color:"#b5adb0",textAlign:"center",padding:"8px 0"}}>
               {(dtfItems||[]).filter(d=>!d.pricePerMeter).length} Design(s) ohne Meterpreis hinterlegt
             </div>
           )}
-          <div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div><div style={{fontSize:11,color:"#999",marginTop:3}}>{(dtfItems||[]).filter(d=>d.pricePerMeter).reduce((a,d)=>a+(d.stock||0),0)} Stück total</div></div>
-            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{dtfTotal.toFixed(2)}</div>
+          <div style={{background:"#ece8e1",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,color:"#5e5058",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div><div style={{fontSize:11,color:"#9a9094",marginTop:3}}>{(dtfItems||[]).filter(d=>d.pricePerMeter).reduce((a,d)=>a+(d.stock||0),0)} Stück total</div></div>
+            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#5fa8a0"}}>€{dtfTotal.toFixed(2)}</div>
           </div>
         </div>
       )}
@@ -2298,33 +2298,33 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
         return(
           <div key={p.id} style={{background:"#fff",borderRadius:14,border:"1px solid #ebebeb",overflow:"hidden"}}>
             <div onClick={()=>toggle(p.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",userSelect:"none"}}>
-              <span style={{fontSize:12,color:"#bbb"}}>{isOpen?"▾":"▸"}</span>
+              <span style={{fontSize:12,color:"#b5adb0"}}>{isOpen?"▾":"▸"}</span>
               <SmartDot item={p} size={20}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{...F_HEAD_STYLE,fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
-                <div style={{fontSize:11,color:"#aaa"}}>{p.color||p.category}</div>
+                <div style={{fontSize:11,color:"#b5adb0"}}>{p.color||p.category}</div>
               </div>
-              <span style={{fontSize:11,background:"#f0f0f0",color:"#555",borderRadius:6,padding:"2px 8px",fontWeight:700,flexShrink:0}}>{p.category}</span>
+              <span style={{fontSize:11,background:"#ece8e1",color:"#5e5058",borderRadius:6,padding:"2px 8px",fontWeight:700,flexShrink:0}}>{p.category}</span>
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{tot!=null?`€${tot.toFixed(2)}`:"—"}</div>
-                <div style={{fontSize:11,color:"#bbb"}}>{qty} Stk{p.buyPrice!=null?` · €${p.buyPrice.toFixed(2)}/St`:""}</div>
+                <div style={{fontSize:11,color:"#b5adb0"}}>{qty} Stk{p.buyPrice!=null?` · €${p.buyPrice.toFixed(2)}/St`:""}</div>
               </div>
             </div>
             {isOpen&&(
-              <div style={{background:"#fafafa",padding:"8px 16px 14px",borderTop:"1px solid #f0f0f0"}}>
+              <div style={{background:"#f8f5f0",padding:"8px 16px 14px",borderTop:"1px solid #f0f0f0"}}>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {isCap?(p.capColors||[]).map(c=>{const sv=p.buyPrice!=null?c.stock*p.buyPrice:null;return(
                     <div key={c.id} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:10,padding:"8px 10px",textAlign:"center",minWidth:70,flex:1}}>
-                      <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"center",marginBottom:3}}><div style={{width:12,height:12,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/><div style={{fontSize:10,color:"#aaa",fontWeight:800}}>{c.name}</div></div>
-                      <div style={{fontSize:20,fontWeight:900,color:c.stock===0?"#ef4444":c.stock<=LOW_STOCK?"#f97316":"#111"}}>{c.stock}</div>
-                      {sv!=null&&<div style={{fontSize:10,color:"#bbb",marginTop:2}}>€{sv.toFixed(2)}</div>}
+                      <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"center",marginBottom:3}}><div style={{width:12,height:12,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/><div style={{fontSize:10,color:"#b5adb0",fontWeight:800}}>{c.name}</div></div>
+                      <div style={{fontSize:20,fontWeight:900,color:c.stock===0?"#F97B4F":c.stock<=LOW_STOCK?"#e5a23c":"#111"}}>{c.stock}</div>
+                      {sv!=null&&<div style={{fontSize:10,color:"#b5adb0",marginTop:2}}>€{sv.toFixed(2)}</div>}
                     </div>
                   )})
                   :DEFAULT_SIZES.map(size=>{const s=(p.stock||{})[size]??0,sv=p.buyPrice!=null?s*p.buyPrice:null;return(
                     <div key={size} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:10,padding:"8px 10px",textAlign:"center",minWidth:60,flex:1}}>
-                      <div style={{fontSize:10,color:"#aaa",fontWeight:800,marginBottom:3}}>{size}</div>
-                      <div style={{fontSize:20,fontWeight:900,color:s===0?"#ef4444":s<=LOW_STOCK?"#f97316":"#111"}}>{s}</div>
-                      {sv!=null&&<div style={{fontSize:10,color:"#bbb",marginTop:2}}>€{sv.toFixed(2)}</div>}
+                      <div style={{fontSize:10,color:"#b5adb0",fontWeight:800,marginBottom:3}}>{size}</div>
+                      <div style={{fontSize:20,fontWeight:900,color:s===0?"#F97B4F":s<=LOW_STOCK?"#e5a23c":"#111"}}>{s}</div>
+                      {sv!=null&&<div style={{fontSize:10,color:"#b5adb0",marginTop:2}}>€{sv.toFixed(2)}</div>}
                     </div>
                   )})}
                 </div>
@@ -2333,9 +2333,9 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
           </div>
         );
       })}
-      <div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>BLANKS LAGERWERT</div><div style={{fontSize:11,color:"#999",marginTop:3}}>{grandQty} Stück total</div></div>
-        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{grandTotal.toFixed(2)}</div>
+      <div style={{background:"#ece8e1",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontSize:11,color:"#5e5058",fontWeight:700,letterSpacing:0.8}}>BLANKS LAGERWERT</div><div style={{fontSize:11,color:"#9a9094",marginTop:3}}>{grandQty} Stück total</div></div>
+        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#5fa8a0"}}>€{grandTotal.toFixed(2)}</div>
       </div>
       </>}
       {finTab==="verluste"&&(()=>{
@@ -2354,7 +2354,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
       })()}
       {finTab==="shopify"&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {shopLoading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Lade Shopify Produkte...</div>}
+          {shopLoading&&<div style={{textAlign:"center",padding:40,color:"#b5adb0"}}>⟳ Lade Shopify Produkte...</div>}
           {!shopLoading&&shopFiltered.map(sp=>{
             const variants=sp.variants||[];
             const totalQty=variants.reduce((a,v)=>a+(v.inventory_quantity||0),0);
@@ -2363,21 +2363,21 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
             return(
               <div key={sp.id} style={{background:"#fff",borderRadius:14,border:"1px solid #ebebeb",overflow:"hidden"}}>
                 <div onClick={()=>setShopOpen(o=>({...o,[sp.id]:!o[sp.id]}))} style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",userSelect:"none"}}>
-                  <span style={{fontSize:12,color:"#bbb"}}>{isOpen?"▾":"▸"}</span>
+                  <span style={{fontSize:12,color:"#b5adb0"}}>{isOpen?"▾":"▸"}</span>
                   {sp.images?.[0]?.src
                     ?<img src={sp.images[0].src} style={{width:28,height:28,borderRadius:6,objectFit:"cover",flexShrink:0}} alt=""/>
-                    :<div style={{width:28,height:28,borderRadius:6,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={14} color="#aaa"/></div>}
+                    :<div style={{width:28,height:28,borderRadius:6,background:"#ece8e1",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={14} color="#b5adb0"/></div>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sp.title}</div>
-                    <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten</div>
+                    <div style={{fontSize:11,color:"#b5adb0"}}>{variants.length} Varianten</div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
                     <div style={{...F_HEAD_STYLE,...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#111"}}>€{totalValue.toFixed(2)}</div>
-                    <div style={{fontSize:11,color:"#bbb"}}>{totalQty} Stk</div>
+                    <div style={{fontSize:11,color:"#b5adb0"}}>{totalQty} Stk</div>
                   </div>
                 </div>
                 {isOpen&&(
-                  <div style={{background:"#fafafa",borderTop:"1px solid #f0f0f0"}}>
+                  <div style={{background:"#f8f5f0",borderTop:"1px solid #f0f0f0"}}>
                     {variants.map(v=>{
                       const qty=v.inventory_quantity||0;
                       const price=parseFloat(v.price||0);
@@ -2385,8 +2385,8 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
                       return(
                         <div key={v.id} style={{display:"flex",alignItems:"center",padding:"8px 16px",borderTop:"1px solid #f0f0f0",fontSize:13}}>
                           <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{v.title||"Default"}</div>
-                          <div style={{width:50,textAlign:"right",fontSize:12,color:"#888"}}>{qty} Stk</div>
-                          <div style={{width:60,textAlign:"right",fontSize:12,color:"#888"}}>€{price.toFixed(2)}</div>
+                          <div style={{width:50,textAlign:"right",fontSize:12,color:"#8a7d84"}}>{qty} Stk</div>
+                          <div style={{width:60,textAlign:"right",fontSize:12,color:"#8a7d84"}}>€{price.toFixed(2)}</div>
                           <div style={{width:80,textAlign:"right",fontSize:13,fontWeight:800,color:"#111"}}>€{lineTotal.toFixed(2)}</div>
                         </div>
                       );
@@ -2396,9 +2396,9 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               </div>
             );
           })}
-          {!shopLoading&&<div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>SHOPIFY WARENWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{shopGrandQty} Stück · {shopFiltered.length} Produkte</div></div>
-            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{shopGrandValue.toFixed(2)}</div>
+          {!shopLoading&&<div style={{background:"#ece8e1",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,color:"#5e5058",fontWeight:700,letterSpacing:0.8}}>SHOPIFY WARENWERT</div><div style={{fontSize:11,color:"#b5adb0",marginTop:3}}>{shopGrandQty} Stück · {shopFiltered.length} Produkte</div></div>
+            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#5fa8a0"}}>€{shopGrandValue.toFixed(2)}</div>
           </div>}
         </div>
       )}
@@ -2438,7 +2438,7 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
       <div style={{background:"#fff",borderRadius:18,width:500,maxWidth:"95vw",maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
         <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
           <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>Restock Auftrag</div>
-          <div style={{fontSize:12,color:"#aaa",marginTop:2}}>{product.title} → {blank.name}</div>
+          <div style={{fontSize:12,color:"#b5adb0",marginTop:2}}>{product.title} → {blank.name}</div>
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px",flex:1}}>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
@@ -2450,14 +2450,14 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
               const target = sollVal > 0 ? sollVal : minVal;
               return(
                 <div key={label} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,
-                  background:val>0?"#fff7ed":"#f8f8f8",border:`1px solid ${val>0?"#fed7aa":"#ebebeb"}`,
+                  background:val>0?"#fef5e6":"#f5f2ed",border:`1px solid ${val>0?"#f5deb0":"#e8e3dd"}`,
                   borderRadius:12,padding:"10px 6px",flex:1,minWidth:mobile?60:70}}>
-                  <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:val>0?"#9a3412":"#666"}}>{label}</span>
-                  <div style={{fontSize:10,color:"#aaa"}}>{current}/{target}</div>
+                  <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:val>0?"#8b5e14":"#6e5e68"}}>{label}</span>
+                  <div style={{fontSize:10,color:"#b5adb0"}}>{current}/{target}</div>
                   <div style={{display:"flex",alignItems:"center",gap:4}}>
-                    <button onClick={()=>setSize(label,val-1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:16,cursor:"pointer",fontWeight:800}}>−</button>
-                    <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,minWidth:28,textAlign:"center",color:val>0?"#f97316":"#ccc"}}>{val}</span>
-                    <button onClick={()=>setSize(label,val+1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:16,cursor:"pointer",fontWeight:800}}>+</button>
+                    <button onClick={()=>setSize(label,val-1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:16,cursor:"pointer",fontWeight:800}}>−</button>
+                    <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,minWidth:28,textAlign:"center",color:val>0?"#e5a23c":"#c8c0c4"}}>{val}</span>
+                    <button onClick={()=>setSize(label,val+1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:16,cursor:"pointer",fontWeight:800}}>+</button>
                   </div>
                 </div>
               );
@@ -2465,9 +2465,9 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
           </div>
         </div>
         <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0,display:"flex",gap:10}}>
-          <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+          <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
           <button type="button" disabled={totalQty===0} onClick={()=>onConfirm(qty)}
-            style={{flex:2,padding:13,borderRadius:10,border:"none",background:totalQty>0?"#16a34a":"#e0e0e0",color:totalQty>0?"#fff":"#bbb",cursor:totalQty>0?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
+            style={{flex:2,padding:13,borderRadius:10,border:"none",background:totalQty>0?"#5fa8a0":"#ddd8d0",color:totalQty>0?"#fff":"#b5adb0",cursor:totalQty>0?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
             Auftrag erstellen · {totalQty} Stk
           </button>
         </div>
@@ -2528,19 +2528,19 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
 
   const totalLowVariants = filtered.reduce((a,r)=>a+r.variants.length,0);
 
-  if(loading) return <div style={{textAlign:"center",padding:60,color:"#aaa"}}>Shopify Produkte laden...</div>;
+  if(loading) return <div style={{textAlign:"center",padding:60,color:"#b5adb0"}}>Shopify Produkte laden...</div>;
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
-      <div style={{background:"#fff7ed",borderRadius:12,padding:"12px 16px",border:"1px solid #fed7aa",display:"flex",alignItems:"center",gap:10}}>
-        <IC_WARN size={16} color="#f97316"/>
-        <div style={{fontSize:13,color:"#9a3412",fontWeight:600}}>{totalLowVariants} Variante{totalLowVariants!==1?"n":""} unter Mindestbestand bei {filtered.length} Produkt{filtered.length!==1?"en":""}</div>
+      <div style={{background:"#fef5e6",borderRadius:12,padding:"12px 16px",border:"1px solid #fed7aa",display:"flex",alignItems:"center",gap:10}}>
+        <IC_WARN size={16} color="#e5a23c"/>
+        <div style={{fontSize:13,color:"#8b5e14",fontWeight:600}}>{totalLowVariants} Variante{totalLowVariants!==1?"n":""} unter Mindestbestand bei {filtered.length} Produkt{filtered.length!==1?"en":""}</div>
       </div>
 
       <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Produkt suchen..."
-        style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
+        style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f5f2ed"}}/>
 
-      {filtered.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Alle Produkte ausreichend bestockt</div>}
+      {filtered.length===0&&<div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>Alle Produkte ausreichend bestockt</div>}
 
       {filtered.map(({product:sp, variants:lowVars})=>{
         const allVars = sp.variants||[];
@@ -2566,14 +2566,14 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
             {/* Product header */}
             <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
               {img?<img src={img} style={{width:40,height:40,borderRadius:10,objectFit:"cover",flexShrink:0}}/>
-                  :<div style={{width:40,height:40,borderRadius:10,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={18} color="#ccc"/></div>}
+                  :<div style={{width:40,height:40,borderRadius:10,background:"#ece8e1",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={18} color="#c8c0c4"/></div>}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sp.title}</div>
-                <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{allVars.length} Varianten{hasMultipleColors?` · ${colorGroups.length} Farben`:""} · {totalInv} Stk</div>
+                <div style={{fontSize:11,color:"#b5adb0",marginTop:2}}>{allVars.length} Varianten{hasMultipleColors?` · ${colorGroups.length} Farben`:""} · {totalInv} Stk</div>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
-                <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#f97316",lineHeight:1}}>{lowVars.length}</div>
-                <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
+                <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#e5a23c",lineHeight:1}}>{lowVars.length}</div>
+                <div style={{fontSize:10,color:"#b5adb0",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
               </div>
             </div>
             {/* Color groups */}
@@ -2587,11 +2587,11 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                 return(
                   <div style={{borderTop:"1px solid #f0f0f0"}}>
                     <div style={{display:"flex",alignItems:"center",padding:"8px 18px",gap:8}}>
-                      {blank?<div style={{fontSize:11,color:"#888",flex:1}}>
-                        <IC_LINK size={10} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
-                        {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
-                      </div>:<div style={{flex:1,fontSize:11,color:"#ccc",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
-                      {blank&&<button onClick={()=>setRestockModal({product:sp,variants:allVars,blank,dtf,lowVars})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                      {blank?<div style={{fontSize:11,color:"#8a7d84",flex:1}}>
+                        <IC_LINK size={10} color="#584053"/> <span style={{color:"#584053",fontWeight:700}}>{blank.name}</span>
+                        {dtf&&<span style={{color:"#b5adb0"}}> · DTF: {dtf.name}</span>}
+                      </div>:<div style={{flex:1,fontSize:11,color:"#c8c0c4",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
+                      {blank&&<button onClick={()=>setRestockModal({product:sp,variants:allVars,blank,dtf,lowVars})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
                         <IC_PROD size={11} color="#fff"/> Auftrag
                       </button>}
                     </div>
@@ -2605,12 +2605,12 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                         return(
                           <div key={color} style={{
                             display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0,
-                            background:isOut?"#f0f0f0":"#f8f8f8",
+                            background:isOut?"#ece8e1":"#f5f2ed",
                             borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
                           }}>
-                            <span style={{...F_HEAD_STYLE,fontSize:14,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
-                            <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
-                            {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
+                            <span style={{...F_HEAD_STYLE,fontSize:14,color:isOut?"#b5adb0":"#6e5e68",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
+                            <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#b5adb0":qty<min?"#e5a23c":"#5fa8a0",lineHeight:1}}>{qty}</span>
+                            {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#F97B4F":"#b5adb0",fontWeight:700}}>/{min}</span>}
                           </div>
                         );
                       })}
@@ -2629,15 +2629,15 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
               return(
                 <div key={color} style={{borderTop:"1px solid #f0f0f0"}}>
                   {/* Color header */}
-                  <div style={{display:"flex",alignItems:"center",padding:"8px 18px",gap:8,background:hasMultipleColors?"#fafafa":"transparent"}}>
-                    {hasMultipleColors&&<IC_PAINT size={12} color="#555"/>}
+                  <div style={{display:"flex",alignItems:"center",padding:"8px 18px",gap:8,background:hasMultipleColors?"#f8f5f0":"transparent"}}>
+                    {hasMultipleColors&&<IC_PAINT size={12} color="#5e5058"/>}
                     {hasMultipleColors&&<span style={{fontSize:13,fontWeight:800,color:"#333"}}>{color==="_default_"?"Standard":color}</span>}
-                    {blank?<div style={{fontSize:11,color:"#888",flex:1}}>
-                      <IC_LINK size={10} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
-                      {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
-                    </div>:<div style={{flex:1,fontSize:11,color:"#ccc",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
-                    {hasMultipleColors&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#888"}}>{groupInv}</span>}
-                    {blank&&<button onClick={()=>setRestockModal({product:sp,variants:cvars,blank,dtf,lowVars:cvars.filter(v=>{const sz=parseSize(v.title);const min=sz?RESTOCK_MIN[sz]:RESTOCK_DEFAULT;return(v.inventory_quantity||0)<min;})})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                    {blank?<div style={{fontSize:11,color:"#8a7d84",flex:1}}>
+                      <IC_LINK size={10} color="#584053"/> <span style={{color:"#584053",fontWeight:700}}>{blank.name}</span>
+                      {dtf&&<span style={{color:"#b5adb0"}}> · DTF: {dtf.name}</span>}
+                    </div>:<div style={{flex:1,fontSize:11,color:"#c8c0c4",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
+                    {hasMultipleColors&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:900,color:groupInv===0?"#F97B4F":groupInv<5?"#e5a23c":"#8a7d84"}}>{groupInv}</span>}
+                    {blank&&<button onClick={()=>setRestockModal({product:sp,variants:cvars,blank,dtf,lowVars:cvars.filter(v=>{const sz=parseSize(v.title);const min=sz?RESTOCK_MIN[sz]:RESTOCK_DEFAULT;return(v.inventory_quantity||0)<min;})})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
                       <IC_PROD size={11} color="#fff"/> Auftrag
                     </button>}
                   </div>
@@ -2652,12 +2652,12 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                       return(
                         <div key={v.id} style={{
                           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0,
-                          background:isOut?"#f0f0f0":"#f8f8f8",
+                          background:isOut?"#ece8e1":"#f5f2ed",
                           borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
                         }}>
-                          <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{sizeLabel}</span>
-                          <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
-                          {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
+                          <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#b5adb0":"#6e5e68",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{sizeLabel}</span>
+                          <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#b5adb0":qty<min?"#e5a23c":"#5fa8a0",lineHeight:1}}>{qty}</span>
+                          {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#F97B4F":"#b5adb0",fontWeight:700}}>/{min}</span>}
                         </div>
                       );
                     })}
@@ -2830,7 +2830,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
       priority:"Hoch",
       status:"Geplant",
       veredelung:["Drucken"],
-      colorHex:blank?.colorHex||"#888",
+      colorHex:blank?.colorHex||"#8a7d84",
       isOnlineExclusive:true,
       shopifyOrderId:String(order.id),
       shopifyOrderName:order.name,
@@ -2862,7 +2862,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
           <div style={{background:"#fff",borderRadius:18,width:440,maxWidth:"95vw",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
             <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0"}}>
               <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>Blank auswählen</div>
-              <div style={{fontSize:12,color:"#aaa",marginTop:2}}>
+              <div style={{fontSize:12,color:"#b5adb0",marginTop:2}}>
                 {blankPickerData.line.title} · Größe: <b style={{color:"#111"}}>{blankPickerData.size}</b> · {blankPickerData.line.quantity}×
               </div>
             </div>
@@ -2872,22 +2872,22 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                 const sizeStock = (p.stock||{})[blankPickerData.size]||0;
                 return(
                   <button key={p.id} type="button" onClick={()=>confirmCreateOrder(p.id)}
-                    style={{padding:"12px 14px",borderRadius:11,border:"1.5px solid #e8e8e8",background:"#f8f8f8",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+                    style={{padding:"12px 14px",borderRadius:11,border:"1.5px solid #e8e8e8",background:"#f5f2ed",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                     <SmartDot item={p} size={18}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:800}}>{p.name}</div>
-                      <div style={{fontSize:11,color:"#aaa"}}>{p.color||""} · {p.category}</div>
+                      <div style={{fontSize:11,color:"#b5adb0"}}>{p.color||""} · {p.category}</div>
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
-                      <div style={{fontSize:10,color:"#aaa"}}>Gr. {blankPickerData.size}</div>
-                      <div style={{fontSize:18,fontWeight:900,color:sizeStock===0?"#ef4444":sizeStock<3?"#f97316":"#16a34a"}}>{sizeStock}</div>
+                      <div style={{fontSize:10,color:"#b5adb0"}}>Gr. {blankPickerData.size}</div>
+                      <div style={{fontSize:18,fontWeight:900,color:sizeStock===0?"#F97B4F":sizeStock<3?"#e5a23c":"#5fa8a0"}}>{sizeStock}</div>
                     </div>
                   </button>
                 );
               })}
             </div>
             <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0"}}>
-              <button type="button" onClick={()=>setBlankPickerData(null)} style={{width:"100%",padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+              <button type="button" onClick={()=>setBlankPickerData(null)} style={{width:"100%",padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
             </div>
           </div>
         </div>
@@ -2899,32 +2899,32 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
         <div style={{width:36,height:36,borderRadius:10,background:"#96bf48",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SHOP size={18} color="#fff"/></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800}}>Shopify Sync</div>
-          <div style={{fontSize:11,color:"#aaa",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
-            <span style={{width:8,height:8,borderRadius:"50%",background:connected===true?"#16a34a":connected===false?"#ef4444":"#d1d5db",display:"inline-block",flexShrink:0}}/>
+          <div style={{fontSize:11,color:"#b5adb0",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:connected===true?"#5fa8a0":connected===false?"#F97B4F":"#d1d5db",display:"inline-block",flexShrink:0}}/>
             <span>{connected===true?"Verbunden":connected===false?"Nicht verbunden":"..."} · {shopifyProds.length} Produkte</span>
           </div>
         </div>
-        {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
-        <button onClick={()=>{checkConnection(true);loadAll(true);loadOrders(true);}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#555"/> Reload</button>
+        {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#5fa8a0":"#e5a23c",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fef5e6",borderRadius:8}}>{syncMsg}</div>}
+        <button onClick={()=>{checkConnection(true);loadAll(true);loadOrders(true);}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#5e5058",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#5e5058"/> Reload</button>
       </div>
 
       {/* Sub-tabs */}
-      <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
+      <div style={{display:"flex",gap:0,background:"#ece8e1",borderRadius:12,padding:4}}>
         {[["products","Produkte",0],["orders","Bestellungen",(()=>{const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);return shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);})()]].map(([t,lbl,count])=>(
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-            {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+            {lbl}{count>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
         ))}
       </div>
 
-      {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#ef4444",fontSize:13}}>⚠ {error} — Token korrekt eingetragen?</div>}
-      {loading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Laden...</div>}
+      {error&&<div style={{background:"#fde9e2",border:"1px solid #fecaca",borderRadius:10,padding:"12px 16px",color:"#F97B4F",fontSize:13}}>⚠ {error} — Token korrekt eingetragen?</div>}
+      {loading&&<div style={{textAlign:"center",padding:40,color:"#b5adb0"}}>⟳ Laden...</div>}
 
       {/* Products */}
       {tab==="products"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <input value={prodSearch} onChange={e=>setProdSearch(e.target.value)} placeholder="Produkt suchen..." style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
-          {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Treffer</div>}
+          <input value={prodSearch} onChange={e=>setProdSearch(e.target.value)} placeholder="Produkt suchen..." style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f5f2ed"}}/>
+          {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).length===0&&<div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>Keine Treffer</div>}
           {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).map(sp=>{
             const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id&&l.linkLevel!=="variant");
             const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
@@ -2937,21 +2937,21 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                 <div onClick={()=>toggleExpand(sp.id)} style={{padding:"14px 16px",display:"flex",gap:12,alignItems:"center",cursor:"pointer",userSelect:"none"}}>
                   {sp.images?.[0]?.src
                     ?<img src={sp.images[0].src} style={{width:48,height:48,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
-                    :<div style={{width:48,height:48,borderRadius:8,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={20} color="#aaa"/></div>}
+                    :<div style={{width:48,height:48,borderRadius:8,background:"#ece8e1",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={20} color="#b5adb0"/></div>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:13,fontWeight:800}}>{sp.title}</div>
-                    <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten · {sp.status}</div>
-                    {gkbs&&<div style={{fontSize:11,color:"#16a34a",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
-                    {!gkbs&&varLinkCount>0&&<div style={{fontSize:11,color:"#3b82f6",marginTop:2,fontWeight:700}}><IC_LINK size={11} color="#3b82f6"/> {varLinkCount} Farbe{varLinkCount>1?"n":""} verknüpft</div>}
+                    <div style={{fontSize:11,color:"#b5adb0"}}>{variants.length} Varianten · {sp.status}</div>
+                    {gkbs&&<div style={{fontSize:11,color:"#5fa8a0",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
+                    {!gkbs&&varLinkCount>0&&<div style={{fontSize:11,color:"#584053",marginTop:2,fontWeight:700}}><IC_LINK size={11} color="#584053"/> {varLinkCount} Farbe{varLinkCount>1?"n":""} verknüpft</div>}
                   </div>
                   <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
-                    <div style={{fontSize:10,color:"#aaa"}}>Gesamt</div>
-                    <div style={{fontSize:20,fontWeight:900,color:totalInv===0?"#ef4444":totalInv<10?"#f97316":"#111",lineHeight:1}}>{totalInv}</div>
+                    <div style={{fontSize:10,color:"#b5adb0"}}>Gesamt</div>
+                    <div style={{fontSize:20,fontWeight:900,color:totalInv===0?"#F97B4F":totalInv<10?"#e5a23c":"#111",lineHeight:1}}>{totalInv}</div>
                   </div>
-                  <span style={{fontSize:14,color:"#bbb",flexShrink:0,transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
+                  <span style={{fontSize:14,color:"#b5adb0",flexShrink:0,transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
                   <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true});}}
-                    style={{width:40,height:40,borderRadius:10,border:"1px solid",borderColor:link?"#bbf7d0":varLinkCount>0?"#93c5fd":"#e8e8e8",background:link?"#f0fdf4":varLinkCount>0?"#eff6ff":"#f8f8f8",color:link?"#16a34a":varLinkCount>0?"#3b82f6":"#999",cursor:"pointer",fontWeight:700,fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
-                    <IC_LINK size={14} color="#3b82f6"/>
+                    style={{width:40,height:40,borderRadius:10,border:"1px solid",borderColor:link?"#bbf7d0":varLinkCount>0?"#9a8494":"#e8e3dd",background:link?"#f0fdf4":varLinkCount>0?"#f0eaee":"#f5f2ed",color:link?"#5fa8a0":varLinkCount>0?"#584053":"#9a9094",cursor:"pointer",fontWeight:700,fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
+                    <IC_LINK size={14} color="#584053"/>
                   </button>
                 </div>
                 {expanded&&variants.length>0&&(()=>{
@@ -2999,16 +2999,16 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                         const qty=v.inventory_quantity||0;
                         const colorLink = shopifyLinks.find(l=>l.shopifyProductId==String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
                         return(
-                          <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:ci%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
-                            <IC_PAINT size={11} color="#888"/>
+                          <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:ci%2===0?"#fff":"#f8f5f0",fontSize:13,gap:8}}>
+                            <IC_PAINT size={11} color="#8a7d84"/>
                             <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{color==="_default_"?"Default":color}</div>
-                            <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
+                            <div style={{fontSize:12,color:"#8a7d84",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
                             <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
-                              <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
+                              <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#F97B4F":qty<=3?"#e5a23c":"#5fa8a0"}}>{qty}</span>
                             </div>
                             <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
-                              style={{width:28,height:28,borderRadius:7,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
-                              <IC_LINK size={11} color="#3b82f6"/>
+                              style={{width:28,height:28,borderRadius:7,border:"1px solid",borderColor:colorLink?"#9a8494":"#e8e3dd",background:colorLink?"#f0eaee":"#f5f2ed",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
+                              <IC_LINK size={11} color="#584053"/>
                             </button>
                           </div>
                         );
@@ -3022,16 +3022,16 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                       return(
                         <div key={color}>
                           {/* Color group header */}
-                          {hasMultipleColors&&<div style={{display:"flex",alignItems:"center",padding:"8px 16px",background:"#fafafa",borderTop:"1px solid #f0f0f0",gap:8}}>
-                            <IC_PAINT size={12} color="#888"/>
+                          {hasMultipleColors&&<div style={{display:"flex",alignItems:"center",padding:"8px 16px",background:"#f8f5f0",borderTop:"1px solid #f0f0f0",gap:8}}>
+                            <IC_PAINT size={12} color="#8a7d84"/>
                             <div style={{flex:1,minWidth:0}}>
                               <span style={{fontSize:12,fontWeight:800,color:"#333"}}>{color}</span>
-                              {linkedGkbs&&<span style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginLeft:8}}><IC_LINK size={9} color="#3b82f6"/> {linkedGkbs.name}</span>}
+                              {linkedGkbs&&<span style={{fontSize:10,color:"#584053",fontWeight:700,marginLeft:8}}><IC_LINK size={9} color="#584053"/> {linkedGkbs.name}</span>}
                             </div>
-                            <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#111"}}>{groupInv}</span>
+                            <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:groupInv===0?"#F97B4F":groupInv<5?"#e5a23c":"#111"}}>{groupInv}</span>
                             <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
-                              style={{width:30,height:30,borderRadius:8,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
-                              <IC_LINK size={12} color="#3b82f6"/>
+                              style={{width:30,height:30,borderRadius:8,border:"1px solid",borderColor:colorLink?"#9a8494":"#e8e3dd",background:colorLink?"#f0eaee":"#f5f2ed",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
+                              <IC_LINK size={12} color="#584053"/>
                             </button>
                           </div>}
                           {/* Variants – single line per variant */}
@@ -3041,11 +3041,11 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                             const colorPart = hasMultipleColors ? color : "";
                             const label = hasMultipleColors ? `${colorPart} / ${sizePart}` : (v.title||"Default");
                             return(
-                              <div key={v.id} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:vi%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
+                              <div key={v.id} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:vi%2===0?"#fff":"#f8f5f0",fontSize:13,gap:8}}>
                                 <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</div>
-                                <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
+                                <div style={{fontSize:12,color:"#8a7d84",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
                                 <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
-                                  <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
+                                  <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#F97B4F":qty<=3?"#e5a23c":"#5fa8a0"}}>{qty}</span>
                                 </div>
                               </div>
                             );
@@ -3054,8 +3054,8 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                       );
                     })}
                     {/* Footer */}
-                    <div style={{display:"flex",padding:"8px 16px",borderTop:"1px solid #f0f0f0",background:"#fafafa",fontSize:12,fontWeight:700}}>
-                      <div style={{flex:1,color:"#888"}}>{variants.length} Varianten{hasMultipleColors?` · ${colorGroups.length} Farben`:""}</div>
+                    <div style={{display:"flex",padding:"8px 16px",borderTop:"1px solid #f0f0f0",background:"#f8f5f0",fontSize:12,fontWeight:700}}>
+                      <div style={{flex:1,color:"#8a7d84"}}>{variants.length} Varianten{hasMultipleColors?` · ${colorGroups.length} Farben`:""}</div>
                       <div style={{width:55,textAlign:"right",color:"#111"}}>{totalInv} Stk</div>
                       
                     </div>
@@ -3074,15 +3074,15 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
             const normalize=(t)=>t.toUpperCase().replace(/\s+/g," ").trim().split(" - ")[0].trim();
             const isOE=(t)=>ONLINE_EXCLUSIVE_PRODUCTS.map(normalize).includes(normalize(t));
             const filtered=shopifyOrders.map(o=>({...o,line_items:(o.line_items||[]).filter(l=>isOE(l.title))})).filter(o=>o.line_items.length>0);
-            if(filtered.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Online Exclusive Bestellungen</div>;
+            if(filtered.length===0) return <div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>Keine Online Exclusive Bestellungen</div>;
             return filtered.map(order=>(
             <div key={order.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
               <div style={{padding:"12px 16px",background:"#f9f9f9",display:"flex",alignItems:"center",gap:10}}>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:800}}>{order.name}</div>
-                  <div style={{fontSize:11,color:"#aaa"}}>{order.customer?.first_name} {order.customer?.last_name} · {new Date(order.created_at).toLocaleDateString("de-AT")}</div>
+                  <div style={{fontSize:11,color:"#b5adb0"}}>{order.customer?.first_name} {order.customer?.last_name} · {new Date(order.created_at).toLocaleDateString("de-AT")}</div>
                 </div>
-                <span style={{fontSize:11,background:order.fulfillment_status?"#f0fdf4":"#fff7ed",color:order.fulfillment_status?"#16a34a":"#f97316",borderRadius:6,padding:"3px 8px",fontWeight:700}}>
+                <span style={{fontSize:11,background:order.fulfillment_status?"#f0fdf4":"#fef5e6",color:order.fulfillment_status?"#5fa8a0":"#e5a23c",borderRadius:6,padding:"3px 8px",fontWeight:700}}>
                   {order.fulfillment_status||"Offen"}
                 </span>
               </div>
@@ -3091,21 +3091,21 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                 const gkbs = link ? products.find(p=>p.id===link.gkbsProductId) : null;
                 const already = prods.some(p=>p.shopifyOrderId===String(order.id)&&p.name.includes(line.title));
                 return(
-                  <div key={line.id} style={{padding:"10px 16px",display:"flex",alignItems:"center",gap:10,borderTop:"1px solid #f5f5f5"}}>
+                  <div key={line.id} style={{padding:"10px 16px",display:"flex",alignItems:"center",gap:10,borderTop:"1px solid #eee9e2"}}>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:12,fontWeight:700}}>{line.title}</div>
-                      <div style={{fontSize:11,color:"#888"}}>{line.variant_title} · {line.quantity}×</div>
-                      {gkbs&&<div style={{fontSize:10,color:"#16a34a",marginTop:1}}>Blank: {gkbs.name}</div>}
+                      <div style={{fontSize:11,color:"#8a7d84"}}>{line.variant_title} · {line.quantity}×</div>
+                      {gkbs&&<div style={{fontSize:10,color:"#5fa8a0",marginTop:1}}>Blank: {gkbs.name}</div>}
                       {line.properties?.some(p=>p.name==="_online_exclusive")||!gkbs
                         ?<span style={{fontSize:9,background:"#f0f9ff",color:"#0369a1",borderRadius:4,padding:"2px 5px",fontWeight:800}}>🌐 ONLINE EXCLUSIVE</span>
                         :null}
                     </div>
                     {!already
                       ?<button onClick={()=>createOrderFromLine(order,line)}
-                          style={{padding:"6px 12px",borderRadius:8,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
+                          style={{padding:"6px 12px",borderRadius:8,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0}}>
                           + Auftrag
                         </button>
-                      :<span style={{fontSize:11,color:"#16a34a",fontWeight:700,flexShrink:0}}>✓ Erstellt</span>}
+                      :<span style={{fontSize:11,color:"#5fa8a0",fontWeight:700,flexShrink:0}}>✓ Erstellt</span>}
                   </div>
                 );
               })}
@@ -3210,70 +3210,70 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
         <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div>
             <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>{preColorGroup?"Farbe":"Shopify"} verknüpfen</div>
-            <div style={{fontSize:12,color:"#aaa",marginTop:2}}>
+            <div style={{fontSize:12,color:"#b5adb0",marginTop:2}}>
               {prod?.name||prod?.title}
-              {preColorGroup&&<span style={{color:"#3b82f6",fontWeight:700}}> → {preColorGroup} ({preColorVariants?.length} Varianten)</span>}
+              {preColorGroup&&<span style={{color:"#584053",fontWeight:700}}> → {preColorGroup} ({preColorVariants?.length} Varianten)</span>}
             </div>
           </div>
           <div style={{display:"flex",gap:6}}>
-            {canSave&&<button onClick={doSave} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:16,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✓</button>}
-            <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+            {canSave&&<button onClick={doSave} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#5fa8a0",color:"#fff",fontSize:16,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✓</button>}
+            <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#ece8e1",color:"#6e5e68",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
           </div>
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:14,flex:1}}>
-          {loading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Lade Shopify Daten...</div>}
+          {loading&&<div style={{textAlign:"center",padding:40,color:"#b5adb0"}}>⟳ Lade Shopify Daten...</div>}
           {!loading&&<>
             {/* Color group info */}
-            {preColorGroup&&<div style={{background:"#eff6ff",borderRadius:10,padding:"12px 16px",border:"1px solid #bfdbfe"}}>
-              <div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginBottom:4,display:"flex",alignItems:"center",gap:4}}><IC_PAINT size={12} color="#3b82f6"/> FARBGRUPPE</div>
+            {preColorGroup&&<div style={{background:"#f0eaee",borderRadius:10,padding:"12px 16px",border:"1px solid #bfdbfe"}}>
+              <div style={{fontSize:11,color:"#584053",fontWeight:700,marginBottom:4,display:"flex",alignItems:"center",gap:4}}><IC_PAINT size={12} color="#584053"/> FARBGRUPPE</div>
               <div style={{fontSize:14,fontWeight:800,color:"#1e40af"}}>{preColorGroup}</div>
               <div style={{fontSize:11,color:"#60a5fa",marginTop:4,display:"flex",flexWrap:"wrap",gap:4}}>
                 {(preColorVariants||[]).map(v=><span key={v.id} style={{background:"#dbeafe",borderRadius:4,padding:"1px 6px",fontSize:10}}>{(v.title||"").split("/")[0].trim()} ({v.inventory_quantity||0})</span>)}
               </div>
             </div>}
             {isFromShopify&&<div>
-              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GKBS PRODUKT (Blank)</div>
-              <select value={selGkbs||""} onChange={e=>setSelGkbs(e.target.value)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none"}}>
+              <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GKBS PRODUKT (Blank)</div>
+              <select value={selGkbs||""} onChange={e=>setSelGkbs(e.target.value)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f5f2ed",fontSize:14,outline:"none"}}>
                 <option value="">-- Blank wählen --</option>
                 {products.map(p=><option key={p.id} value={p.id}>{p.name} ({p.category})</option>)}
               </select>
             </div>}
             {!isFromShopify&&<div>
-              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SHOPIFY PRODUKT</div>
+              <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SHOPIFY PRODUKT</div>
               <div style={{position:"relative"}}>
                 <input value={linkSearch} onChange={e=>{setLinkSearch(e.target.value);setLinkDropOpen(true);}} onFocus={()=>setLinkDropOpen(true)}
-                  placeholder="Shopify Produkt suchen..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
-                {selSP&&!linkDropOpen&&<div style={{fontSize:12,color:"#16a34a",fontWeight:700,marginTop:4}}>✓ {selSP.title}</div>}
+                  placeholder="Shopify Produkt suchen..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f5f2ed",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+                {selSP&&!linkDropOpen&&<div style={{fontSize:12,color:"#5fa8a0",fontWeight:700,marginTop:4}}>✓ {selSP.title}</div>}
                 {linkDropOpen&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.1)",maxHeight:200,overflowY:"auto",zIndex:10,marginTop:2}}>
                   {shopifyProds.filter(sp=>!linkSearch||sp.title.toLowerCase().includes(linkSearch.toLowerCase())).slice(0,20).map(sp=>(
                     <div key={sp.id} onClick={()=>{setSelSP(sp);setSelVar(null);setLinkSearch(sp.title);setLinkDropOpen(false);}}
-                      style={{padding:"9px 12px",cursor:"pointer",fontSize:13,fontWeight:selSP?.id===sp.id?800:400,background:selSP?.id===sp.id?"#f0fdf4":"#fff",borderBottom:"1px solid #f5f5f5"}}
+                      style={{padding:"9px 12px",cursor:"pointer",fontSize:13,fontWeight:selSP?.id===sp.id?800:400,background:selSP?.id===sp.id?"#f0fdf4":"#fff",borderBottom:"1px solid #eee9e2"}}
                       onMouseEnter={e=>e.currentTarget.style.background="#f9f9f9"}
                       onMouseLeave={e=>e.currentTarget.style.background=selSP?.id===sp.id?"#f0fdf4":"#fff"}>
                       {sp.title}
                     </div>
                   ))}
-                  {shopifyProds.filter(sp=>!linkSearch||sp.title.toLowerCase().includes(linkSearch.toLowerCase())).length===0&&<div style={{padding:12,color:"#ccc",fontSize:12,textAlign:"center"}}>Keine Treffer</div>}
+                  {shopifyProds.filter(sp=>!linkSearch||sp.title.toLowerCase().includes(linkSearch.toLowerCase())).length===0&&<div style={{padding:12,color:"#c8c0c4",fontSize:12,textAlign:"center"}}>Keine Treffer</div>}
                 </div>}
               </div>
             </div>}
             {selSP&&!preColorGroup&&!isFromShopify&&<div>
-              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
+              <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {(()=>{const vv=selSP.variants||[];if(vv.length===1&&!selVar)setTimeout(()=>setSelVar(vv[0]),0);return vv;})().map(v=>(
                   <button key={v.id} type="button" onClick={()=>setSelVar(v)}
-                    style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selVar?.id===v.id?"#111":"#e8e8e8"}`,background:selVar?.id===v.id?"#111":"#f8f8f8",color:selVar?.id===v.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
+                    style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selVar?.id===v.id?"#111":"#e8e3dd"}`,background:selVar?.id===v.id?"#111":"#f5f2ed",color:selVar?.id===v.id?"#fff":"#5e5058",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
                     <span>{v.title}</span><span style={{fontSize:11,opacity:0.6}}>Lager: {v.inventory_quantity}</span>
                   </button>
                 ))}
               </div>
             </div>}
             {locs.length>1&&<div>
-              <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STANDORT</div>
+              <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>STANDORT</div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {locs.map(loc=>(
                   <button key={loc.id} type="button" onClick={()=>setSelLoc(loc)}
-                    style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selLoc?.id===loc.id?"#111":"#e8e8e8"}`,background:selLoc?.id===loc.id?"#111":"#f8f8f8",color:selLoc?.id===loc.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left"}}>
+                    style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selLoc?.id===loc.id?"#111":"#e8e3dd"}`,background:selLoc?.id===loc.id?"#111":"#f5f2ed",color:selLoc?.id===loc.id?"#fff":"#5e5058",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left"}}>
                     {loc.name}
                   </button>
                 ))}
@@ -3282,10 +3282,10 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
           </>}
         </div>
         <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0,display:"flex",gap:10}}>
-          {existingColorLink&&<button type="button" onClick={doRemoveColorLink} style={{padding:13,borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontWeight:700,fontSize:13}}>✕ Entfernen</button>}
-          <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+          {existingColorLink&&<button type="button" onClick={doRemoveColorLink} style={{padding:13,borderRadius:10,border:"1px solid #fecaca",background:"#fde9e2",color:"#F97B4F",cursor:"pointer",fontWeight:700,fontSize:13}}>✕ Entfernen</button>}
+          <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
           <button type="button" onClick={doSave} disabled={!canSave}
-            style={{flex:2,padding:13,borderRadius:10,border:"none",background:canSave?"#16a34a":"#e0e0e0",color:canSave?"#fff":"#bbb",cursor:canSave?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
+            style={{flex:2,padding:13,borderRadius:10,border:"none",background:canSave?"#5fa8a0":"#ddd8d0",color:canSave?"#fff":"#b5adb0",cursor:canSave?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
             ✓ Verknüpfen & Speichern
           </button>
         </div>
@@ -3331,14 +3331,14 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
         onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
           <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>{blank.name}</div>
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#ece8e1",color:"#6e5e68",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
         </div>
         <div style={{overflowY:"auto",padding:"12px 20px",display:"flex",flexDirection:"column",gap:8,flex:1}}>
           {sizes.map(s => (
-            <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:10,padding:"10px 14px"}}>
+            <div key={s.key} style={{display:"flex",alignItems:"center",gap:10,background:"#f5f2ed",borderRadius:10,padding:"10px 14px"}}>
               <span style={{fontSize:13,fontWeight:800,color:"#444",flex:1}}>{s.label}</span>
               <button onClick={()=>setM(s.key, mengen[s.key]-1)}
-                style={{width:34,height:34,borderRadius:9,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
+                style={{width:34,height:34,borderRadius:9,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>−</button>
               {editing===s.key
                 ? <input ref={el=>refs.current[s.key]=el} type="number" value={draft}
                     onChange={e=>setDraft(e.target.value)}
@@ -3351,12 +3351,12 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
                   </span>
               }
               <button onClick={()=>setM(s.key, mengen[s.key]+1)}
-                style={{width:34,height:34,borderRadius:9,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
+                style={{width:34,height:34,borderRadius:9,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:20,cursor:"pointer",fontWeight:800,flexShrink:0}}>+</button>
             </div>
           ))}
         </div>
         <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0}}>
-          <div style={{fontSize:12,color:"#aaa",marginBottom:8,textAlign:"right"}}>
+          <div style={{fontSize:12,color:"#b5adb0",marginBottom:8,textAlign:"right"}}>
             Gesamt: <strong style={{color:"#111"}}>{Object.values(mengen).reduce((a,b)=>a+b,0)} Stk</strong>
           </div>
           <button onClick={doConfirm}
@@ -3383,20 +3383,20 @@ function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, i
   return(
     <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(stueckVorschau)}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>{isDtf?"DTF bestellen":"Bestellung aufgeben"}</div>
-      <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
+      <div style={{background:"#f5f2ed",borderRadius:12,padding:"14px 16px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
-        <div style={{fontSize:12,color:"#888",marginTop:2}}>{label}{blank.color?" · "+blank.color:""}</div>
+        <div style={{fontSize:12,color:"#8a7d84",marginTop:2}}>{label}{blank.color?" · "+blank.color:""}</div>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>{isMeter?"MENGE (IN METER)":"MENGE"}</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>{isMeter?"MENGE (IN METER)":"MENGE"}</div>
         <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
-          <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
+          <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
           <div style={{textAlign:"center"}}>
             <input ref={inputRef} type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
               style={{width:80,textAlign:"center",...F_HEAD_STYLE,fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
-            {isMeter&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginTop:4}}>= {stueckVorschau} Stk ins Lager</div>}
+            {isMeter&&<div style={{fontSize:11,color:"#584053",fontWeight:700,marginTop:4}}>= {stueckVorschau} Stk ins Lager</div>}
           </div>
-          <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
+          <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
         </div>
       </div>
       <button onClick={()=>onConfirm(stueckVorschau)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
@@ -3418,26 +3418,26 @@ function WareneingangModal({bestellung, onClose, onConfirm}){
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Wareneingang</div>
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"14px 16px",borderLeft:"3px solid #16a34a"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{bestellung.produktName}</div>
-        <div style={{fontSize:12,color:"#888",marginTop:2}}>{isMeter?"DTF Transfer":bestellung.label}</div>
-        <div style={{fontSize:11,color:"#16a34a",fontWeight:700,marginTop:4}}>
+        <div style={{fontSize:12,color:"#8a7d84",marginTop:2}}>{isMeter?"DTF Transfer":bestellung.label}</div>
+        <div style={{fontSize:11,color:"#5fa8a0",fontWeight:700,marginTop:4}}>
           Bestellt: {isMeter?`${bestellung.meterAnzahl||"?"} m (${bestellung.menge} Stk)`:`${bestellung.menge} Stk`}
         </div>
       </div>
       <div>
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>
           EINGEHENDE MENGE {isMeter?"(IN METER)":""}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12,justifyContent:"center"}}>
-          <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
+          <button type="button" onClick={()=>setMenge(m=>Math.max(1,m-1))} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fde9e2",color:"#F97B4F",fontSize:22,cursor:"pointer",fontWeight:800}}>−</button>
           <div style={{textAlign:"center"}}>
             <input type="number" inputMode="numeric" value={menge} onChange={e=>setMenge(Math.max(1,parseInt(e.target.value)||1))}
               style={{width:80,textAlign:"center",...F_HEAD_STYLE,fontSize:28,fontWeight:900,border:"2px solid #e8e8e8",borderRadius:12,padding:"8px",outline:"none"}}/>
-            {isMeter&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginTop:4}}>= {stueckVorschau} Stk werden ins Lager gebucht</div>}
+            {isMeter&&<div style={{fontSize:11,color:"#584053",fontWeight:700,marginTop:4}}>= {stueckVorschau} Stk werden ins Lager gebucht</div>}
           </div>
-          <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
+          <button type="button" onClick={()=>setMenge(m=>m+1)} style={{width:40,height:40,borderRadius:10,border:"none",background:"#e6f3f1",color:"#5fa8a0",fontSize:22,cursor:"pointer",fontWeight:800}}>+</button>
         </div>
       </div>
-      <button onClick={()=>onConfirm(menge)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#16a34a",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+      <button onClick={()=>onConfirm(menge)} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:"#5fa8a0",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
         Wareneingang bestätigen ✓
       </button>
     </ModalWrap>
@@ -3463,44 +3463,44 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {/* Sub-tabs */}
-      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
+      <div style={{display:"flex",gap:6,background:"#ece8e1",borderRadius:12,padding:4}}>
         {[["textilien","Blanks",offenTextilien],["dtf","DTF",offenDtf]].map(([v,lbl,count])=>(
-          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {lbl}{count>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
           </button>
         ))}
       </div>
       {offene.length === 0 && (
-        <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
-          {subTab==="dtf"?<IC_PRINT size={40} color="#ccc"/>:<IC_BOX size={40} color="#ccc"/>}
+        <div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>
+          {subTab==="dtf"?<IC_PRINT size={40} color="#c8c0c4"/>:<IC_BOX size={40} color="#c8c0c4"/>}
           <div style={{marginTop:12}}>Keine offenen Bestellungen</div>
         </div>
       )}
       {offene.length > 0 && (
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"0 4px"}}>OFFENE BESTELLUNGEN · {offene.length}</div>
+          <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,padding:"0 4px"}}>OFFENE BESTELLUNGEN · {offene.length}</div>
           {offene.map(b => (
             <div key={b.id} style={{background:"#fff",borderRadius:14,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",alignItems:"center",gap:12}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{b.produktName}</div>
-                <div style={{fontSize:12,color:"#888",marginTop:2}}>{b.isDtf?"DTF Transfer":b.label}</div>
-                <div style={{fontSize:11,color:"#bbb",marginTop:4}}>Bestellt am {fmtDate(b.bestelltAm)}</div>
+                <div style={{fontSize:12,color:"#8a7d84",marginTop:2}}>{b.isDtf?"DTF Transfer":b.label}</div>
+                <div style={{fontSize:11,color:"#b5adb0",marginTop:4}}>Bestellt am {fmtDate(b.bestelltAm)}</div>
               </div>
               <div style={{textAlign:"center",marginRight:8}}>
                 {b.isDtf&&b.meterAnzahl
                   ?<>
                     <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#111",lineHeight:1}}>{b.meterAnzahl} m</div>
-                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>{b.menge} Stk</div>
+                    <div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>{b.menge} Stk</div>
                   </>
                   :<>
                     <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#111",lineHeight:1}}>{b.menge}</div>
-                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>Stk</div>
+                    <div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>Stk</div>
                   </>
                 }
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                <button onClick={()=>onWareneingang(b)} style={{padding:"8px 14px",borderRadius:10,border:"none",background:"#16a34a",color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>✓ Eingang</button>
-                <button onClick={()=>onDelete(b.id)} style={{padding:"6px 14px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",color:"#bbb",fontSize:11,fontWeight:700,cursor:"pointer"}}>Entfernen</button>
+                <button onClick={()=>onWareneingang(b)} style={{padding:"8px 14px",borderRadius:10,border:"none",background:"#5fa8a0",color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>✓ Eingang</button>
+                <button onClick={()=>onDelete(b.id)} style={{padding:"6px 14px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",color:"#b5adb0",fontSize:11,fontWeight:700,cursor:"pointer"}}>Entfernen</button>
               </div>
             </div>
           ))}
@@ -3508,26 +3508,26 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
       )}
       {erledigt.length > 0 && (
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"0 4px",marginTop:8}}>ZULETZT ERHALTEN</div>
+          <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,padding:"0 4px",marginTop:8}}>ZULETZT ERHALTEN</div>
           {erledigt.map(b => (
-            <div key={b.id} style={{background:"#f8f8f8",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:12,opacity:0.7}}>
+            <div key={b.id} style={{background:"#f5f2ed",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:12,opacity:0.7}}>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:800,color:"#555"}}>{b.produktName}</div>
-                <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{b.label}</div>
+                <div style={{fontSize:13,fontWeight:800,color:"#5e5058"}}>{b.produktName}</div>
+                <div style={{fontSize:11,color:"#b5adb0",marginTop:2}}>{b.label}</div>
               </div>
               <div style={{textAlign:"center"}}>
                 {b.isDtf&&b.meterAnzahl
                   ?<>
-                    <div style={{fontSize:18,fontWeight:900,color:"#16a34a",lineHeight:1}}>{b.meterAnzahl} m</div>
-                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>{b.menge} Stk</div>
+                    <div style={{fontSize:18,fontWeight:900,color:"#5fa8a0",lineHeight:1}}>{b.meterAnzahl} m</div>
+                    <div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>{b.menge} Stk</div>
                   </>
                   :<>
-                    <div style={{fontSize:18,fontWeight:900,color:"#16a34a",lineHeight:1}}>{b.menge}</div>
-                    <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>Stk</div>
+                    <div style={{fontSize:18,fontWeight:900,color:"#5fa8a0",lineHeight:1}}>{b.menge}</div>
+                    <div style={{fontSize:10,color:"#b5adb0",fontWeight:700}}>Stk</div>
                   </>
                 }
               </div>
-              <div style={{fontSize:10,color:"#16a34a",fontWeight:800}}>✓ Erhalten</div>
+              <div style={{fontSize:10,color:"#5fa8a0",fontWeight:800}}>✓ Erhalten</div>
             </div>
           ))}
         </div>
@@ -3571,7 +3571,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     const totalQty=prod.isCapOrder?(prod.capColors||[]).reduce((a,c)=>a+c.qty,0):DEFAULT_SIZES.reduce((a,s)=>a+((prod.qty||{})[s]||0),0);
     if(!dtfBedarfMap[prod.dtfId])dtfBedarfMap[prod.dtfId]={needed:0,auftraege:[]};
     dtfBedarfMap[prod.dtfId].needed+=totalQty;
-    dtfBedarfMap[prod.dtfId].auftraege.push({name:prod.name,qty:totalQty,colorHex:prod.colorHex||"#888"});
+    dtfBedarfMap[prod.dtfId].auftraege.push({name:prod.name,qty:totalQty,colorHex:prod.colorHex||"#8a7d84"});
   });
 
   const hasAnyMissing=Object.entries(bedarfMap).some(([blankId,sizeNeeds])=>{
@@ -3602,17 +3602,17 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   return(
     <div style={S.col12}>
       {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
-      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
+      <div style={{display:"flex",gap:6,background:"#ece8e1",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","Blanks",bedarfCount||0],["dtf","DTF",dtfBedarfCount||0]].map(([v,lbl,count])=>(
-          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {lbl}{count>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
         ))}
       </div>
 
       {subTab==="dtf"&&(
         dtfEntries.length===0
-          ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Kein DTF-Bedarf</div>
+          ? <div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>Kein DTF-Bedarf</div>
           : <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {dtfEntries.map(({dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit})=>{
                 const ok=toOrder===0,okWithMin=toOrderWithMin===0;
@@ -3623,14 +3623,14 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                       <div style={{width:32,height:32,borderRadius:8,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_PRINT size={14} color="#fff"/></div>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:14,fontWeight:800}}>{dtf.name}</div>
-                        <div style={{fontSize:11,color:"#aaa",marginTop:1}}>
-                          Folien: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong>
-                          {dpm>1&&<span style={{color:"#bbb"}}> · {dpm} Designs/m</span>}
+                        <div style={{fontSize:11,color:"#b5adb0",marginTop:1}}>
+                          Folien: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#5fa8a0":"#F97B4F"}}>{avail}</strong>
+                          {dpm>1&&<span style={{color:"#b5adb0"}}> · {dpm} Designs/m</span>}
                         </div>
                         {(dtfBedarfMap[dtf.id]?.auftraege||[]).length>0&&(
                           <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:6}}>
                             {dtfBedarfMap[dtf.id].auftraege.map((a,i)=>(
-                              <span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:20,fontSize:10,fontWeight:700,background:"#f0f0f0",color:"#555"}}>
+                              <span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:20,fontSize:10,fontWeight:700,background:"#ece8e1",color:"#5e5058"}}>
                                 <span style={{width:7,height:7,borderRadius:"50%",background:a.colorHex,display:"inline-block",flexShrink:0}}/>{a.name} · {a.qty} Stk
                               </span>
                             ))}
@@ -3638,14 +3638,14 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         )}
                       </div>
                       <button type="button" disabled={dtfOrdered} onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
-                        style={{background:dtfOrdered?"#f0f0f0":ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#ddd":ok?"#bbf7d0":"#fecaca"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
-                        <div style={{fontSize:9,color:dtfOrdered?"#bbb":ok?"#16a34a":"#ef4444",fontWeight:700}}>{dtfOrdered?"✓":"MIN"}</div>
-                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":ok?"#16a34a":"#ef4444",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
+                        style={{background:dtfOrdered?"#ece8e1":ok?"#e6f3f1":"#fde9e2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#d8d0d4":ok?"#bbf7d0":"#f5c4b8"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
+                        <div style={{fontSize:9,color:dtfOrdered?"#b5adb0":ok?"#5fa8a0":"#F97B4F",fontWeight:700}}>{dtfOrdered?"✓":"MIN"}</div>
+                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#b5adb0":ok?"#5fa8a0":"#F97B4F",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                       </button>
                       {minStock>0&&<button type="button" disabled={dtfOrdered} onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrderWithMin)}
-                        style={{background:dtfOrdered?"#f0f0f0":okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#ddd":okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
-                        <div style={{fontSize:9,color:dtfOrdered?"#bbb":okWithMin?"#16a34a":"#f97316",fontWeight:700}}>{dtfOrdered?"":"MAX"}</div>
-                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":okWithMin?"#16a34a":"#f97316",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderWithMinM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
+                        style={{background:dtfOrdered?"#ece8e1":okWithMin?"#e6f3f1":"#fef5e6",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#d8d0d4":okWithMin?"#bbf7d0":"#f5deb0"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
+                        <div style={{fontSize:9,color:dtfOrdered?"#b5adb0":okWithMin?"#5fa8a0":"#e5a23c",fontWeight:700}}>{dtfOrdered?"":"MAX"}</div>
+                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#b5adb0":okWithMin?"#5fa8a0":"#e5a23c",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderWithMinM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                       </button>}
                     </div>
                   </div>
@@ -3657,7 +3657,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
       {subTab==="textilien"&&(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {!hasAnyMissing
-            ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{marginBottom:12}}><IC_CHECK_CIRCLE size={40} color="#ccc"/></div>Kein Bestellbedarf</div>
+            ? <div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}><div style={{marginBottom:12}}><IC_CHECK_CIRCLE size={40} color="#c8c0c4"/></div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
                 <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const hh=String(now.getHours()).padStart(2,"0");const mi=String(now.getMinutes()).padStart(2,"0");const ss=String(now.getSeconds()).padStart(2,"0");const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}/${mm}/${yy}+${hh}:${mi}:${ss}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
@@ -3708,20 +3708,20 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               <div key={blankId} style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
-                  <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
+                  <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#b5adb0"}}>{blank.color} · {blank.category}</div></div>
                   {hasStCode&&<button type="button" onClick={toggleProduct}
-                    style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
+                    style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#8a7d84":"#d8d0d4"}`,background:allCsvSelected?"#111":someCsvSelected?"#ece8e1":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#b5adb0",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
                     CSV
                   </button>}
                   
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allDone||minSizes.length===0}
-                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef2f2",color:allDone?"#bbb":"#ef4444",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#ddd8d0":"#fde9e2",color:allDone?"#b5adb0":"#F97B4F",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
                       MIN
                     </button>
                     <button type="button" disabled={allDone||maxSizes.length===0}
-                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fff7ed",color:allDone?"#bbb":"#f97316",fontSize:11,fontWeight:800,cursor:allDone||maxSizes.length===0?"not-allowed":"pointer",opacity:allDone||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa",letterSpacing:0.5}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#ddd8d0":"#fef5e6",color:allDone?"#b5adb0":"#e5a23c",fontSize:11,fontWeight:800,cursor:allDone||maxSizes.length===0?"not-allowed":"pointer",opacity:allDone||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
                       MAX
                     </button>
@@ -3733,20 +3733,20 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                        background:state==="done"?"#f0f0f0":"#f8f8f8",
+                        background:state==="done"?"#ece8e1":"#f5f2ed",
                         borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer",opacity:state==="done"?0.6:1}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
-                        <span style={{...F_HEAD_STYLE,fontSize:16,color:state==="done"?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
+                        <span style={{...F_HEAD_STYLE,fontSize:16,color:state==="done"?"#b5adb0":"#6e5e68",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
                         {state==="done"
-                          ?<span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#bbb",lineHeight:1}}>✓</span>
+                          ?<span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#b5adb0",lineHeight:1}}>✓</span>
                           :<div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                            <span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#ef4444",lineHeight:1}}>{remainMin}</span>
-                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800,color:"#f97316",lineHeight:1}}>/{remainMax}</span>}
+                            <span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#F97B4F",lineHeight:1}}>{remainMin}</span>
+                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800,color:"#e5a23c",lineHeight:1}}>/{remainMax}</span>}
                           </div>}
-                        <span style={{position:"absolute",top:5,right:6,fontSize:9,color:"#bbb",fontWeight:700}}>{avail}</span>
+                        <span style={{position:"absolute",top:5,right:6,fontSize:9,color:"#b5adb0",fontWeight:700}}>{avail}</span>
                         {hasStCode&&<div style={{position:"absolute",bottom:4,right:4}}>
                           <button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
-                            style={{padding:"1px 4px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
+                            style={{padding:"1px 4px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#d8d0d4"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#c8c0c4",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
                             CSV
                           </button>
                         </div>}
@@ -3760,18 +3760,18 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     return(
                       <div key={key} onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                         style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,cursor:"pointer",
-                          background:state==="done"?"#f0f0f0":"#f8f8f8",opacity:state==="done"?0.6:1}}>
+                          background:state==="done"?"#ece8e1":"#f5f2ed",opacity:state==="done"?0.6:1}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
-                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:state==="done"?"#bbb":"#333",minWidth:40}}>{label}</span>
-                        <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
+                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:state==="done"?"#b5adb0":"#333",minWidth:40}}>{label}</span>
+                        <div style={{flex:1,fontSize:11,color:"#8a7d84"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#5fa8a0":"#F97B4F"}}>{avail}</strong></div>
                         {state==="done"
-                          ?<span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#bbb",flexShrink:0}}>✓</span>
+                          ?<span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#b5adb0",flexShrink:0}}>✓</span>
                           :<div style={{display:"flex",alignItems:"baseline",gap:2,flexShrink:0}}>
-                            <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#ef4444"}}>{remainMin}</span>
-                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#f97316"}}>/{remainMax}</span>}
+                            <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#F97B4F"}}>{remainMin}</span>
+                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#e5a23c"}}>/{remainMax}</span>}
                           </div>}
                         {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
-                          style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0}}>
+                          style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#d8d0d4"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#b5adb0",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0}}>
                           CSV
                         </button>}
                       </div>
@@ -3784,28 +3784,28 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   if(!t) return null;
                   const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state}=t;
                   return(
-                    <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"10px 14px",display:"flex",flexDirection:"column",gap:8}}>
+                    <div style={{background:"#f8f5f0",borderRadius:12,border:"1px solid #ebebeb",padding:"10px 14px",display:"flex",flexDirection:"column",gap:8}}>
                       <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800}}>{label}</span>
-                        <span style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></span>
-                        {minStockVal>0&&<span style={{fontSize:10,color:"#bbb"}}>· Soll: {minStockVal}</span>}
-                        {t.oQty>0&&<span style={{fontSize:10,color:"#16a34a",fontWeight:700}}>· ✓ {t.oQty} bestellt</span>}
+                        <span style={{fontSize:11,color:"#8a7d84"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#5fa8a0":"#F97B4F"}}>{avail}</strong></span>
+                        {minStockVal>0&&<span style={{fontSize:10,color:"#b5adb0"}}>· Soll: {minStockVal}</span>}
+                        {t.oQty>0&&<span style={{fontSize:10,color:"#5fa8a0",fontWeight:700}}>· ✓ {t.oQty} bestellt</span>}
                         <div style={{marginLeft:"auto",display:"flex",gap:6}}>
                           <button type="button" disabled={remainMin===0} onClick={()=>{if(remainMin>0)onBestellen(blank,key,isCapKey,capColor,remainMin);}}
-                            style={{background:remainMin===0?"#f0f0f0":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:52,border:`1px solid ${remainMin===0?"#ddd":"#fecaca"}`,cursor:remainMin===0?"not-allowed":"pointer",flexShrink:0,opacity:remainMin===0?0.5:1}}>
-                            <div style={{fontSize:8,color:remainMin===0?"#bbb":"#ef4444",fontWeight:700}}>{remainMin===0?"✓":"MIN"}</div>
-                            <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#ef4444",lineHeight:1}}>{remainMin===0?"–":remainMin}</div>
+                            style={{background:remainMin===0?"#ece8e1":"#fde9e2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:52,border:`1px solid ${remainMin===0?"#d8d0d4":"#f5c4b8"}`,cursor:remainMin===0?"not-allowed":"pointer",flexShrink:0,opacity:remainMin===0?0.5:1}}>
+                            <div style={{fontSize:8,color:remainMin===0?"#b5adb0":"#F97B4F",fontWeight:700}}>{remainMin===0?"✓":"MIN"}</div>
+                            <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#b5adb0":"#F97B4F",lineHeight:1}}>{remainMin===0?"–":remainMin}</div>
                           </button>
                           {minStockVal>0&&<button type="button" disabled={remainMax===0} onClick={()=>{if(remainMax>0)onBestellen(blank,key,isCapKey,capColor,remainMax);}}
-                            style={{background:remainMax===0?"#f0f0f0":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:52,border:`1px solid ${remainMax===0?"#ddd":"#fed7aa"}`,cursor:remainMax===0?"not-allowed":"pointer",flexShrink:0,opacity:remainMax===0?0.5:1}}>
-                            <div style={{fontSize:8,color:remainMax===0?"#bbb":"#f97316",fontWeight:700}}>{remainMax===0?"✓":"MAX"}</div>
-                            <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#f97316",lineHeight:1}}>{remainMax===0?"–":remainMax}</div>
+                            style={{background:remainMax===0?"#ece8e1":"#fef5e6",borderRadius:8,padding:"4px 10px",textAlign:"center",width:52,border:`1px solid ${remainMax===0?"#d8d0d4":"#f5deb0"}`,cursor:remainMax===0?"not-allowed":"pointer",flexShrink:0,opacity:remainMax===0?0.5:1}}>
+                            <div style={{fontSize:8,color:remainMax===0?"#b5adb0":"#e5a23c",fontWeight:700}}>{remainMax===0?"✓":"MAX"}</div>
+                            <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#b5adb0":"#e5a23c",lineHeight:1}}>{remainMax===0?"–":remainMax}</div>
                           </button>}
                         </div>
                       </div>
                       {(breakdownMap[blankId]?.[key]||[]).length>0&&<div style={{display:"flex",flexDirection:"column",gap:4}}>
-                        <div style={{fontSize:9,color:"#bbb",fontWeight:700,letterSpacing:0.6}}>AUFTRÄGE</div>
+                        <div style={{fontSize:9,color:"#b5adb0",fontWeight:700,letterSpacing:0.6}}>AUFTRÄGE</div>
                         {(breakdownMap[blankId]?.[key]||[]).map((item,i)=>(
                           <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
                             <ColorDot hex={item.colorHex} size={12}/>
@@ -3834,8 +3834,8 @@ function SheetsSetupModal({onClose}){
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
         <span style={{fontSize:28}}>✓</span>
         <div>
-          <div style={{fontSize:14,fontWeight:800,color:"#16a34a"}}>Verbunden</div>
-          <div style={{fontSize:12,color:"#555",marginTop:2}}>Alle Änderungen werden automatisch gespeichert.</div>
+          <div style={{fontSize:14,fontWeight:800,color:"#5fa8a0"}}>Verbunden</div>
+          <div style={{fontSize:12,color:"#5e5058",marginTop:2}}>Alle Änderungen werden automatisch gespeichert.</div>
         </div>
       </div>
       <button type="button" onClick={onClose} style={{width:"100%",padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>OK</button>
@@ -3846,7 +3846,7 @@ function SheetsSetupModal({onClose}){
 // ─── Print Pie Dot helper ────────────────────────────────────────
 function PrintPie({colors,r=10,vk="stock"}){
   const cols=colors.filter(c=>(c[vk]||0)>0);
-  if(cols.length<=1) return <span className="p-dot" style={{background:cols[0]?.hex||"#888",width:r*2,height:r*2}}/>;
+  if(cols.length<=1) return <span className="p-dot" style={{background:cols[0]?.hex||"#8a7d84",width:r*2,height:r*2}}/>;
   const tot=cols.reduce((a,c)=>a+(c[vk]||0),0);
   let ang=-Math.PI/2;
   const s=r*2;
@@ -3870,9 +3870,9 @@ function PrintPie({colors,r=10,vk="stock"}){
 // ─── Password Lock ────────────────────────────────────────────────
 // ─── Users (passwords stored as SHA-256 hashes) ───────────────────
 const USERS = [
-  {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#3b82f6"},
-  {name:"Merlin", hash:"62936c7f995c57dee05ec9666e6600fa1318448bd8b6373a99e7129e2106e14b", avatar:"M", color:"#ef4444"},
-  {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#a855f7"},
+  {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#584053"},
+  {name:"Merlin", hash:"62936c7f995c57dee05ec9666e6600fa1318448bd8b6373a99e7129e2106e14b", avatar:"M", color:"#F97B4F"},
+  {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#8b6894"},
 ];
 
 async function sha256(str){
@@ -3924,19 +3924,19 @@ function ActivityLogModal({onClose}){
   return(
     <ModalWrap onClose={onClose} width={540}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Activity Log</div>
-      <div style={{fontSize:11,color:"#bbb",marginTop:-8}}>Letzte 14 Tage · {logs.length} Einträge</div>
-      {logs.length===0&&<div style={{color:"#ccc",textAlign:"center",padding:40,fontSize:14}}>Noch keine Aktivitäten</div>}
+      <div style={{fontSize:11,color:"#b5adb0",marginTop:-8}}>Letzte 14 Tage · {logs.length} Einträge</div>
+      {logs.length===0&&<div style={{color:"#c8c0c4",textAlign:"center",padding:40,fontSize:14}}>Noch keine Aktivitäten</div>}
       <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:400,overflowY:"auto"}}>
         {logs.map((l,i)=>{
-          const col = userColors[l.user] || "#888";
+          const col = userColors[l.user] || "#8a7d84";
           return(
-            <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"9px 12px",background:"#f8f8f8",borderRadius:10,borderLeft:`3px solid ${col}`}}>
+            <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"9px 12px",background:"#f5f2ed",borderRadius:10,borderLeft:`3px solid ${col}`}}>
               <div style={{width:28,height:28,borderRadius:"50%",background:col,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:900,flexShrink:0}}>
                 {l.user[0]}
               </div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{l.action}</div>
-                <div style={{fontSize:10,color:"#aaa",marginTop:2}}>{l.user} · {fmtTs(l.ts)}</div>
+                <div style={{fontSize:10,color:"#b5adb0",marginTop:2}}>{l.user} · {fmtTs(l.ts)}</div>
               </div>
             </div>
           );
@@ -3971,17 +3971,17 @@ function LoginScreen({onUnlock}){
   return(
     <div style={{minHeight:"100vh",background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk', -apple-system, sans-serif",padding:20}}>
       <div style={{background:"#fff",borderRadius:20,padding:"40px 32px",width:"100%",maxWidth:360,boxShadow:"0 20px 60px rgba(0,0,0,0.4)"}}>
-        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4,color:"#ef4444"}}>GKBS</div>
-        <div style={{fontSize:13,color:"#bbb",fontWeight:600,marginBottom:28}}>Inventory Management</div>
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4,color:"#F97B4F"}}>GKBS</div>
+        <div style={{fontSize:13,color:"#b5adb0",fontWeight:600,marginBottom:28}}>Inventory Management</div>
 
         {/* Profile selection */}
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:10}}>PROFIL AUSWÄHLEN</div>
+        <div style={{fontSize:11,color:"#b5adb0",fontWeight:700,letterSpacing:0.8,marginBottom:10}}>PROFIL AUSWÄHLEN</div>
         <div style={{display:"flex",gap:10,marginBottom:24}}>
           {USERS.map(u=>(
             <button key={u.name} onClick={()=>{setSelected(u.name);setPw("");setError(false);}}
-              style={{flex:1,padding:"12px 6px",borderRadius:12,border:`2px solid ${selected===u.name?u.color:"#e8e8e8"}`,background:selected===u.name?u.color+"15":"#fff",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"all 0.15s"}}>
+              style={{flex:1,padding:"12px 6px",borderRadius:12,border:`2px solid ${selected===u.name?u.color:"#e8e3dd"}`,background:selected===u.name?u.color+"15":"#fff",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"all 0.15s"}}>
               <div style={{width:36,height:36,borderRadius:"50%",background:u.color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900}}>{u.avatar}</div>
-              <span style={{fontSize:11,fontWeight:700,color:selected===u.name?u.color:"#555"}}>{u.name}</span>
+              <span style={{fontSize:11,fontWeight:700,color:selected===u.name?u.color:"#5e5058"}}>{u.name}</span>
             </button>
           ))}
         </div>
@@ -3996,13 +3996,13 @@ function LoginScreen({onUnlock}){
                 value={pw}
                 onChange={e=>{setPw(e.target.value);setError(false);}}
                 onKeyDown={e=>e.key==="Enter"&&check()}
-                style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#ef4444":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef2f2":"#fff",transition:"border-color 0.2s"}}
+                style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#F97B4F":"#e8e3dd"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fde9e2":"#fff",transition:"border-color 0.2s"}}
               />
-              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:18,padding:0,lineHeight:1}}>
+              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#b5adb0",fontSize:18,padding:0,lineHeight:1}}>
                 {show?"🙈":"👁"}
               </button>
             </div>
-            {error&&<div style={{color:"#ef4444",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
+            {error&&<div style={{color:"#F97B4F",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
             <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
               Einloggen →
             </button>
@@ -4178,7 +4178,7 @@ function AppInner({currentUser,onLogout}){
     const label = isCapKey ? (capColor?.name || key) : key;
     const neu = {
       id: Date.now().toString() + Math.random().toString(36).slice(2),
-      blankId: blank.id, blankName: blank.name, produktName: blank.name, blankHex: blank.colorHex||"#ccc",
+      blankId: blank.id, blankName: blank.name, produktName: blank.name, blankHex: blank.colorHex||"#c8c0c4",
       sizeKey: key, label, isCapKey, capColor: capColor||null,
       menge, status: "offen",
       bestelltAm: new Date().toISOString(), createdBy: currentUser.name,
@@ -4590,7 +4590,7 @@ function AppInner({currentUser,onLogout}){
         <div style={{position:"fixed",bottom:80,right:16,background:"#111",color:"#fff",borderRadius:12,padding:"12px 16px",zIndex:500,maxWidth:320,fontSize:12,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
             <span style={{fontWeight:800,fontSize:13}}>Shopify Debug</span>
-            <button onClick={()=>setShopifyDebug([])} style={{background:"none",border:"none",color:"#aaa",cursor:"pointer",fontSize:16,lineHeight:1}}>✕</button>
+            <button onClick={()=>setShopifyDebug([])} style={{background:"none",border:"none",color:"#b5adb0",cursor:"pointer",fontSize:16,lineHeight:1}}>✕</button>
           </div>
           {shopifyDebug.map((l,i)=><div key={i} style={{padding:"2px 0",borderBottom:"1px solid #333",color:l.startsWith("❌")?"#f87171":l.startsWith("✓")?"#4ade80":"#fff"}}>{l}</div>)}
         </div>
@@ -4615,30 +4615,30 @@ function AppInner({currentUser,onLogout}){
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#ef4444"}}>GKBS</div>
+            <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#F97B4F"}}>GKBS</div>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</span>
-              {syncStatus==="loading"&&<span style={{fontSize:10,color:"#f97316",fontWeight:600}}>· Laden...</span>}
-              {syncStatus==="saving"&&<span style={{fontSize:10,color:"#f97316",fontWeight:600}}>· Speichern...</span>}
-              {syncStatus==="ok"&&<span style={{width:6,height:6,borderRadius:"50%",background:"#16a34a",display:"inline-block"}}/>}
-              {syncStatus==="error"&&<span style={{fontSize:10,color:"#ef4444",fontWeight:600}}>· Fehler</span>}
+              <span style={{fontSize:10,fontWeight:700,color:"#b5adb0",letterSpacing:0.5}}>{APP_VERSION}</span>
+              {syncStatus==="loading"&&<span style={{fontSize:10,color:"#e5a23c",fontWeight:600}}>· Laden...</span>}
+              {syncStatus==="saving"&&<span style={{fontSize:10,color:"#e5a23c",fontWeight:600}}>· Speichern...</span>}
+              {syncStatus==="ok"&&<span style={{width:6,height:6,borderRadius:"50%",background:"#5fa8a0",display:"inline-block"}}/>}
+              {syncStatus==="error"&&<span style={{fontSize:10,color:"#F97B4F",fontWeight:600}}>· Fehler</span>}
             </div>
           </div>
           <div style={{display:"flex",gap:6,alignItems:"center"}}>
             {/* Sheets */}
             <button onClick={()=>setShowSheetsSetup(true)} title={sheetsUrl?"Verbunden":"Sheets einrichten"} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:sheetsUrl?"#f0fdf4":"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <IC_CLOUD size={14} color={sheetsUrl?"#16a34a":"#ccc"}/>
+              <IC_CLOUD size={14} color={sheetsUrl?"#5fa8a0":"#c8c0c4"}/>
             </button>
             {/* Undo */}
             <button onClick={undo} disabled={!canUndo} title="Rückgängig"
-              style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f2ed",color:canUndo?"#333":"#c8c0c4",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
             </button>
-            <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_CLOCK size={15} color="#555"/></button>
-            {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>
-              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
-            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
-            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
+            <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#5e5058",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_CLOCK size={15} color="#5e5058"/></button>
+            {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#5e5058"/></button>
+              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
+            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
+            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#5fa8a0",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
             <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
               {currentUser.avatar}
             </button>
@@ -4647,16 +4647,16 @@ function AppInner({currentUser,onLogout}){
         </div>
         {/* Tab bar – desktop only, mobile uses bottom bar */}
         {!mobile&&<div style={{padding:"4px 24px 12px",marginTop:4}}>
-          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto"}}>
+          <div style={{display:"flex",gap:3,background:"#e8e3dd",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto"}}>
             {TABS.map(([v,lbl,Icon])=>(
               <button key={v} onClick={()=>setView(v)}
-                style={{flex:1,padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
-                <Icon size={15} color={view===v?"#111":"#aaa"}/>
+                style={{flex:1,padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
+                <Icon size={15} color={view===v?"#111":"#b5adb0"}/>
                 {lbl}
-                {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
-                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-                {v==="shopify"&&shopifyBadge>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
-                {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
+                {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
+                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+                {v==="shopify"&&shopifyBadge>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+                {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
               </button>
             ))}
           </div>
@@ -4689,9 +4689,9 @@ function AppInner({currentUser,onLogout}){
         {view==="production"&&(
           <div style={S.col12}>
             {/* Sub-tabs: Aufträge / Restock */}
-            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
+            <div style={{display:"flex",gap:0,background:"#ece8e1",borderRadius:12,padding:4,marginBottom:12}}>
               {[["auftraege","Aufträge"],["restock","Restock Empfehlungen"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
 
@@ -4700,21 +4700,21 @@ function AppInner({currentUser,onLogout}){
             {prodMainTab==="auftraege"&&<>
             {/* Filters – scrollable on mobile */}
             <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
-              <div style={{display:"flex",gap:2,background:"#e8e8e8",borderRadius:9,padding:3,flexShrink:0}}>
+              <div style={{display:"flex",gap:2,background:"#e8e3dd",borderRadius:9,padding:3,flexShrink:0}}>
                 {[["Alle",null,"Alle"],["Drucken","print","Drucken"],["Sticken","stitch","Sticken"]].map(([v,icon,lbl])=>{
                   const active=prodSubView===v;
-                  return <button key={v} onClick={()=>setProdSubView(v)} style={{padding:"6px 12px",borderRadius:7,border:"none",background:active?"#fff":"transparent",color:active?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:12,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4}}>
-                    {icon==="print"&&<IC_PRINT size={12} color={active?"#3b82f6":"#aaa"}/>}
-                    {icon==="stitch"&&<IC_STITCH size={12} color={active?"#a855f7":"#aaa"}/>}
+                  return <button key={v} onClick={()=>setProdSubView(v)} style={{padding:"6px 12px",borderRadius:7,border:"none",background:active?"#fff":"transparent",color:active?"#111":"#8a7d84",cursor:"pointer",fontWeight:700,fontSize:12,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4}}>
+                    {icon==="print"&&<IC_PRINT size={12} color={active?"#584053":"#b5adb0"}/>}
+                    {icon==="stitch"&&<IC_STITCH size={12} color={active?"#8b6894":"#b5adb0"}/>}
                     {lbl}
                   </button>;
                 })}
               </div>
-              <div style={{width:1,height:20,background:"#e0e0e0",flexShrink:0}}/>
-              {["Alle","Hoch","Mittel","Niedrig"].map(p=>{const s=PRIORITY[p]||{};const active=prioFilter===p;return <button key={p} onClick={()=>setPrioFilter(p)} style={{padding:"6px 11px",borderRadius:9,border:`1px solid ${active?(p==="Alle"?"#111":s.dot):"#e8e8e8"}`,background:active?(p==="Alle"?"#111":s.bg):"#fff",color:active?(p==="Alle"?"#fff":s.color):"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0}}>{p}</button>;})}
-              <button onClick={()=>setProds(ps=>{const active=ps.filter(p=>p.status!=="Fertig");const done=ps.filter(p=>p.status==="Fertig");const sorted=[...active].sort((a,b)=>PRIORITY_ORDER[a.priority]-PRIORITY_ORDER[b.priority]);return [...sorted,...done];})} style={{padding:"6px 11px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0,marginLeft:4}}>↕ Sortieren</button>
+              <div style={{width:1,height:20,background:"#ddd8d0",flexShrink:0}}/>
+              {["Alle","Hoch","Mittel","Niedrig"].map(p=>{const s=PRIORITY[p]||{};const active=prioFilter===p;return <button key={p} onClick={()=>setPrioFilter(p)} style={{padding:"6px 11px",borderRadius:9,border:`1px solid ${active?(p==="Alle"?"#111":s.dot):"#e8e3dd"}`,background:active?(p==="Alle"?"#111":s.bg):"#fff",color:active?(p==="Alle"?"#fff":s.color):"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0}}>{p}</button>;})}
+              <button onClick={()=>setProds(ps=>{const active=ps.filter(p=>p.status!=="Fertig");const done=ps.filter(p=>p.status==="Fertig");const sorted=[...active].sort((a,b)=>PRIORITY_ORDER[a.priority]-PRIORITY_ORDER[b.priority]);return [...sorted,...done];})} style={{padding:"6px 11px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0,marginLeft:4}}>↕ Sortieren</button>
             </div>
-            {filteredProds.length===0&&<div style={{color:"#ccc",fontSize:14,padding:40,textAlign:"center"}}>Keine aktiven Aufträge</div>}
+            {filteredProds.length===0&&<div style={{color:"#c8c0c4",fontSize:14,padding:40,textAlign:"center"}}>Keine aktiven Aufträge</div>}
             <div style={S.col10}>
               {filteredProds.map(prod=>(
                 <div key={prod.id} draggable onDragStart={e=>onDragStart(e,prod.id)} onDragEnter={()=>onDragEnter(null,prod.id)} onDragEnd={onDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===prod.id?0.45:1,transition:"opacity 0.15s",cursor:"grab"}}>
@@ -4740,13 +4740,13 @@ function AppInner({currentUser,onLogout}){
             </div>
             {/* Archive */}
             <div style={{marginTop:4}}>
-              <button onClick={()=>setShowArchive(o=>!o)} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:12,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,width:"100%"}}>
-                <span>{showArchive?"▾":"▸"}</span><IC_FOLDER size={14} color="#555"/> <span>Archiv</span>
-                <span style={{background:"#e8e8e8",color:"#666",borderRadius:20,padding:"2px 9px",fontSize:11,fontWeight:800,marginLeft:"auto"}}>{archivedProdsArr.length}</span>
+              <button onClick={()=>setShowArchive(o=>!o)} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:12,border:"1px solid #e8e8e8",background:"#fff",color:"#5e5058",cursor:"pointer",fontWeight:700,fontSize:13,width:"100%"}}>
+                <span>{showArchive?"▾":"▸"}</span><IC_FOLDER size={14} color="#5e5058"/> <span>Archiv</span>
+                <span style={{background:"#e8e3dd",color:"#6e5e68",borderRadius:20,padding:"2px 9px",fontSize:11,fontWeight:800,marginLeft:"auto"}}>{archivedProdsArr.length}</span>
               </button>
               {showArchive&&(
                 <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:8}}>
-                  {archivedProdsArr.length===0&&<div style={{color:"#ccc",fontSize:13,textAlign:"center",padding:24}}>Noch keine abgeschlossenen Aufträge</div>}
+                  {archivedProdsArr.length===0&&<div style={{color:"#c8c0c4",fontSize:13,textAlign:"center",padding:24}}>Noch keine abgeschlossenen Aufträge</div>}
                   {archivedProdsArr.map(prod=><ArchivedCard key={prod.id} prod={prod} blank={products.find(p=>p.id===prod.blankId)} onDelete={()=>setConfirmDelete({name:prod.name,onConfirm:()=>setProds(ps=>ps.filter(x=>x.id!==prod.id))})}/>)}
                 </div>
               )}
@@ -4759,9 +4759,9 @@ function AppInner({currentUser,onLogout}){
         {view==="inventory"&&(
           <>
             {/* Sub-tabs: Blanks / DTF */}
-            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
+            <div style={{display:"flex",gap:0,background:"#ece8e1",borderRadius:12,padding:4,marginBottom:12}}>
               {[["textil","Blanks"],["dtf","DTF"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
             {inventoryTab==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
@@ -4774,11 +4774,11 @@ function AppInner({currentUser,onLogout}){
             <div style={{display:"flex",gap:8,marginBottom:14,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
               <input placeholder="Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
                 style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"9px 13px",fontSize:16,outline:"none",width:mobile?120:160,flexShrink:0}}/>
-              {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"8px 12px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
+              {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"8px 12px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e3dd",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#6e5e68",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
             </div>
             <div style={{display:"grid",gap:10,gridTemplateColumns:mobile?"1fr":"repeat(auto-fill, minmax(560px, 1fr))"}}>
               {filtered.length===0
-                ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
+                ?<div style={{color:"#c8c0c4",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
                 :filtered.map(p=>(
                   <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
                     <ProductCard product={p} onUpdate={u=>{
@@ -4812,13 +4812,13 @@ function AppInner({currentUser,onLogout}){
       {mobile&&(
         <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"10px 0 env(safe-area-inset-bottom,12px)",zIndex:50}}>
           {TABS.map(([v,lbl,Icon])=>(
-            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#bbb",position:"relative"}}>
-              <Icon size={18} color={view===v?"#111":"#bbb"}/>
+            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#b5adb0",position:"relative"}}>
+              <Icon size={18} color={view===v?"#111":"#b5adb0"}/>
               <span style={{fontSize:9,fontWeight:700}}>{lbl}</span>
-              {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
-              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
-              {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
+              {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
+              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+              {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#F97B4F",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
             </button>
           ))}
         </div>
