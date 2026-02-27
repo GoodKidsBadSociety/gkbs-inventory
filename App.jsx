@@ -2410,6 +2410,69 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
 }
 
 
+
+// ─── Restock Order Modal ─────────────────────────────────────────
+function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDefault, onConfirm, onClose}){
+  const mobile = useIsMobile();
+  const parseSize = (title) => {
+    const s = (title||"").split("/")[0].trim().toUpperCase();
+    if(restockMin[s]!==undefined) return s;
+    return null;
+  };
+  const initQty = {};
+  (variants||[]).forEach(v=>{
+    const sz = parseSize(v.title);
+    const label = sz || v.title.split("/")[0].trim();
+    const min = sz ? restockMin[sz] : restockDefault;
+    const current = v.inventory_quantity||0;
+    const deficit = Math.max(0, min - current);
+    initQty[label] = deficit;
+  });
+  const [qty, setQty] = useState(initQty);
+  const setSize = (label, val) => setQty(q=>({...q,[label]:Math.max(0,val)}));
+  const totalQty = Object.values(qty).reduce((a,b)=>a+b,0);
+
+  return(
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={onClose}>
+      <div style={{background:"#fff",borderRadius:18,width:500,maxWidth:"95vw",maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
+          <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>Restock Auftrag</div>
+          <div style={{fontSize:12,color:"#aaa",marginTop:2}}>{product.title} → {blank.name}</div>
+        </div>
+        <div style={{overflowY:"auto",padding:"16px 20px",flex:1}}>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {Object.entries(qty).map(([label, val])=>{
+              const v = (variants||[]).find(x=>(parseSize(x.title)||x.title.split("/")[0].trim())===label);
+              const current = v?.inventory_quantity||0;
+              const min = restockMin[label.toUpperCase()]!==undefined ? restockMin[label.toUpperCase()] : restockDefault;
+              return(
+                <div key={label} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                  background:val>0?"#fff7ed":"#f8f8f8",border:`1px solid ${val>0?"#fed7aa":"#ebebeb"}`,
+                  borderRadius:12,padding:"10px 6px",flex:1,minWidth:mobile?60:70}}>
+                  <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:val>0?"#9a3412":"#666"}}>{label}</span>
+                  <div style={{fontSize:10,color:"#aaa"}}>{current}/{min}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:4}}>
+                    <button onClick={()=>setSize(label,val-1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:16,cursor:"pointer",fontWeight:800}}>−</button>
+                    <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,minWidth:28,textAlign:"center",color:val>0?"#f97316":"#ccc"}}>{val}</span>
+                    <button onClick={()=>setSize(label,val+1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#dcfce7",color:"#16a34a",fontSize:16,cursor:"pointer",fontWeight:800}}>+</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{padding:"12px 20px 20px",borderTop:"1px solid #f0f0f0",flexShrink:0,display:"flex",gap:10}}>
+          <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+          <button type="button" disabled={totalQty===0} onClick={()=>onConfirm(qty)}
+            style={{flex:2,padding:13,borderRadius:10,border:"none",background:totalQty>0?"#16a34a":"#e0e0e0",color:totalQty>0?"#fff":"#bbb",cursor:totalQty>0?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>
+            Auftrag erstellen · {totalQty} Stk
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Restock View ─────────────────────────────────────────────────
 const RESTOCK_MIN = {XXS:2,XS:2,S:3,M:4,L:5,XL:4,XXL:2,XXXL:1};
 const RESTOCK_DEFAULT = 5;
@@ -2419,6 +2482,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const [shopProds,setShopProds]=useState([]);
   const [loading,setLoading]=useState(false);
   const [search,setSearch]=useState("");
+  const [restockModal,setRestockModal]=useState(null);
 
   useEffect(()=>{
     if(!sheetsUrl)return;
@@ -2505,18 +2569,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                   <IC_LINK size={11} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
                   {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
                 </div>
-                <button onClick={()=>{
-                  const qty={};lowVars.forEach(v=>{const sz=parseSize(v.title);const szLabel=sz||v.title.split("/")[0].trim();const min=sz?RESTOCK_MIN[sz]:RESTOCK_DEFAULT;const deficit=min-(v.inventory_quantity||0);qty[szLabel]=Math.max(1,deficit);});
-                  if(onAddProd)onAddProd({
-                    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-                    name:"Restock: "+sp.title,blankId:blank.id,
-                    qty,done:{},status:"Offen",priority:"Hoch",
-                    veredelung:blank.veredelung||[],
-                    dtfDesignId:dtf?.id||null,dtfDesignName:dtf?.name||null,
-                    shopifyProductLink:null,
-                    createdAt:new Date().toISOString()
-                  });
-                }} style={{padding:"6px 14px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:12,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                <button onClick={()=>setRestockModal({product:sp,variants:allVars,blank,dtf,lowVars})} style={{padding:"6px 14px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:12,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
                   <IC_PROD size={12} color="#fff"/> Auftrag
                 </button>
               </div>;
@@ -2550,6 +2603,28 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
           </div>
         );
       })}
+      {restockModal&&<RestockOrderModal
+        product={restockModal.product}
+        variants={restockModal.variants}
+        blank={restockModal.blank}
+        dtf={restockModal.dtf}
+        restockMin={RESTOCK_MIN}
+        restockDefault={RESTOCK_DEFAULT}
+        onClose={()=>setRestockModal(null)}
+        onConfirm={(qty)=>{
+          const {blank,dtf,product:sp}=restockModal;
+          if(onAddProd)onAddProd({
+            id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+            name:"Restock: "+sp.title,blankId:blank.id,
+            qty,done:{},status:"Offen",priority:"Hoch",
+            veredelung:blank.veredelung||[],
+            dtfDesignId:dtf?.id||null,dtfDesignName:dtf?.name||null,
+            shopifyProductLink:null,
+            createdAt:new Date().toISOString()
+          });
+          setRestockModal(null);
+        }}
+      />}
     </div>
   );
 }
@@ -2772,7 +2847,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
       <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
         {[["products","Produkte",0],["orders","Bestellungen",(()=>{const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);return shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);})()]].map(([t,lbl,count])=>(
           <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-            {lbl}{count>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+            {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
         ))}
       </div>
@@ -2989,9 +3064,11 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
     })();
   },[]);
 
+  // Auto-select first variant when linking from Shopify
+  const effectiveVar = selVar || (isFromShopify&&selSP?(selSP.variants||[])[0]:null);
   const canSave = linkLevel==="color"
     ? selSP&&(isFromShopify?selGkbs:true)
-    : selSP&&selVar&&(isFromShopify?selGkbs:true);
+    : selSP&&effectiveVar&&(isFromShopify?selGkbs:true);
 
   const doSave = () => {
     if(!canSave) return;
@@ -3015,13 +3092,15 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
       onSave(updated);
     } else {
       // Product-level link
+      const useVar = effectiveVar;
+      if(!useVar) return;
       const newLink = {
         gkbsProductId:gkbsId,
         shopifyProductId:String(selSP.id),
-        shopifyVariantId:String(selVar.id),
-        shopifyInventoryItemId:String(selVar.inventory_item_id),
+        shopifyVariantId:String(useVar.id),
+        shopifyInventoryItemId:String(useVar.inventory_item_id),
         shopifyLocationId:selLoc?String(selLoc.id):(locs[0]?String(locs[0].id):""),
-        label:`${selSP.title} – ${selVar.title}`,
+        label:`${selSP.title} – ${useVar.title}`,
         linkLevel:"product"
       };
       const updated = [...links.filter(l=>!(l.gkbsProductId===gkbsId&&l.linkLevel==="product")), newLink];
@@ -3090,7 +3169,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
                 </div>}
               </div>
             </div>}
-            {selSP&&!preColorGroup&&<div>
+            {selSP&&!preColorGroup&&!isFromShopify&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {(()=>{const vv=selSP.variants||[];if(vv.length===1&&!selVar)setTimeout(()=>setSelVar(vv[0]),0);return vv;})().map(v=>(
@@ -3369,7 +3448,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount}){
   const mobile = useIsMobile();
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
@@ -3436,8 +3515,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     <div style={S.col12}>
       {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
-        {[["textilien","Textilien"],["dtf","DTF"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        {[["textilien","Textilien",bedarfCount||0],["dtf","DTF",dtfBedarfCount||0]].map(([v,lbl,count])=>(
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+          </button>
         ))}
       </div>
 
@@ -3555,8 +3636,8 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     </button>
                   </div>
                 </div>
-                {/* Size boxes */}
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {/* Size cells – boxes on desktop, rows on mobile */}
+                {!mobile?<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {relKeys.map(key=>{
                     const needed=sizeNeeds[key]||0;
                     const isCapKey=key.startsWith("cap_");
@@ -3567,7 +3648,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const toOrder=Math.max(0,needed-avail),toOrderWithMin=Math.max(0,needed+minStockVal-avail);
                     const ok=toOrder===0;
                     const ordered=alreadyOrdered(key);
-                    const isOpen=openSize===`${blankId}-${key}`;
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",
                         background:ordered?"#f8f8f8":ok?"#f0fdf4":"#fef2f2",
@@ -3589,6 +3669,34 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     );
                   })}
                 </div>
+                :<div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  {relKeys.map(key=>{
+                    const needed=sizeNeeds[key]||0;
+                    const isCapKey=key.startsWith("cap_");
+                    const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
+                    const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
+                    const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
+                    const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+                    const toOrder=Math.max(0,needed-avail),toOrderWithMin=Math.max(0,needed+minStockVal-avail);
+                    const ok=toOrder===0;
+                    const ordered=alreadyOrdered(key);
+                    return(
+                      <div key={key} onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
+                        style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,cursor:"pointer",
+                          background:ordered?"#f8f8f8":ok?"#f0fdf4":"#fef2f2",
+                          border:`1px solid ${ordered?"#e8e8e8":ok?"#bbf7d0":"#fecaca"}`}}>
+                        {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
+                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:ordered?"#bbb":"#333",minWidth:40}}>{label}</span>
+                        <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
+                        <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:ordered?"#ccc":ok?"#16a34a":"#ef4444"}}>{ordered?"✓":toOrder}</span>
+                        {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
+                          style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0}}>
+                          CSV
+                        </button>}
+                      </div>
+                    );
+                  })}
+                </div>}
                 {/* Expanded detail for selected size */}
                 {relKeys.some(key=>openSize===`${blankId}-${key}`)&&(()=>{
                   const key=relKeys.find(k=>openSize===`${blankId}-${k}`);
@@ -4154,6 +4262,39 @@ function AppInner({currentUser,onLogout}){
   const lowCount=products.filter(p=>p.category==="Cap"?(p.capColors||[]).some(c=>c.stock>0&&c.stock<=LOW_STOCK):Object.values(p.stock||{}).some(v=>v>0&&v<=LOW_STOCK)).length;
   const outCount=products.filter(p=>p.category==="Cap"?(p.capColors||[]).every(c=>c.stock===0):Object.values(p.stock||{}).every(v=>v===0)).length;
   const activeProdsArr=prods.filter(p=>p.status!=="Fertig");
+  const bedarfCount=useMemo(()=>{
+    const bm={};
+    activeProdsArr.forEach(p=>{
+      if(!bm[p.blankId])bm[p.blankId]={};
+      if(p.isCapOrder){(p.capColors||[]).forEach(cc=>{const k="cap_"+cc.id+"_"+cc.name;bm[p.blankId][k]=(bm[p.blankId][k]||0)+(cc.qty||0);});}
+      else{DEFAULT_SIZES.forEach(s=>{const q=(p.qty||{})[s]||0;bm[p.blankId][s]=(bm[p.blankId][s]||0)+q;});}
+    });
+    let count=0;
+    Object.entries(bm).forEach(([blankId,sn])=>{
+      const bl=products.find(p=>p.id===blankId);if(!bl)return;
+      const has=Object.keys(sn).some(k=>{
+        const needed=sn[k]||0;if(!needed)return false;
+        const isCap=k.startsWith("cap_");
+        const avail=isCap?((bl.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===k)?.stock||0):((bl.stock||{})[k]||0);
+        const min=isCap?0:((bl.minStock||{})[k]||0);
+        return Math.max(0,needed+min-avail)>0;
+      });
+      if(has)count++;
+    });
+    return count;
+  },[activeProdsArr,products]);
+  const dtfBedarfCount=useMemo(()=>{
+    const dm={};
+    activeProdsArr.forEach(p=>{
+      if(!p.dtfId)return;
+      const tot=p.isCapOrder?(p.capColors||[]).reduce((a,c)=>a+c.qty,0):DEFAULT_SIZES.reduce((a,s)=>a+((p.qty||{})[s]||0),0);
+      dm[p.dtfId]=(dm[p.dtfId]||0)+tot;
+    });
+    return (dtfItems||[]).filter(d=>{
+      const needed=dm[d.id]||0;
+      return Math.max(0,needed-(d.stock||0))>0;
+    }).length;
+  },[activeProdsArr,dtfItems]);
   const archivedProdsArr=prods.filter(p=>p.status==="Fertig").sort((a,b)=>(b.completedAt||0)-(a.completedAt||0));
   const PRIORITY_ORDER={"Hoch":0,"Mittel":1,"Niedrig":2};
 
@@ -4420,8 +4561,9 @@ function AppInner({currentUser,onLogout}){
                 <Icon size={15} color={view===v?"#111":"#aaa"}/>
                 {lbl}
                 {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
-                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-                {v==="shopify"&&shopifyBadge>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+                {v==="shopify"&&shopifyBadge>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+                {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
               </button>
             ))}
           </div>
@@ -4444,7 +4586,7 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{const item=bestellungen.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name||(item.isDtf?"DTF-Bestellung":"Bestellung"),onConfirm:()=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");setConfirmDelete(null);}});}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} bedarfCount={bedarfCount} dtfBedarfCount={dtfBedarfCount} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
   const dpm=dtf.designsPerMeter||1;
   const meter=dpm>1?Math.ceil(menge/dpm):null;
   setBestellModal({blank:{...dtf,category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
@@ -4575,8 +4717,9 @@ function AppInner({currentUser,onLogout}){
               <Icon size={18} color={view===v?"#111":"#bbb"}/>
               <span style={{fontSize:9,fontWeight:700}}>{lbl}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
-              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+              {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
             </button>
           ))}
         </div>
