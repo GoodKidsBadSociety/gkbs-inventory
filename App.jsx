@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.8";
+const APP_VERSION = "v3.3.9";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2411,6 +2411,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
 // ─── Restock Order Modal ─────────────────────────────────────────
 function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDefault, onConfirm, onClose}){
   const mobile = useIsMobile();
+  const blankMinStock = blank?.minStock||{};
   const parseSize = (title) => {
     const parts = (title||"").split("/").map(p=>p.trim().toUpperCase());
     for(const p of parts){ if(restockMin[p]!==undefined) return p; }
@@ -2420,9 +2421,12 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
   (variants||[]).forEach(v=>{
     const sz = parseSize(v.title);
     const label = sz || v.title.split("/").pop().trim();
-    const min = sz ? restockMin[sz] : restockDefault;
+    // Use blank's SOLL stock for deficit, fall back to restock min
+    const sollVal = sz ? (blankMinStock[sz]||0) : 0;
+    const minVal = sz ? restockMin[sz] : restockDefault;
+    const target = sollVal > 0 ? sollVal : minVal;
     const current = v.inventory_quantity||0;
-    const deficit = Math.max(0, min - current);
+    const deficit = Math.max(0, target - current);
     initQty[label] = deficit;
   });
   const [qty, setQty] = useState(initQty);
@@ -2441,13 +2445,15 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
             {Object.entries(qty).map(([label, val])=>{
               const v = (variants||[]).find(x=>(parseSize(x.title)||x.title.split("/").pop().trim())===label);
               const current = v?.inventory_quantity||0;
-              const min = restockMin[label.toUpperCase()]!==undefined ? restockMin[label.toUpperCase()] : restockDefault;
+              const sollVal = blankMinStock[label.toUpperCase()]||0;
+              const minVal = restockMin[label.toUpperCase()]!==undefined ? restockMin[label.toUpperCase()] : restockDefault;
+              const target = sollVal > 0 ? sollVal : minVal;
               return(
                 <div key={label} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,
                   background:val>0?"#fff7ed":"#f8f8f8",border:`1px solid ${val>0?"#fed7aa":"#ebebeb"}`,
                   borderRadius:12,padding:"10px 6px",flex:1,minWidth:mobile?60:70}}>
                   <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:val>0?"#9a3412":"#666"}}>{label}</span>
-                  <div style={{fontSize:10,color:"#aaa"}}>{current}/{min}</div>
+                  <div style={{fontSize:10,color:"#aaa"}}>{current}/{target}</div>
                   <div style={{display:"flex",alignItems:"center",gap:4}}>
                     <button onClick={()=>setSize(label,val-1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#fee2e2",color:"#ef4444",fontSize:16,cursor:"pointer",fontWeight:800}}>−</button>
                     <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,minWidth:28,textAlign:"center",color:val>0?"#f97316":"#ccc"}}>{val}</span>
@@ -4143,9 +4149,24 @@ function AppInner({currentUser,onLogout}){
     // Load shopifyLinks globally so Restock can use them
     const cachedLinks=shopCacheGet("shopify_links");
     if(cachedLinks){setShopifyLinks(cachedLinks);}
-    fetch(SHEETS_URL+"?action=shopify_links",{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.links){setShopifyLinks(d.links);shopCacheSet("shopify_links",d.links);}}catch(e){}})
-      .catch(()=>{});
+    // Preload ALL Shopify data at startup so tabs are instant
+    const preloadShopify=async()=>{
+      try{
+        const [prodRes,linksRes,locRes,ordRes,statRes]=await Promise.allSettled([
+          fetch(SHEETS_URL+"?action=shopify_products",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
+          fetch(SHEETS_URL+"?action=shopify_links",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
+          fetch(SHEETS_URL+"?action=shopify_locations",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
+          fetch(SHEETS_URL+"?action=shopify_orders&status=open",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
+          fetch(SHEETS_URL+"?action=shopify_status",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t))
+        ]);
+        if(prodRes.status==="fulfilled"&&prodRes.value?.products){shopCacheSet("shopify_products",prodRes.value.products);}
+        if(linksRes.status==="fulfilled"&&linksRes.value?.links){setShopifyLinks(linksRes.value.links);shopCacheSet("shopify_links",linksRes.value.links);}
+        if(locRes.status==="fulfilled"&&locRes.value?.locations){shopCacheSet("shopify_locations",locRes.value.locations);}
+        if(ordRes.status==="fulfilled"&&ordRes.value?.orders){shopCacheSet("shopify_orders",ordRes.value.orders);}
+        if(statRes.status==="fulfilled"){shopCacheSet("shopify_status",statRes.value?.ok===true);}
+      }catch(e){}
+    };
+    preloadShopify();
   },[]);
 
   const handleBestellen = (blank, key, isCapKey, capColor, menge) => {
