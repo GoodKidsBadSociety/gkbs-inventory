@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.3";
+const APP_VERSION = "v3.3.4";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -858,9 +858,6 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#aaa"}}>{product.color}</span>}
             {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category==="Bag"?"BAG":"CAP"}</span>}
-            {allOut&&<span style={{fontSize:10,background:"#ef4444",color:"#fff",borderRadius:6,padding:"2px 7px",fontWeight:800,letterSpacing:0.3}}>OUT</span>}
-            {someOut&&<span style={{fontSize:10,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"2px 7px",fontWeight:800,border:"1px solid #fecaca"}}>KRIT</span>}
-            {hasLow&&<span style={{fontSize:10,background:"#fff7ed",color:"#f97316",borderRadius:6,padding:"2px 7px",fontWeight:800,border:"1px solid #fed7aa"}}>LOW</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
