@@ -1,5 +1,5 @@
 // GKBS INVENTORY v1.81
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 // Prevent iOS auto-zoom on input focus
 if (typeof document !== "undefined") {
@@ -556,6 +556,7 @@ const IC_TSHIRT=({size=16,color="currentColor"})=><svg width={size} height={size
 const IC_THREAD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4.8Z"/><path d="M4 22V12c0-2 1-4 4-4h3"/><path d="M15 6c0 3 2 4 4 4s4-1 4-4-2-4-4-4-4 1-4 4Z"/><path d="M11 8c-3 0-4 2-4 4v4c0 2 1 4 4 4"/></svg>;
 const IC_DOWN=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>;
 const IC_LAYOUT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>;
+const IC_PAINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3"/></svg>;
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
 const DEMO_PRODUCTS = [
@@ -675,7 +676,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   if(mobile){
     return(
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:10,padding:"8px 12px",position:"relative",opacity:isOut?0.6:1}}>
-        <span style={{...F_HEAD_STYLE,fontSize:13,color:isOut?"#bbb":"#555",fontWeight:800,width:36}}>{size}</span>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:isOut?"#bbb":"#555",fontWeight:800,width:44}}>{size}</span>
         {editing?(
           <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
             data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
@@ -695,7 +696,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   }
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1}}>
-      <span style={{...F_HEAD_STYLE,fontSize:13,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{size}</span>
+      <span style={{...F_HEAD_STYLE,fontSize:28,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{size}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
@@ -803,7 +804,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   if(mobile){
     return(
       <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"10px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"#f0f0f0"}`}}>
-        <span style={{...F_HEAD_STYLE,fontSize:13,color:"#555",fontWeight:800,width:40,flexShrink:0}}>{size}</span>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:"#555",fontWeight:800,width:44,flexShrink:0}}>{size}</span>
         <div style={{flex:1,textAlign:"center"}}>
           <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
         </div>
@@ -816,15 +817,15 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"8px 4px",flex:1,minWidth:0,position:"relative",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"transparent"}`}}>
-      <span style={{...F_HEAD_STYLE,fontSize:13,color:"#666",fontWeight:800}}>{size}</span>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fff7ed":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fed7aa":"transparent"}`}}>
+      <span style={{...F_HEAD_STYLE,fontSize:28,color:"#666",fontWeight:800}}>{size}</span>
       <span style={{position:"absolute",top:5,right:6,fontSize:9,color:sCol(avail),fontWeight:700}}>{avail}</span>
       <div style={{textAlign:"center",lineHeight:1}}>
         <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
       </div>
       <div style={{display:"flex",gap:4}}>
-        <button onClick={onDec} style={btn(28,true)}>−</button>
-        <button onClick={onInc} disabled={disabled} style={btn(28,false,disabled)}>+</button>
+        <button onClick={onDec} style={btn(30,true)}>−</button>
+        <button onClick={onInc} disabled={disabled} style={btn(30,false,disabled)}>+</button>
       </div>
       {complete&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#16a34a"}}>✓</span>}
       {atLimit&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#f97316"}}>⚠</span>}
@@ -1064,7 +1065,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             const soll=(prod.qty||{})[size]||0,done=(prod.done||{})[size]||0,avail=(blank?.stock??{})[size]??0;
             if(soll===0&&done===0)return(
               <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#fafafa",borderRadius:12,padding:"8px 4px",opacity:0.3}}>
-                <span style={{...F_HEAD_STYLE,fontSize:13,color:"#bbb",fontWeight:800}}>{size}</span>
+                <span style={{...F_HEAD_STYLE,fontSize:28,color:"#bbb",fontWeight:800}}>{size}</span>
                 <span style={{fontSize:32,fontWeight:900,color:"#ddd",lineHeight:1}}>—</span>
               </div>
             );
@@ -2394,6 +2395,122 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
 }
 
 
+// ─── Restock View ─────────────────────────────────────────────────
+const RESTOCK_MIN = {XXS:2,XS:2,S:3,M:4,L:5,XL:4,XXL:2,XXXL:1};
+const RESTOCK_DEFAULT = 5;
+
+function RestockView({sheetsUrl}){
+  const mobile = useIsMobile();
+  const [shopProds,setShopProds]=useState([]);
+  const [loading,setLoading]=useState(false);
+  const [search,setSearch]=useState("");
+
+  useEffect(()=>{
+    if(!sheetsUrl)return;
+    setLoading(true);
+    fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{const d=JSON.parse(t);if(d.products)setShopProds(d.products);})
+      .catch(()=>{})
+      .finally(()=>setLoading(false));
+  },[sheetsUrl]);
+
+  // Parse size from variant title (first segment before " / ")
+  const parseSize = (title) => {
+    const s = (title||"").split("/")[0].trim().toUpperCase();
+    if(RESTOCK_MIN[s]!==undefined) return s;
+    return null;
+  };
+
+  // Build restock items: variants below min stock
+  const restockItems = useMemo(()=>{
+    const items = [];
+    shopProds.forEach(sp=>{
+      const variants = sp.variants||[];
+      const lowVariants = variants.filter(v=>{
+        const size = parseSize(v.title);
+        const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
+        return (v.inventory_quantity||0) < min;
+      });
+      if(lowVariants.length>0){
+        items.push({product:sp, variants:lowVariants});
+      }
+    });
+    return items;
+  },[shopProds]);
+
+  const filtered = search
+    ? restockItems.filter(r=>r.product.title.toLowerCase().includes(search.toLowerCase()))
+    : restockItems;
+
+  const totalLowVariants = filtered.reduce((a,r)=>a+r.variants.length,0);
+
+  if(loading) return <div style={{textAlign:"center",padding:60,color:"#aaa"}}>Shopify Produkte laden...</div>;
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{background:"#fff7ed",borderRadius:12,padding:"12px 16px",border:"1px solid #fed7aa",display:"flex",alignItems:"center",gap:10}}>
+        <IC_WARN size={16} color="#f97316"/>
+        <div style={{fontSize:13,color:"#9a3412",fontWeight:600}}>{totalLowVariants} Variante{totalLowVariants!==1?"n":""} unter Mindestbestand bei {filtered.length} Produkt{filtered.length!==1?"en":""}</div>
+      </div>
+
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Produkt suchen..."
+        style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
+
+      {filtered.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Alle Produkte ausreichend bestockt</div>}
+
+      {filtered.map(({product:sp, variants:lowVars})=>{
+        const allVars = sp.variants||[];
+        const totalInv = allVars.reduce((a,v)=>a+(v.inventory_quantity||0),0);
+        const img = sp.image?.src || sp.images?.[0]?.src;
+        return(
+          <div key={sp.id} style={{background:"#fff",borderRadius:16,border:"1px solid #ebebeb",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+            {/* Product header */}
+            <div style={{padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
+              {img?<img src={img} style={{width:40,height:40,borderRadius:10,objectFit:"cover",flexShrink:0}}/>
+                  :<div style={{width:40,height:40,borderRadius:10,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={18} color="#ccc"/></div>}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sp.title}</div>
+                <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{allVars.length} Varianten · {totalInv} Stk gesamt</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#f97316",lineHeight:1}}>{lowVars.length}</div>
+                <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
+              </div>
+            </div>
+            {/* Size cells */}
+            <div style={{padding:"0 18px 16px",display:"flex",gap:6,flexWrap:"wrap"}}>
+              {allVars.map(v=>{
+                const size = parseSize(v.title);
+                const sizeLabel = size || v.title.split("/")[0].trim();
+                const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
+                const qty = v.inventory_quantity||0;
+                const isLow = qty < min;
+                const deficit = min - qty;
+                return(
+                  <div key={v.id} style={{
+                    background:isLow?"#fff7ed":"#f8f8f8",
+                    border:`1px solid ${isLow?"#fed7aa":"#ebebeb"}`,
+                    borderRadius:12,padding:"8px 8px",flex:1,minWidth:mobile?70:80,maxWidth:120,
+                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",height:92,position:"relative"
+                  }}>
+                    <span style={{...F_HEAD_STYLE,fontSize:28,color:isLow?"#9a3412":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
+                    <div style={{display:"flex",alignItems:"baseline",gap:2}}>
+                      <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isLow?"#f97316":qty===0?"#ef4444":"#16a34a",lineHeight:1}}>{qty}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:"#bbb"}}>/{min}</span>
+                    </div>
+                    {isLow&&<span style={{position:"absolute",bottom:4,right:6,fontSize:9,color:"#ef4444",fontWeight:800}}>+{deficit}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
 // ─── Scroll To Top Button ─────────────────────────────────────────
 function ScrollTopButton(){
   const [show,setShow]=useState(false);
@@ -2580,25 +2697,25 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       {linkModal&&<ShopifyLinkModal prod={linkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} shopifyProds={shopifyProds} locations={locations} onSave={async(links)=>{await saveLinks(links);setLinkModal(null);}} onClose={()=>setLinkModal(null)}/>}
 
       {/* Header */}
-      <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+      <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
         <div style={{width:36,height:36,borderRadius:10,background:"#96bf48",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SHOP size={18} color="#fff"/></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800}}>Shopify Sync</div>
           <div style={{fontSize:11,color:"#aaa",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:connected===true?"#16a34a":connected===false?"#ef4444":"#d1d5db",display:"inline-block",flexShrink:0}}/>
-            <span>{connected===true?"Verbunden · ":connected===false?"Nicht verbunden · ":""}</span>
-            <span>goodkidsbadsociety.myshopify.com · {shopifyProds.length} Produkte</span>
+            <span>{connected===true?"Verbunden":connected===false?"Nicht verbunden":"..."} · {shopifyProds.length} Produkte</span>
           </div>
         </div>
         {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
-        <button onClick={()=>{checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
-        <button onClick={async()=>{await apiPost({action:"clear_cache"});checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontWeight:700,fontSize:13}}><IC_TRASH size={13} color="#ef4444"/> Cache</button>
+        <button onClick={()=>{checkConnection();loadAll();}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#555"/> Reload</button>
       </div>
 
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["products","Produkte"],["orders","Bestellungen"],["sync","Bestand Sync"]].map(([t,lbl])=>(
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        {[["products","Produkte",0],["orders","Bestellungen",(()=>{const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);return shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);})()]].map(([t,lbl,count])=>(
+          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+            {lbl}{count>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+          </button>
         ))}
       </div>
 
@@ -2686,7 +2803,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                           {/* Color group header */}
                           {hasMultipleColors&&<div style={{display:"flex",alignItems:"center",padding:"8px 16px",background:"#fafafa",borderTop:"1px solid #f0f0f0",gap:8}}>
                             <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:12,fontWeight:800,color:"#333"}}>🎨 {color}</div>
+                              <div style={{fontSize:12,fontWeight:800,color:"#333",display:"flex",alignItems:"center",gap:5}}><IC_PAINT size={12} color="#3b82f6"/> {color}</div>
                               {linkedGkbs&&<div style={{fontSize:10,color:colorLink?"#3b82f6":"#16a34a",fontWeight:700,marginTop:1}}><IC_LINK size={10} color={colorLink?"#3b82f6":"#16a34a"}/> {linkedGkbs.name}</div>}
                             </div>
                             <div style={{fontSize:11,color:"#888",fontWeight:700}}>{cvars.length} Var.</div>
@@ -2778,33 +2895,6 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       )}
 
       {/* Sync */}
-      {tab==="sync"&&!loading&&(
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{background:"#f8f8f8",borderRadius:10,padding:"12px 16px",fontSize:12,color:"#888"}}>Addiert den GKBS-Bestand zum bestehenden Shopify-Bestand. Wird auch automatisch nach jeder Produktion ausgelöst (+produzierte Menge).</div>
-          {shopifyLinks.length===0&&<div style={{color:"#ccc",fontSize:14,padding:40,textAlign:"center"}}>Keine Verknüpfungen vorhanden</div>}
-          {shopifyLinks.map((link,i)=>{
-            const gkbs = products.find(p=>p.id===link.gkbsProductId);
-            if(!gkbs) return null;
-            const total = Object.values(gkbs.stock||{}).reduce((a,b)=>a+b,0);
-            const isVar = link.linkLevel==="color";
-            return(
-              <div key={i} style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:`1px solid ${isVar?"#bfdbfe":"#ebebeb"}`,display:"flex",alignItems:"center",gap:12}}>
-                <SmartDot item={gkbs} size={20}/>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:800}}>{gkbs.name}</div>
-                  <div style={{fontSize:11,color:"#aaa",marginTop:1}}>↔ {link.label}</div>
-                  {isVar&&<div style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginTop:1}}>🎨 Farb-Verknüpfung</div>}
-                </div>
-                <div style={{textAlign:"right",flexShrink:0,marginRight:4}}>
-                  <div style={{fontSize:10,color:"#aaa"}}>GKBS</div>
-                  <div style={{fontSize:22,fontWeight:900,color:"#111",lineHeight:1}}>{total}</div>
-                </div>
-                <button onClick={()=>syncToShopify(link,total)} style={{padding:"8px 14px",borderRadius:9,border:"none",background:"#96bf48",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:13,flexShrink:0}}>+ Shopify</button>
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
@@ -2908,7 +2998,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
           {!loading&&<>
             {/* Color group info */}
             {preColorGroup&&<div style={{background:"#eff6ff",borderRadius:10,padding:"12px 16px",border:"1px solid #bfdbfe"}}>
-              <div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginBottom:4}}>🎨 FARBGRUPPE</div>
+              <div style={{fontSize:11,color:"#3b82f6",fontWeight:700,marginBottom:4,display:"flex",alignItems:"center",gap:4}}><IC_PAINT size={12} color="#3b82f6"/> FARBGRUPPE</div>
               <div style={{fontSize:14,fontWeight:800,color:"#1e40af"}}>{preColorGroup}</div>
               <div style={{fontSize:11,color:"#60a5fa",marginTop:4,display:"flex",flexWrap:"wrap",gap:4}}>
                 {(preColorVariants||[]).map(v=><span key={v.id} style={{background:"#dbeafe",borderRadius:4,padding:"1px 6px",fontSize:10}}>{(v.title||"").split("/")[0].trim()} ({v.inventory_quantity||0})</span>)}
@@ -3662,6 +3752,7 @@ function AppInner({currentUser,onLogout}){
   const [dtfItems,__setDtfItems]=useState([]);
   const [syncStatus,setSyncStatus]=useState("idle");
   const [shopifyDebug,setShopifyDebug]=useState([]);
+  useEffect(()=>{if(shopifyDebug.length>0){const t=setTimeout(()=>setShopifyDebug([]),3500);return ()=>clearTimeout(t);}},[shopifyDebug]);
   const [sheetsUrl,setSheetsUrl]=useState(SHEETS_URL);
 
   // ── All refs (must be before triggerSave and setters) ──────────
@@ -3953,6 +4044,7 @@ function AppInner({currentUser,onLogout}){
   const [inventoryTab,setInventoryTab]=useState("textil");
   const [shopifyLinks,setShopifyLinks]=useState([]);
   const [shopifyLinkModal,setShopifyLinkModal]=useState(null); // prod object to link
+  const [prodMainTab,setProdMainTab]=useState("auftraege");
   const [prodSubView,setProdSubView]=useState("Alle");
   const [showProdModal,setShowProdModal]=useState(false);
   const [showPAModal,setShowPAModal]=useState(false);
@@ -4223,7 +4315,7 @@ function AppInner({currentUser,onLogout}){
             {/* Undo */}
             <button onClick={undo} disabled={!canUndo} title="Rückgängig"
               style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",fontWeight:700,fontSize:mobile?12:13,display:"flex",alignItems:"center",gap:4}}>
-              ↩{!mobile&&` Undo`}{canUndo&&<span style={{fontSize:10,color:"#bbb",fontWeight:500}}>({historyRef.current.length})</span>}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>{!mobile&&` Undo`}{canUndo&&<span style={{fontSize:10,color:"#bbb",fontWeight:500}}>({historyRef.current.length})</span>}
             </button>
 {view==="inventory"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
@@ -4233,7 +4325,7 @@ function AppInner({currentUser,onLogout}){
             </>}
             {view==="production"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
-              <button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>
+              {prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
             </>}
             {view==="bestellbedarf"&&<>
               <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
@@ -4285,6 +4377,16 @@ function AppInner({currentUser,onLogout}){
         {/* Production */}
         {view==="production"&&(
           <div style={S.col12}>
+            {/* Sub-tabs: Aufträge / Restock */}
+            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
+              {[["auftraege","Aufträge"],["restock","Restock"]].map(([t,lbl])=>(
+                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+              ))}
+            </div>
+
+            {prodMainTab==="restock"&&<RestockView sheetsUrl={SHEETS_URL}/>}
+
+            {prodMainTab==="auftraege"&&<>
             {/* Filters – scrollable on mobile */}
             <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
               <div style={{display:"flex",gap:2,background:"#e8e8e8",borderRadius:9,padding:3,flexShrink:0}}>
@@ -4332,6 +4434,7 @@ function AppInner({currentUser,onLogout}){
                 </div>
               )}
             </div>
+            </>}
           </div>
         )}
 
@@ -4396,6 +4499,7 @@ function AppInner({currentUser,onLogout}){
               <Icon size={18} color={view===v?"#111":"#bbb"}/>
               <span style={{fontSize:9,fontWeight:700}}>{lbl}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
+              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
             </button>
           ))}
         </div>
