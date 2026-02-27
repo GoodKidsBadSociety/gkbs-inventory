@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.6.2";
+const APP_VERSION = "v3.6.3";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -1256,14 +1256,11 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
     }
     setLoading(true);
     try {
-      const [d1, d2] = await Promise.all([
-        fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse),
-        fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
-      ]);
+      const d1 = await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse);
       if(d1.products) setShopifyProds(d1.products);
+      const d2 = await fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse);
       if(d2.locations && d2.locations.length>0){
         setLocations(d2.locations);
-        // Always set first location as default
         selLocRef.current = d2.locations[0];
       }
     } catch(e){}
@@ -2491,33 +2488,34 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const [hiddenIds,setHiddenIds]=useState([]);
   const [showHidden,setShowHidden]=useState(false);
 
-  // Load hidden product IDs from Sheets
+  // Load hidden IDs (safe - action may not exist in Code.gs yet)
   useEffect(()=>{
     if(!sheetsUrl)return;
-    fetch(`${sheetsUrl}?action=restock_hidden`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hidden)setHiddenIds(d.hidden);}catch(e){}})
-      .catch(()=>{});
+    // Load shopify products (cache-first)
+    const cached=shopCacheGet("shopify_products");
+    if(cached){setShopProds(cached);}
+    else{
+      setLoading(true);
+      fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"})
+        .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.products){setShopProds(d.products);shopCacheSet("shopify_products",d.products);}}catch(e){}})
+        .catch(()=>{})
+        .finally(()=>setLoading(false));
+    }
+    // Load hidden IDs separately (non-blocking, may 404 if not deployed)
+    setTimeout(()=>{
+      fetch(`${sheetsUrl}?action=restock_hidden`,{redirect:"follow"})
+        .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hidden)setHiddenIds(d.hidden);}catch(e){}})
+        .catch(()=>{});
+    },2000);
   },[sheetsUrl]);
 
   const saveHidden = async (ids) => {
     setHiddenIds(ids);
     if(!sheetsUrl)return;
-    try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"restock_save_hidden",hidden:ids})});}catch(e){}
+    try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"restock_save_hidden",hidden:ids})});}catch(e){console.log("saveHidden not available yet");}
   };
-
   const hideProduct = (productId) => saveHidden([...hiddenIds, String(productId)]);
   const unhideProduct = (productId) => saveHidden(hiddenIds.filter(id=>id!==String(productId)));
-
-  useEffect(()=>{
-    if(!sheetsUrl)return;
-    const cached=shopCacheGet("shopify_products");
-    if(cached){setShopProds(cached);return;}
-    setLoading(true);
-    fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{const d=JSON.parse(t);if(d.products){setShopProds(d.products);shopCacheSet("shopify_products",d.products);}})
-      .catch(()=>{})
-      .finally(()=>setLoading(false));
-  },[sheetsUrl]);
 
   // Parse size from variant title (check all segments)
   const parseSize = (title) => {
@@ -2883,7 +2881,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
     setTimeout(()=>setSyncMsg(null),4000);
   };
 
-  useEffect(()=>{ checkConnection().then(()=>loadAll()); },[]);
+  useEffect(()=>{ (async()=>{ await checkConnection(); await loadAll(); })(); },[]);
   useEffect(()=>{ if(tab==="orders") loadOrders(); },[tab]);
   // Update parent badge with OE order qty
   useEffect(()=>{
@@ -2944,7 +2942,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
           </div>
         </div>
         {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#1a9a50":"#f08328",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fef6ed",borderRadius:8}}>{syncMsg}</div>}
-        <button onClick={()=>{checkConnection(true);loadAll(true);loadOrders(true);}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#555"/> Reload</button>
+        <button onClick={async()=>{await checkConnection(true);await loadAll(true);await loadOrders(true);}} style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}><IC_REFRESH size={14} color="#555"/> Reload</button>
       </div>
 
       {/* Sub-tabs */}
@@ -3179,11 +3177,9 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
     (async()=>{
       setLoading(true);
       try{
-        const [d1,d2] = await Promise.all([
-          fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse),
-          fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
-        ]);
+        const d1 = await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse);
         if(d1.products) setShopifyProds(d1.products);
+        const d2 = await fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse);
         if(d2.locations){setLocs(d2.locations);if(d2.locations.length>=1)setSelLoc(d2.locations[0]);}
         if(isFromShopify) setSelSP(prod);
       }catch(e){}
@@ -4185,29 +4181,9 @@ function AppInner({currentUser,onLogout}){
       setSyncStatus(data?"ok":"error");
       setTimeout(()=>setSyncStatus("idle"),2000);
     });
-    // Load shopifyLinks globally so Restock can use them
+    // Load shopifyLinks from cache if available
     const cachedLinks=shopCacheGet("shopify_links");
     if(cachedLinks){setShopifyLinks(cachedLinks);}
-    // Preload ALL Shopify data at startup so tabs are instant (sequential to avoid GAS rate limits)
-    const preloadShopify=async()=>{
-      if(!SHEETS_URL)return;
-      const safeFetch=async(action)=>{
-        try{const r=await fetch(SHEETS_URL+"?action="+action,{redirect:"follow"});return JSON.parse(await r.text());}catch(e){return null;}
-      };
-      try{
-        const links=await safeFetch("shopify_links");
-        if(links?.links){setShopifyLinks(links.links);shopCacheSet("shopify_links",links.links);}
-        const stat=await safeFetch("shopify_status");
-        if(stat)shopCacheSet("shopify_status",stat.ok===true);
-        const prods=await safeFetch("shopify_products");
-        if(prods?.products)shopCacheSet("shopify_products",prods.products);
-        const locs=await safeFetch("shopify_locations");
-        if(locs?.locations)shopCacheSet("shopify_locations",locs.locations);
-        const ords=await safeFetch("shopify_orders&status=open");
-        if(ords?.orders)shopCacheSet("shopify_orders",ords.orders);
-      }catch(e){}
-    };
-    preloadShopify();
   },[]);
 
   const handleBestellen = (blank, key, isCapKey, capColor, menge) => {
