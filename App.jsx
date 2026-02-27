@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.7.2";
+const APP_VERSION = "v3.8.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -561,6 +561,7 @@ const IC_TSHIRT=({size=16,color="currentColor"})=><svg width={size} height={size
 const IC_THREAD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4.8Z"/><path d="M4 22V12c0-2 1-4 4-4h3"/><path d="M15 6c0 3 2 4 4 4s4-1 4-4-2-4-4-4-4 1-4 4Z"/><path d="M11 8c-3 0-4 2-4 4v4c0 2 1 4 4 4"/></svg>;
 const IC_DOWN=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>;
 const IC_LAYOUT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>;
+const IC_SETTINGS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
 const IC_PAINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3"/></svg>;
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
@@ -2481,6 +2482,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const mobile = useIsMobile();
   const [shopProds,setShopProds]=useState([]);
   const [loading,setLoading]=useState(false);
+  const [reloading,setReloading]=useState(false);
   const [search,setSearch]=useState("");
   const [restockModal,setRestockModal]=useState(null);
   const [hiddenIds,setHiddenIds]=useState([]);
@@ -2496,6 +2498,19 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hidden)setHiddenIds(d.hidden);}catch(e){}})
       .catch(()=>{});
   },[sheetsUrl]);
+
+  // Reload Shopify products fresh from API
+  const reloadShopify = async () => {
+    if(!sheetsUrl||reloading)return;
+    setReloading(true);
+    try{
+      const r=await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"});
+      const t=await r.text();
+      const d=JSON.parse(t);
+      if(d.products){setShopProds(d.products);shopCacheSet("shopify_products",d.products);}
+    }catch(e){console.warn("Restock reload failed",e);}
+    setReloading(false);
+  };
 
   // Re-check cache periodically (picks up data loaded by Shopify tab)
   useEffect(()=>{
@@ -2558,6 +2573,9 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
       <div style={{display:"flex",gap:6,alignItems:"center"}}>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Produkt suchen..."
           style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",flex:1,boxSizing:"border-box",background:"#f8f8f8"}}/>
+        <button onClick={reloadShopify} disabled={reloading} title="Shopify Daten neu laden" style={{padding:"10px 12px",borderRadius:10,border:"1px solid #e8e8e8",background:reloading?"#f8f8f8":"#fff",color:reloading?"#ccc":"#555",cursor:reloading?"not-allowed":"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:5}}>
+          <IC_REFRESH size={13} color={reloading?"#ccc":"#555"} style={reloading?{animation:"spin 1s linear infinite"}:{}}/>{reloading?"...":""}
+        </button>
         <button onClick={()=>setShowHidden(!showHidden)} style={{padding:"10px 14px",borderRadius:10,border:`1px solid ${showHidden?"#e84142":"#e8e8e8"}`,background:showHidden?"#fef1f0":"#fff",color:showHidden?"#e84142":"#888",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:5}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           Hidden{hiddenItems.length>0?` (${hiddenItems.length})`:""}
@@ -2745,7 +2763,7 @@ function ScrollTopButton(){
 
 
 // ─── Shopify View ─────────────────────────────────────────────────
-function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopifyBadge, onAddProd, onSetBlankStock, sheetsUrl}){
+function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopifyBadge, onAddProd, onSetBlankStock, sheetsUrl, orderFilter}){
   const mobile = useIsMobile();
   const [tab, setTab] = useState("products");
   const [shopifyProds, setShopifyProds] = useState([]);
@@ -2872,14 +2890,17 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
 
   useEffect(()=>{ loadAll(); },[]);
   useEffect(()=>{ if(tab==="orders") loadOrders(); },[tab]);
-  // Update parent badge with OE order qty
+  // Update parent badge with order qty (respects filter)
   useEffect(()=>{
     if(!setShopifyBadge) return;
     const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
     const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);
-    const count=shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);
+    const unfulfilled=shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled");
+    const count = orderFilter==="all"
+      ? unfulfilled.reduce((a,o)=>a+(o.line_items||[]).reduce((b,l)=>b+(l.quantity||0),0),0)
+      : unfulfilled.reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);
     setShopifyBadge(count);
-  },[shopifyOrders]);
+  },[shopifyOrders,orderFilter]);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -3099,9 +3120,11 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
           {(()=>{
             const normalize=(t)=>t.toUpperCase().replace(/\s+/g," ").trim().split(" - ")[0].trim();
             const isOE=(t)=>ONLINE_EXCLUSIVE_PRODUCTS.map(normalize).includes(normalize(t));
-            const filtered=shopifyOrders.map(o=>({...o,line_items:(o.line_items||[]).filter(l=>isOE(l.title))})).filter(o=>o.line_items.length>0);
-            if(filtered.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Online Exclusive Bestellungen</div>;
-            return filtered.map(order=>(
+            const displayOrders = orderFilter==="all"
+              ? shopifyOrders.filter(o=>o.line_items?.length>0)
+              : shopifyOrders.map(o=>({...o,line_items:(o.line_items||[]).filter(l=>isOE(l.title))})).filter(o=>o.line_items.length>0);
+            if(displayOrders.length===0) return <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>{orderFilter==="all"?"Keine offenen Bestellungen":"Keine Online Exclusive Bestellungen"}</div>;
+            return displayOrders.map(order=>(
             <div key={order.id} style={{background:"#fff",borderRadius:12,border:"1px solid #ebebeb",overflow:"hidden"}}>
               <div style={{padding:"12px 16px",background:"#f9f9f9",display:"flex",alignItems:"center",gap:10}}>
                 <div style={{flex:1}}>
@@ -4011,19 +4034,185 @@ function ActivityLogModal({onClose}){
 }
 
 // ─── Login Screen ──────────────────────────────────────────────────
+function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSettings, sheetsUrl}){
+  const [tab,setTab]=useState("account");
+  const [newName,setNewName]=useState(currentUser.name);
+  const [oldPw,setOldPw]=useState("");
+  const [newPw,setNewPw]=useState("");
+  const [newPw2,setNewPw2]=useState("");
+  const [pwMsg,setPwMsg]=useState(null);
+  const [nameMsg,setNameMsg]=useState(null);
+  const [showOld,setShowOld]=useState(false);
+  const [showNew,setShowNew]=useState(false);
+  const [sheetsHash,setSheetsHash]=useState(null);
+  const [saving,setSaving]=useState(false);
+
+  // Load current Sheets hash for this user
+  useEffect(()=>{
+    if(!sheetsUrl)return;
+    fetch(`${sheetsUrl}?action=user_hashes`,{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hashes&&d.hashes[currentUser.name])setSheetsHash(d.hashes[currentUser.name]);}catch(e){}})
+      .catch(()=>{});
+  },[sheetsUrl,currentUser.name]);
+
+  const handleNameSave = () => {
+    if(!newName.trim()){setNameMsg({ok:false,text:"Name darf nicht leer sein"});return;}
+    onUpdateUser({...currentUser, name:newName.trim()});
+    setNameMsg({ok:true,text:"Name gespeichert ✓"});
+    setTimeout(()=>setNameMsg(null),2000);
+  };
+
+  const handlePwSave = async () => {
+    if(!oldPw){setPwMsg({ok:false,text:"Altes Passwort eingeben"});return;}
+    if(!newPw||newPw.length<3){setPwMsg({ok:false,text:"Neues Passwort min. 3 Zeichen"});return;}
+    if(newPw!==newPw2){setPwMsg({ok:false,text:"Passwörter stimmen nicht überein"});return;}
+    const oldHash = await sha256(oldPw);
+    // Check against Sheets hash first, fallback to hardcoded
+    const activeHash = sheetsHash || currentUser.hash;
+    if(oldHash!==activeHash){setPwMsg({ok:false,text:"Altes Passwort falsch"});return;}
+    const newHash = await sha256(newPw);
+    // Save to Sheets
+    setSaving(true);
+    try{
+      if(sheetsUrl){
+        await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"save_user_hash",username:currentUser.name,hash:newHash})});
+        setSheetsHash(newHash);
+      }
+    }catch(e){
+      setPwMsg({ok:false,text:"Fehler beim Speichern — versuche es nochmal"});
+      setSaving(false);
+      return;
+    }
+    setSaving(false);
+    setOldPw("");setNewPw("");setNewPw2("");
+    setPwMsg({ok:true,text:"Passwort geändert ✓"});
+    setTimeout(()=>setPwMsg(null),3000);
+  };
+
+  const logs = getLogs();
+  const userColors = {};
+  USERS.forEach(u => userColors[u.name] = u.color);
+
+  const isDemo = !!currentUser.isDemo;
+
+  return(
+    <ModalWrap onClose={onClose} width={560}>
+      <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Einstellungen</div>
+
+      {/* Tabs */}
+      <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:9,padding:3,marginTop:4}}>
+        {[["account","Account"],["display","Anzeige"],["log","Activity Log"]].map(([v,lbl])=>(
+          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:7,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {/* Account Tab */}
+      {tab==="account"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:16,marginTop:8}}>
+          {isDemo?<div style={{color:"#f08328",fontSize:13,fontWeight:600,background:"#fef6ed",borderRadius:10,padding:"12px 16px",border:"1px solid #fed7aa"}}>Demo-Modus — Account-Einstellungen nicht verfügbar</div>:(
+            <>
+              {/* Name */}
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                <div style={{fontSize:12,fontWeight:700,color:"#888"}}>Name</div>
+                <div style={{display:"flex",gap:8}}>
+                  <input value={newName} onChange={e=>setNewName(e.target.value)} style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",background:"#f8f8f8"}}/>
+                  <button onClick={handleNameSave} style={{padding:"10px 18px",borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:13}}>Speichern</button>
+                </div>
+                {nameMsg&&<div style={{fontSize:12,color:nameMsg.ok?"#1a9a50":"#e84142",fontWeight:600}}>{nameMsg.text}</div>}
+              </div>
+
+              {/* Password */}
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                <div style={{fontSize:12,fontWeight:700,color:"#888"}}>Passwort ändern</div>
+                <div style={{position:"relative"}}>
+                  <input type={showOld?"text":"password"} value={oldPw} onChange={e=>setOldPw(e.target.value)} placeholder="Altes Passwort" style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",background:"#f8f8f8",boxSizing:"border-box"}}/>
+                  <button onClick={()=>setShowOld(!showOld)} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:16}}>{showOld?"◉":"◎"}</button>
+                </div>
+                <div style={{position:"relative"}}>
+                  <input type={showNew?"text":"password"} value={newPw} onChange={e=>setNewPw(e.target.value)} placeholder="Neues Passwort" style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",background:"#f8f8f8",boxSizing:"border-box"}}/>
+                  <button onClick={()=>setShowNew(!showNew)} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:16}}>{showNew?"◉":"◎"}</button>
+                </div>
+                <input type={showNew?"text":"password"} value={newPw2} onChange={e=>setNewPw2(e.target.value)} placeholder="Neues Passwort bestätigen" style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",background:"#f8f8f8"}}/>
+                <button onClick={handlePwSave} disabled={saving} style={{padding:"10px 18px",borderRadius:10,border:"none",background:saving?"#888":"#111",color:"#fff",cursor:saving?"not-allowed":"pointer",fontWeight:700,fontSize:13,alignSelf:"flex-start"}}>{saving?"Speichern...":"Passwort ändern"}</button>
+                {pwMsg&&<div style={{fontSize:12,color:pwMsg.ok?"#1a9a50":"#e84142",fontWeight:600}}>{pwMsg.text}</div>}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Display Tab */}
+      {tab==="display"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginTop:8}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#888"}}>Shopify Bestellungen</div>
+          <div style={{display:"flex",gap:8}}>
+            {[["oe","Nur Online Exclusive"],["all","Alle Bestellungen"]].map(([v,lbl])=>(
+              <button key={v} onClick={()=>onUpdateSettings({...settings,orderFilter:v})}
+                style={{flex:1,padding:"12px 16px",borderRadius:10,border:`1.5px solid ${settings.orderFilter===v?"#111":"#e8e8e8"}`,background:settings.orderFilter===v?"#111":"#fff",color:settings.orderFilter===v?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:13}}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+          <div style={{fontSize:11,color:"#bbb",marginTop:-4}}>
+            {settings.orderFilter==="all"?"Zeigt alle offenen Shopify-Bestellungen an.":"Zeigt nur Bestellungen mit Online Exclusive Produkten."}
+          </div>
+        </div>
+      )}
+
+      {/* Activity Log Tab */}
+      {tab==="log"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:8}}>
+          <div style={{fontSize:11,color:"#bbb"}}>Letzte 14 Tage · {logs.length} Einträge</div>
+          {logs.length===0&&<div style={{color:"#ccc",textAlign:"center",padding:40,fontSize:14}}>Noch keine Aktivitäten</div>}
+          <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:350,overflowY:"auto"}}>
+            {logs.map((l,i)=>{
+              const col = userColors[l.user] || "#888";
+              return(
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"9px 12px",background:"#f8f8f8",borderRadius:10,borderLeft:`3px solid ${col}`}}>
+                  <div style={{width:28,height:28,borderRadius:"50%",background:col,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:900,flexShrink:0}}>
+                    {l.user[0]}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"#111"}}>{l.action}</div>
+                    <div style={{fontSize:10,color:"#bbb",marginTop:2}}>{l.user} · {fmtTs(l.ts)}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </ModalWrap>
+  );
+}
+
+
 function LoginScreen({onUnlock}){
   const [selected,setSelected] = useState(null);
   const [pw,setPw] = useState("");
   const [error,setError] = useState(false);
   const [show,setShow] = useState(false);
+  const [sheetsHashes,setSheetsHashes] = useState({});
   const realUsers = USERS.filter(u=>!u.isDemo);
   const demoUser = USERS.find(u=>u.isDemo);
+
+  // Load overridden hashes from Sheets on mount
+  useEffect(()=>{
+    if(!SHEETS_URL)return;
+    fetch(`${SHEETS_URL}?action=user_hashes`,{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hashes)setSheetsHashes(d.hashes);}catch(e){}})
+      .catch(()=>{});
+  },[]);
 
   const check = async () => {
     const user = USERS.find(u => u.name === selected);
     if(user){
       const h = await sha256(pw);
-      if(h === user.hash){
+      // Check Sheets hash first (overrides hardcoded), fallback to hardcoded
+      const activeHash = sheetsHashes[user.name] || user.hash;
+      if(h === activeHash){
         localStorage.setItem("gkbs_user", selected);
         logActivity(selected, "Eingeloggt");
         onUnlock(selected);
@@ -4621,6 +4810,11 @@ function AppInner({currentUser,onLogout}){
 
   const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellungen","Bestellte Ware",IC_CART],["bestellbedarf","Bestellbedarf",IC_CHART],["shopify","Shopify",IC_SHOP],["finance","Finanzen",IC_DOLLAR]];
   const [showActivityLog,setShowActivityLog]=useState(false);
+  const [showSettings,setShowSettings]=useState(false);
+  const [appSettings,setAppSettings]=useState(()=>{try{const r=localStorage.getItem("gkbs_settings");return r?JSON.parse(r):{orderFilter:"oe"};}catch(e){return {orderFilter:"oe"};}});
+  const updateSettings=(s)=>{setAppSettings(s);try{localStorage.setItem("gkbs_settings",JSON.stringify(s));}catch(e){}};
+  const [userOverrides,setUserOverrides]=useState(()=>{try{const r=localStorage.getItem("gkbs_user_overrides");return r?JSON.parse(r):{};}catch(e){return {};}});
+  const updateUser=(u)=>{const o={...userOverrides,[u.name]:{hash:u.hash,displayName:u.name}};setUserOverrides(o);try{localStorage.setItem("gkbs_user_overrides",JSON.stringify(o));}catch(e){};};
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
   const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}verlusteRef.current=next;triggerSave(null,null,null,null,null,next,null);return next;});
@@ -4675,6 +4869,7 @@ function AppInner({currentUser,onLogout}){
       {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)}/>}
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
     {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
+    {showSettings&&<SettingsModal currentUser={currentUser} onClose={()=>setShowSettings(false)} onUpdateUser={updateUser} settings={appSettings} onUpdateSettings={updateSettings} sheetsUrl={sheetsUrl}/>}
     {showDtfModal&&<DtfModal
       initial={showDtfModal==="add"?null:showDtfModal}
       onClose={()=>setShowDtfModal(false)}
@@ -4711,7 +4906,7 @@ function AppInner({currentUser,onLogout}){
               style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f8f8f8",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
             </button>
-            <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_CLOCK size={15} color="#555"/></button>
+            <button onClick={()=>setShowSettings(true)} title="Einstellungen" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SETTINGS size={15} color="#555"/></button>
             {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>
               <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
             {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
@@ -4724,10 +4919,10 @@ function AppInner({currentUser,onLogout}){
         </div>
         {/* Tab bar – desktop only */}
         {!mobile&&<div style={{padding:"4px 24px 12px",marginTop:4}}>
-          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto"}}>
+          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto",justifyContent:"center"}}>
             {TABS.map(([v,lbl,Icon])=>(
               <button key={v} onClick={()=>setView(v)}
-                style={{flex:1,padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
+                style={{padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
                 <Icon size={15} color={view===v?"#111":"#bbb"}/>
                 {lbl}
                 {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
@@ -4739,9 +4934,9 @@ function AppInner({currentUser,onLogout}){
           </div>
         </div>}
         {/* Mobile tab bar – top under header */}
-        {mobile&&<div style={{display:"flex",padding:"8px 4px 6px",overflowX:"auto"}}>
+        {mobile&&<div style={{display:"flex",padding:"8px 4px 6px",overflowX:"auto",justifyContent:"space-evenly"}}>
           {TABS.map(([v,lbl,Icon])=>(
-            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 0",color:view===v?"#111":"#bbb",position:"relative",minWidth:0}}>
+            <button key={v} onClick={()=>setView(v)} style={{border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 6px",color:view===v?"#111":"#bbb",position:"relative",minWidth:0}}>
               <Icon size={16} color={view===v?"#111":"#bbb"}/>
               <span style={{fontSize:9,fontWeight:700,whiteSpace:"nowrap"}}>{lbl}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{activeProdsArr.length}</span>}
@@ -4757,7 +4952,7 @@ function AppInner({currentUser,onLogout}){
 
 
         {/* Shopify */}
-        {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
+        {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} orderFilter={appSettings.orderFilter||"oe"} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);shopCacheSet("shopify_links",links);if(sheetsUrl){try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={sheetsUrl}/>}
