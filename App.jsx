@@ -2379,11 +2379,6 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
           </div>}
         </div>
       )}
-      {/* Combined total */}
-      <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:4}}>
-        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTER LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Textilien + DTF</div></div>
-        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#fff"}}>€{(grandTotal+dtfTotal).toFixed(2)}</div>
-      </div>
     </div>
   );
 }
