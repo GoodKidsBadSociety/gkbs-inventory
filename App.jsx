@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.5.1";
+const APP_VERSION = "v3.6.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -1973,10 +1973,11 @@ function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
 
 // ─── DTF View ─────────────────────────────────────────────────────
 function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
+  const mobile = useIsMobile();
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+    <div style={mobile?{display:"flex",flexDirection:"column",gap:12}:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:12}}>
       {dtfItems.length===0&&(
-        <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
+        <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center",gridColumn:"1 / -1"}}>
           <div style={{marginBottom:12}}><IC_PRINT size={40} color="#ccc"/></div>
           Noch keine DTF-Transfers angelegt
         </div>
@@ -2232,17 +2233,17 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>BLANKS</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{grandTotal.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#1a9a50"}}>€{grandTotal.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{grandQty} Stück</div>
                 </div>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_PRINT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>DTF</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{dtfTotal.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#1a9a50"}}>€{dtfTotal.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{(dtfItems||[]).reduce((a,d)=>a+(d.stock||0),0)} Stück</div>
                 </div>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_SHOP size={16} color="#96bf48"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>SHOPIFY</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{shopGrandValue.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#1a9a50"}}>€{shopGrandValue.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{shopGrandQty} Stück{shopProds.length===0?" · Laden...":""}</div>
                 </div>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
@@ -2486,6 +2487,25 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const [loading,setLoading]=useState(false);
   const [search,setSearch]=useState("");
   const [restockModal,setRestockModal]=useState(null);
+  const [hiddenIds,setHiddenIds]=useState([]);
+  const [showHidden,setShowHidden]=useState(false);
+
+  // Load hidden product IDs from Sheets
+  useEffect(()=>{
+    if(!sheetsUrl)return;
+    fetch(`${sheetsUrl}?action=restock_hidden`,{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hidden)setHiddenIds(d.hidden);}catch(e){}})
+      .catch(()=>{});
+  },[sheetsUrl]);
+
+  const saveHidden = async (ids) => {
+    setHiddenIds(ids);
+    if(!sheetsUrl)return;
+    try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"restock_save_hidden",hidden:ids})});}catch(e){}
+  };
+
+  const hideProduct = (productId) => saveHidden([...hiddenIds, String(productId)]);
+  const unhideProduct = (productId) => saveHidden(hiddenIds.filter(id=>id!==String(productId)));
 
   useEffect(()=>{
     if(!sheetsUrl)return;
@@ -2523,12 +2543,16 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   },[shopProds]);
 
   const filtered = search
-    ? restockItems.filter(r=>r.product.title.toLowerCase().includes(search.toLowerCase()))
-    : restockItems;
+    ? restockItems.filter(r=>!hiddenIds.includes(String(r.product.id))&&r.product.title.toLowerCase().includes(search.toLowerCase()))
+    : restockItems.filter(r=>!hiddenIds.includes(String(r.product.id)));
+
+  const hiddenItems = restockItems.filter(r=>hiddenIds.includes(String(r.product.id)));
 
   const totalLowVariants = filtered.reduce((a,r)=>a+r.variants.length,0);
 
   if(loading) return <div style={{textAlign:"center",padding:60,color:"#bbb"}}>Shopify Produkte laden...</div>;
+
+  const displayItems = showHidden ? hiddenItems : filtered;
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -2537,12 +2561,18 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
         <div style={{fontSize:13,color:"#8c4318",fontWeight:600}}>{totalLowVariants} Variante{totalLowVariants!==1?"n":""} unter Mindestbestand bei {filtered.length} Produkt{filtered.length!==1?"en":""}</div>
       </div>
 
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Produkt suchen..."
-        style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
+      <div style={{display:"flex",gap:6,alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Produkt suchen..."
+          style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",flex:1,boxSizing:"border-box",background:"#f8f8f8"}}/>
+        <button onClick={()=>setShowHidden(!showHidden)} style={{padding:"10px 14px",borderRadius:10,border:`1px solid ${showHidden?"#e84142":"#e8e8e8"}`,background:showHidden?"#fef1f0":"#fff",color:showHidden?"#e84142":"#888",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:5}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          Hidden{hiddenItems.length>0?` (${hiddenItems.length})`:""}
+        </button>
+      </div>
 
-      {filtered.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Alle Produkte ausreichend bestockt</div>}
+      {displayItems.length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>{showHidden?"Keine versteckten Produkte":"Alle Produkte ausreichend bestockt"}</div>}
 
-      {filtered.map(({product:sp, variants:lowVars})=>{
+      {displayItems.map(({product:sp, variants:lowVars})=>{
         const allVars = sp.variants||[];
         const totalInv = allVars.reduce((a,v)=>a+(v.inventory_quantity||0),0);
         const img = sp.image?.src || sp.images?.[0]?.src;
@@ -2575,6 +2605,13 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                 <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#f08328",lineHeight:1}}>{lowVars.length}</div>
                 <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
               </div>
+              {showHidden?
+                <button onClick={()=>unhideProduct(sp.id)} title="Wieder anzeigen" style={{width:32,height:32,borderRadius:8,border:"1px solid #dcfce7",background:"#f0fdf4",color:"#1a9a50",cursor:"pointer",fontSize:14,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>↩</button>
+              :
+                <button onClick={()=>hideProduct(sp.id)} title="Ausblenden" style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#bbb",cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              }
             </div>
             {/* Color groups */}
             {(()=>{
@@ -2706,7 +2743,7 @@ function ScrollTopButton(){
   if(!show)return null;
   return(
     <button onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}
-      style={{position:"fixed",bottom:80,right:16,width:42,height:42,borderRadius:"50%",background:"#111",color:"#fff",border:"none",fontSize:18,cursor:"pointer",zIndex:200,boxShadow:"0 2px 12px rgba(0,0,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      style={{position:"fixed",bottom:24,right:16,width:42,height:42,borderRadius:"50%",background:"#111",color:"#fff",border:"none",fontSize:18,cursor:"pointer",zIndex:200,boxShadow:"0 2px 12px rgba(0,0,0,0.2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       ↑
     </button>
   );
@@ -4587,7 +4624,7 @@ function AppInner({currentUser,onLogout}){
       {showCats&&<CategoryModal categories={categories} onClose={()=>setShowCats(false)} onSave={cats=>{setCategories(cats);setShowCats(false);}}/>}
       {confirmDelete&&<DeleteConfirmModal name={confirmDelete.name} onConfirm={()=>{confirmDelete.onConfirm();setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
       {shopifyDebug.length>0&&(
-        <div style={{position:"fixed",bottom:80,right:16,background:"#111",color:"#fff",borderRadius:12,padding:"12px 16px",zIndex:500,maxWidth:320,fontSize:12,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
+        <div style={{position:"fixed",bottom:24,right:16,background:"#111",color:"#fff",borderRadius:12,padding:"12px 16px",zIndex:500,maxWidth:320,fontSize:12,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
             <span style={{fontWeight:800,fontSize:13}}>Shopify Debug</span>
             <button onClick={()=>setShopifyDebug([])} style={{background:"none",border:"none",color:"#bbb",cursor:"pointer",fontSize:16,lineHeight:1}}>✕</button>
@@ -4645,7 +4682,7 @@ function AppInner({currentUser,onLogout}){
           </div>
         </div>
         </div>
-        {/* Tab bar – desktop only, mobile uses bottom bar */}
+        {/* Tab bar – desktop only */}
         {!mobile&&<div style={{padding:"4px 24px 12px",marginTop:4}}>
           <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto"}}>
             {TABS.map(([v,lbl,Icon])=>(
@@ -4661,9 +4698,22 @@ function AppInner({currentUser,onLogout}){
             ))}
           </div>
         </div>}
+        {/* Mobile tab bar – top under header */}
+        {mobile&&<div style={{display:"flex",padding:"8px 4px 6px",overflowX:"auto"}}>
+          {TABS.map(([v,lbl,Icon])=>(
+            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 0",color:view===v?"#111":"#bbb",position:"relative",minWidth:0}}>
+              <Icon size={16} color={view===v?"#111":"#bbb"}/>
+              <span style={{fontSize:9,fontWeight:700,whiteSpace:"nowrap"}}>{lbl}</span>
+              {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{activeProdsArr.length}</span>}
+              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{shopifyBadge}</span>}
+              {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
+            </button>
+          ))}
+        </div>}
       </div>
 
-      <div style={{padding:mobile?"12px 12px 100px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
+      <div style={{padding:mobile?"12px 12px 20px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
 
 
         {/* Shopify */}
@@ -4807,22 +4857,6 @@ function AppInner({currentUser,onLogout}){
 
       {/* Scroll to top button */}
       <ScrollTopButton/>
-
-      {/* Mobile bottom tab bar */}
-      {mobile&&(
-        <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"10px 0 env(safe-area-inset-bottom,12px)",zIndex:50}}>
-          {TABS.map(([v,lbl,Icon])=>(
-            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#bbb",position:"relative"}}>
-              <Icon size={18} color={view===v?"#111":"#bbb"}/>
-              <span style={{fontSize:9,fontWeight:700}}>{lbl}</span>
-              {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
-              {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-              {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
-              {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
