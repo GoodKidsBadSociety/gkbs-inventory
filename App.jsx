@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.7";
+const APP_VERSION = "v3.3.8";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2571,7 +2571,49 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
               </div>
             </div>
             {/* Color groups */}
-            {colorGroups.map(([color, cvars])=>{
+            {(()=>{
+              const isColorOnly = hasMultipleColors && colorGroups.every(([,cvs])=>cvs.length===1);
+              if(isColorOnly){
+                // Color-only: one flat row of color tiles + single link info
+                const productLink = shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id)&&l.linkLevel!=="color");
+                const blank = productLink?products.find(p=>p.id===productLink.gkbsProductId):null;
+                const dtf = blank?(dtfItems||[]).find(d=>(blank.veredelung||[]).includes("Drucken")&&d.linkedProducts?.includes(blank.id)):null;
+                return(
+                  <div style={{borderTop:"1px solid #f0f0f0"}}>
+                    <div style={{display:"flex",alignItems:"center",padding:"8px 18px",gap:8}}>
+                      {blank?<div style={{fontSize:11,color:"#888",flex:1}}>
+                        <IC_LINK size={10} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
+                        {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
+                      </div>:<div style={{flex:1,fontSize:11,color:"#ccc",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
+                      {blank&&<button onClick={()=>setRestockModal({product:sp,variants:allVars,blank,dtf,lowVars})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                        <IC_PROD size={11} color="#fff"/> Auftrag
+                      </button>}
+                    </div>
+                    <div style={{padding:"6px 18px 14px",display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {colorGroups.map(([color, cvars])=>{
+                        const v=cvars[0];
+                        const qty=v.inventory_quantity||0;
+                        const min=RESTOCK_DEFAULT;
+                        const isOut=qty===0;
+                        const label=color==="_default_"?"Default":color;
+                        return(
+                          <div key={color} style={{
+                            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0,
+                            background:isOut?"#f0f0f0":"#f8f8f8",
+                            borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
+                          }}>
+                            <span style={{...F_HEAD_STYLE,fontSize:14,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
+                            <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
+                            {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+              // Size-based: per-color sections
+              return colorGroups.map(([color, cvars])=>{
               const groupInv = cvars.reduce((a,v)=>a+(v.inventory_quantity||0),0);
               const colorLink = shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
               const productLink = shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id)&&l.linkLevel!=="color");
@@ -2616,7 +2658,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                   </div>
                 </div>
               );
-            })}
+            });})()}
           </div>
         );
       })}
