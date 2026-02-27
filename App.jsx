@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.0";
+const APP_VERSION = "v3.3.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2584,11 +2584,11 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                 const isOut = qty===0;
                 return(
                   <div key={v.id} style={{
-                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,
+                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0,
                     background:isOut?"#f0f0f0":"#f8f8f8",
                     borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
                   }}>
-                    <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
+                    <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{sizeLabel}</span>
                     <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
                     {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
                   </div>
@@ -2683,7 +2683,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
       if(d1.error) setError(d1.error);
       else{setShopifyProds(d1.products||[]);shopCacheSet("shopify_products",d1.products||[]);}
       setLocations(locs.locations||[]);shopCacheSet("shopify_locations",locs.locations||[]);
-      if(linksData.links) setShopifyLinks(linksData.links);
+      if(linksData.links){setShopifyLinks(linksData.links);shopCacheSet("shopify_links",linksData.links);}
     } catch(e) { setError(String(e)); }
     setLoading(false);
   };
@@ -2710,7 +2710,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
   };
 
   const saveLinks = async (links) => {
-    setShopifyLinks(links);
+    setShopifyLinks(links);shopCacheSet("shopify_links",links);
     await apiPost({action:"shopify_save_links", links});
   };
 
@@ -3652,7 +3652,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         {state==="done"&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#16a34a"}}>✓</span>}
                         {state==="orange"&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#f97316"}}>MAX</span>}
                         {state==="red"&&<span style={{position:"absolute",bottom:5,fontSize:9,color:"#ef4444",fontWeight:700}}>MIN</span>}
-                        {hasStCode&&<div style={{position:"absolute",top:3,right:4}}>
+                        {hasStCode&&<div style={{position:"absolute",bottom:4,right:4}}>
                           <button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
                             style={{padding:"1px 4px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
                             CSV
@@ -4055,6 +4055,12 @@ function AppInner({currentUser,onLogout}){
       setSyncStatus(data?"ok":"error");
       setTimeout(()=>setSyncStatus("idle"),2000);
     });
+    // Load shopifyLinks globally so Restock can use them
+    const cachedLinks=shopCacheGet("shopify_links");
+    if(cachedLinks){setShopifyLinks(cachedLinks);}
+    fetch(SHEETS_URL+"?action=shopify_links",{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.links){setShopifyLinks(d.links);shopCacheSet("shopify_links",d.links);}}catch(e){}})
+      .catch(()=>{});
   },[]);
 
   const handleBestellen = (blank, key, isCapKey, capColor, menge) => {
@@ -4556,7 +4562,7 @@ function AppInner({currentUser,onLogout}){
 
         {/* Shopify */}
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={SHEETS_URL}/>}
-        {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);try{await fetch(SHEETS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
+        {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={SHEETS_URL} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);shopCacheSet("shopify_links",links);try{await fetch(SHEETS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={SHEETS_URL}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
