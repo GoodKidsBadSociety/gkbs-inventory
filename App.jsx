@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.1.0";
+const APP_VERSION = "v3.2.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -972,12 +972,9 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
               {!blank&&<span>Kein Blank</span>}
             </div>
           </div>
-          <div style={{textAlign:"right",flexShrink:0}}>
-            <div style={{display:"flex",alignItems:"baseline",gap:1,justifyContent:"flex-end"}}>
-              <span style={{...F_HEAD_STYLE,fontSize:mobile?32:36,fontWeight:900,color:"#111",lineHeight:1}}>{totalDone}</span>
-              <span style={{fontFamily:F_BODY,fontSize:16,fontWeight:700,color:"#ccc"}}>/{totalQty}</span>
-            </div>
-            <div style={{fontSize:10,fontWeight:700,color:allDone?"#16a34a":"#bbb",letterSpacing:1,marginTop:2}}>{allDone?"✓ DONE":"DONE"}</div>
+          <div style={{display:"flex",gap:6,flexShrink:0}}>
+            <button onClick={onEdit} style={{width:38,height:38,borderRadius:10,border:"none",background:"#f5f5f5",color:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><PENCIL/></button>
+            <button onClick={onDelete} style={{width:38,height:38,borderRadius:10,border:"none",background:"#fef2f2",color:"#ef4444",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
           </div>
         </div>
 
@@ -995,11 +992,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-flex",alignItems:"center",gap:3}}><IC_LINK size={11} color="#3b82f6"/> Design</a>}
         </div>}
 
-        {/* Edit/Delete buttons */}
-        <div style={{display:"flex",gap:8,marginTop:14,justifyContent:"flex-end"}}>
-          <button onClick={onEdit} style={{width:40,height:40,borderRadius:10,border:"none",background:"#f5f5f5",color:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><PENCIL/></button>
-          <button onClick={onDelete} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fef2f2",color:"#ef4444",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
-        </div>
+
       </div>
 
       {/* Photos */}
@@ -1012,11 +1005,15 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
         </div>
       )}
 
-      {/* Progress bar */}
+      {/* Counter + Progress bar */}
       {totalQty>0&&(
-        <div style={{padding:mobile?"4px 16px":"4px 20px"}}>
-          <div style={{height:3,background:"#f0f0f0",borderRadius:3,overflow:"hidden"}}>
-            <div style={{height:3,background:allDone?"#16a34a":"#111",borderRadius:3,width:`${progress}%`,transition:"width 0.3s"}}/>
+        <div style={{padding:mobile?"8px 16px 4px":"8px 20px 4px"}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:6}}>
+            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:allDone?"#16a34a":"#111",lineHeight:1}}>{totalDone}</span>
+            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#ccc",lineHeight:1}}>/{totalQty}</span>
+          </div>
+          <div style={{height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden"}}>
+            <div style={{height:4,background:allDone?"#16a34a":"#16a34a",borderRadius:4,width:`${progress}%`,transition:"width 0.3s"}}/>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#ccc",fontWeight:600,marginTop:4}}>
             <span>{progress}% erledigt</span><span>{totalQty-totalDone} verbleibend</span>
@@ -1774,7 +1771,7 @@ function BestellbedarfModal({prods,products,onClose}){
           <div key={blankId} style={{background:"#f8f8f8",borderRadius:14,padding:16}}>
             <div style={S.cardHdr}>
               <SmartDot item={blank} size={22}/>
-              <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
+              <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
               
               <button type="button" disabled={allOrdered}
                 style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
@@ -2054,7 +2051,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
         {[["fehler","Produktionsfehler"],["promo","Promo Gifts"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {tab==="fehler"&&(
@@ -2214,7 +2211,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
         {[["dashboard","Dashboard"],["blanks","Textilien"],["dtf","DTF"],["shopify","Shopify"],["verluste","Verluste"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
       {finTab==="dashboard"&&(
@@ -2279,9 +2276,9 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               {(dtfItems||[]).filter(d=>!d.pricePerMeter).length} Design(s) ohne Meterpreis hinterlegt
             </div>
           )}
-          <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{(dtfItems||[]).filter(d=>d.pricePerMeter).reduce((a,d)=>a+(d.stock||0),0)} Stück total</div></div>
-            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#fff"}}>€{dtfTotal.toFixed(2)}</div>
+          <div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>DTF LAGERBESTAND</div><div style={{fontSize:11,color:"#999",marginTop:3}}>{(dtfItems||[]).filter(d=>d.pricePerMeter).reduce((a,d)=>a+(d.stock||0),0)} Stück total</div></div>
+            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{dtfTotal.toFixed(2)}</div>
           </div>
         </div>
       )}
@@ -2330,7 +2327,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
       })}
       <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>BLANKS LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{grandQty} Stück total</div></div>
-        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#fff"}}>€{grandTotal.toFixed(2)}</div>
+        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{grandTotal.toFixed(2)}</div>
       </div>
       </>}
       {finTab==="verluste"&&(()=>{
@@ -2391,9 +2388,9 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               </div>
             );
           })}
-          {!shopLoading&&<div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>SHOPIFY WARENWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{shopGrandQty} Stück · {shopFiltered.length} Produkte</div></div>
-            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#fff"}}>€{shopGrandValue.toFixed(2)}</div>
+          {!shopLoading&&<div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>SHOPIFY WARENWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{shopGrandQty} Stück · {shopFiltered.length} Produkte</div></div>
+            <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{shopGrandValue.toFixed(2)}</div>
           </div>}
         </div>
       )}
@@ -2490,7 +2487,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
             {(()=>{
               const link=shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id));
               const blank=link?products.find(p=>p.id===link.gkbsProductId):null;
-              if(!blank) return null;
+              if(!blank) return <div style={{padding:"0 18px 10px"}}><div style={{fontSize:11,color:"#bbb",fontStyle:"italic"}}>Kein Blank verknüpft</div></div>;
               const dtf=(dtfItems||[]).find(d=>(blank.veredelung||[]).includes("Drucken")&&d.linkedProducts?.includes(blank.id));
               return <div style={{padding:"0 18px 10px",display:"flex",alignItems:"center",gap:8}}>
                 <div style={{fontSize:11,color:"#888",flex:1}}>
@@ -2524,12 +2521,12 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                 const deficit = min - qty;
                 return(
                   <div key={v.id} style={{
+                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,
                     background:isLow?"#fff7ed":"#f8f8f8",
                     border:`1px solid ${isLow?"#fed7aa":"#ebebeb"}`,
-                    borderRadius:12,padding:"8px 8px",flex:1,minWidth:mobile?70:80,maxWidth:120,
-                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",height:92,position:"relative"
+                    borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92
                   }}>
-                    <span style={{...F_HEAD_STYLE,fontSize:mobile?18:15,color:isLow?"#9a3412":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
+                    <span style={{...F_HEAD_STYLE,fontSize:16,color:isLow?"#9a3412":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
                     <div style={{display:"flex",alignItems:"baseline",gap:2}}>
                       <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isLow?"#f97316":qty===0?"#ef4444":"#16a34a",lineHeight:1}}>{qty}</span>
                       <span style={{fontSize:11,fontWeight:700,color:"#bbb"}}>/{min}</span>
@@ -2757,7 +2754,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
         {[["products","Produkte",0],["orders","Bestellungen",(()=>{const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);return shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);})()]].map(([t,lbl,count])=>(
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
             {lbl}{count>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
         ))}
@@ -2969,7 +2966,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
           fetch(`${sheetsUrl}?action=shopify_locations`,{redirect:"follow"}).then(r=>r.text()).then(JSON.parse)
         ]);
         if(d1.products) setShopifyProds(d1.products);
-        if(d2.locations){setLocs(d2.locations);if(d2.locations.length===1)setSelLoc(d2.locations[0]);}
+        if(d2.locations){setLocs(d2.locations);if(d2.locations.length>=1)setSelLoc(d2.locations[0]);}
         if(isFromShopify) setSelSP(prod);
       }catch(e){}
       setLoading(false);
@@ -2992,7 +2989,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
         shopifyProductId:String(selSP.id),
         shopifyVariantId:firstVar?String(firstVar.id):"",
         shopifyInventoryItemId:firstVar?String(firstVar.inventory_item_id):"",
-        shopifyLocationId:String(selLoc.id),
+        shopifyLocationId:selLoc?String(selLoc.id):(locs[0]?String(locs[0].id):""),
         label:`${selSP.title} – ${preColorGroup}`,
         linkLevel:"color",
         colorGroup:preColorGroup,
@@ -3007,7 +3004,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
         shopifyProductId:String(selSP.id),
         shopifyVariantId:String(selVar.id),
         shopifyInventoryItemId:String(selVar.inventory_item_id),
-        shopifyLocationId:String(selLoc.id),
+        shopifyLocationId:selLoc?String(selLoc.id):(locs[0]?String(locs[0].id):""),
         label:`${selSP.title} – ${selVar.title}`,
         linkLevel:"product"
       };
@@ -3282,7 +3279,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
         {[["textilien","Textilien",offenTextilien],["dtf","DTF",offenDtf]].map(([v,lbl,count])=>(
-          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
           </button>
         ))}
@@ -3290,7 +3287,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
       {offene.length === 0 && (
         <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
           {subTab==="dtf"?<IC_PRINT size={40} color="#ccc"/>:<IC_BOX size={40} color="#ccc"/>}
-          Keine offenen Bestellungen
+          <div style={{marginTop:12}}>Keine offenen Bestellungen</div>
         </div>
       )}
       {offene.length > 0 && (
@@ -3420,7 +3417,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
       {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
         {[["textilien","Textilien"],["dtf","DTF"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+          <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
 
@@ -3516,10 +3513,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               return {key,label,toOrder:Math.max(0,needed+minStockVal-avail)};
             }).filter(s=>s.toOrder>0);
             return(
-              <div key={blankId} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+              <div key={blankId} style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
-                  <div><div style={{fontSize:14,fontWeight:800}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
+                  <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#aaa"}}>{blank.color} · {blank.category}</div></div>
                   {hasStCode&&<button type="button" onClick={toggleProduct}
                     style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
                     CSV
@@ -4337,7 +4334,7 @@ function AppInner({currentUser,onLogout}){
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:-0.5,color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
+            <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
             {!mobile&&<div style={{fontSize:12,color:"#bbb",fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
               {syncStatus==="loading"&&<span style={{color:"#f97316"}}>Laden...</span>}
               {syncStatus==="saving"&&<span style={{color:"#f97316"}}>Speichern...</span>}
@@ -4384,7 +4381,7 @@ function AppInner({currentUser,onLogout}){
           <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto"}}>
             {TABS.map(([v,lbl,Icon])=>(
               <button key={v} onClick={()=>setView(v)}
-                style={{flex:1,padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
+                style={{flex:1,padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
                 <Icon size={15} color={view===v?"#111":"#aaa"}/>
                 {lbl}
                 {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
@@ -4424,7 +4421,7 @@ function AppInner({currentUser,onLogout}){
             {/* Sub-tabs: Aufträge / Restock */}
             <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
               {[["auftraege","Aufträge"],["restock","Restock"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
 
@@ -4488,7 +4485,7 @@ function AppInner({currentUser,onLogout}){
             {/* Sub-tabs: Textil / DTF */}
             <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
               {[["textil","Textil"],["dtf","DTF"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
             {inventoryTab==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
