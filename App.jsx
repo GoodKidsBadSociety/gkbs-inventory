@@ -2221,7 +2221,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   return(
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["dashboard","Dashboard"],["blanks","Textilien"],["dtf","DTF"],["shopify","Shopify"],["verluste","Verluste"]].map(([v,lbl])=>(
+        {[["dashboard","Dashboard"],["blanks","Blanks"],["dtf","DTF"],["shopify","Shopify"],["verluste","Verluste"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -2234,7 +2234,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
             return <>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>TEXTILIEN</div></div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>BLANKS</div></div>
                   <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#111"}}>€{grandTotal.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{grandQty} Stück</div>
                 </div>
@@ -2257,7 +2257,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               <div style={{background:"#dcfce7",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0"}}>
                 <div>
                   <div style={{fontSize:12,color:"#16a34a",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
-                  <div style={{fontSize:11,color:"#86efac",marginTop:4}}>Textilien + DTF + Shopify − Verluste</div>
+                  <div style={{fontSize:11,color:"#86efac",marginTop:4}}>Blanks + DTF + Shopify − Verluste</div>
                 </div>
                 <div style={{...F_HEAD_STYLE,fontSize:38,fontWeight:900,color:"#111"}}>€{allTotal.toFixed(2)}</div>
               </div>
@@ -2581,21 +2581,16 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                 const sizeLabel = size || v.title.split("/")[0].trim();
                 const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
                 const qty = v.inventory_quantity||0;
-                const isLow = qty < min;
-                const deficit = min - qty;
+                const isOut = qty===0;
                 return(
                   <div key={v.id} style={{
                     display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,
-                    background:isLow?"#fff7ed":"#f8f8f8",
-                    border:`1px solid ${isLow?"#fed7aa":"#ebebeb"}`,
-                    borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92
+                    background:isOut?"#f0f0f0":"#f8f8f8",
+                    borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
                   }}>
-                    <span style={{...F_HEAD_STYLE,fontSize:16,color:isLow?"#9a3412":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
-                    <div style={{display:"flex",alignItems:"baseline",gap:2}}>
-                      <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isLow?"#f97316":qty===0?"#ef4444":"#16a34a",lineHeight:1}}>{qty}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:"#bbb"}}>/{min}</span>
-                    </div>
-                    {isLow&&<span style={{position:"absolute",bottom:4,right:6,fontSize:9,color:"#ef4444",fontWeight:800}}>+{deficit}</span>}
+                    <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
+                    <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
+                    {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
                   </div>
                 );
               })}
@@ -3376,7 +3371,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["textilien","Textilien",offenTextilien],["dtf","DTF",offenDtf]].map(([v,lbl,count])=>(
+        {[["textilien","Blanks",offenTextilien],["dtf","DTF",offenDtf]].map(([v,lbl,count])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
           </button>
@@ -3515,7 +3510,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     <div style={S.col12}>
       {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
-        {[["textilien","Textilien",bedarfCount||0],["dtf","DTF",dtfBedarfCount||0]].map(([v,lbl,count])=>(
+        {[["textilien","Blanks",bedarfCount||0],["dtf","DTF",dtfBedarfCount||0]].map(([v,lbl,count])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
@@ -3528,6 +3523,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           : <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {dtfEntries.map(({dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit})=>{
                 const ok=toOrder===0,okWithMin=toOrderWithMin===0;
+                const dtfOrdered=(bestellungen||[]).some(b=>b.isDtf&&b.status==="offen"&&(b.dtfId===dtf.id||b.produktId===dtf.id));
                 return(
                   <div key={dtf.id} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -3548,15 +3544,15 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                           </div>
                         )}
                       </div>
-                      <button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
-                        style={{background:ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`,cursor:"pointer",flexShrink:0}}>
-                        <div style={{fontSize:9,color:ok?"#16a34a":"#ef4444",fontWeight:700}}>MIN</div>
-                        <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:ok?"#16a34a":"#ef4444",lineHeight:1}}>{toOrderM}{unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
+                      <button type="button" disabled={dtfOrdered} onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrder)}
+                        style={{background:dtfOrdered?"#f0f0f0":ok?"#dcfce7":"#fef2f2",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#ddd":ok?"#bbf7d0":"#fecaca"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
+                        <div style={{fontSize:9,color:dtfOrdered?"#bbb":ok?"#16a34a":"#ef4444",fontWeight:700}}>{dtfOrdered?"✓":"MIN"}</div>
+                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":ok?"#16a34a":"#ef4444",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                       </button>
-                      {minStock>0&&<button type="button" onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrderWithMin)}
-                        style={{background:okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:"pointer",flexShrink:0}}>
-                        <div style={{fontSize:9,color:okWithMin?"#16a34a":"#f97316",fontWeight:700}}>MAX</div>
-                        <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:okWithMin?"#16a34a":"#f97316",lineHeight:1}}>{toOrderWithMinM}{unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
+                      {minStock>0&&<button type="button" disabled={dtfOrdered} onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrderWithMin)}
+                        style={{background:dtfOrdered?"#f0f0f0":okWithMin?"#dcfce7":"#fff7ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#ddd":okWithMin?"#bbf7d0":"#fed7aa"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
+                        <div style={{fontSize:9,color:dtfOrdered?"#bbb":okWithMin?"#16a34a":"#f97316",fontWeight:700}}>{dtfOrdered?"":"MAX"}</div>
+                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":okWithMin?"#16a34a":"#f97316",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderWithMinM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                       </button>}
                     </div>
                   </div>
@@ -3652,13 +3648,14 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",
                         background:ordered?"#f8f8f8":ok?"#f0fdf4":"#fef2f2",
                         border:`1px solid ${ordered?"#e8e8e8":ok?"#bbf7d0":"#fecaca"}`,
-                        borderRadius:12,padding:"8px 6px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer"}}
+                        borderRadius:12,padding:"6px 6px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
-                        <span style={{...F_HEAD_STYLE,fontSize:14,color:ordered?"#bbb":ok?"#16a34a":"#9a3412",fontWeight:800,lineHeight:1,textAlign:"center"}}>{label}</span>
+                        <span style={{...F_HEAD_STYLE,fontSize:13,color:ordered?"#bbb":ok?"#16a34a":"#9a3412",fontWeight:800,lineHeight:1,textAlign:"center"}}>{label}</span>
                         <div style={{display:"flex",alignItems:"baseline",gap:2}}>
-                          <span style={{...F_HEAD_STYLE,fontSize:26,fontWeight:900,color:ordered?"#ccc":ok?"#16a34a":"#ef4444",lineHeight:1}}>{ordered?"✓":toOrder}</span>
+                          <span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:ordered?"#ccc":ok?"#16a34a":"#ef4444",lineHeight:1}}>{ordered?"✓":toOrder}</span>
+                          {!ordered&&minStockVal>0&&toOrderWithMin!==toOrder&&<span style={{...F_HEAD_STYLE,fontSize:13,fontWeight:800,color:"#f97316",lineHeight:1}}>/{toOrderWithMin}</span>}
                         </div>
-                        <div style={{fontSize:9,color:"#aaa",fontWeight:700,lineHeight:1}}>{avail}/{needed}</div>
+                        <div style={{fontSize:8,color:"#aaa",fontWeight:700,lineHeight:1}}>{avail} da · {needed} ben.</div>
                         {hasStCode&&<div style={{position:"absolute",top:3,right:4}}>
                           <button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
                             style={{padding:"1px 4px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
@@ -3688,7 +3685,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:ordered?"#bbb":"#333",minWidth:40}}>{label}</span>
                         <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
-                        <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:ordered?"#ccc":ok?"#16a34a":"#ef4444"}}>{ordered?"✓":toOrder}</span>
+                        <div style={{display:"flex",alignItems:"baseline",gap:2,flexShrink:0}}>
+                          <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:ordered?"#ccc":ok?"#16a34a":"#ef4444"}}>{ordered?"✓":toOrder}</span>
+                          {!ordered&&minStockVal>0&&toOrderWithMin!==toOrder&&<span style={{...F_HEAD_STYLE,fontSize:13,fontWeight:800,color:"#f97316"}}>/{toOrderWithMin}</span>}
+                        </div>
                         {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
                           style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0}}>
                           CSV
@@ -4659,9 +4659,9 @@ function AppInner({currentUser,onLogout}){
         {/* Inventory */}
         {view==="inventory"&&(
           <>
-            {/* Sub-tabs: Textil / DTF */}
+            {/* Sub-tabs: Blanks / DTF */}
             <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
-              {[["textil","Textil"],["dtf","DTF"]].map(([t,lbl])=>(
+              {[["textil","Blanks"],["dtf","DTF"]].map(([t,lbl])=>(
                 <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
