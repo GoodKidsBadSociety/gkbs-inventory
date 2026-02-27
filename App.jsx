@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.6.1";
+const APP_VERSION = "v3.6.2";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2779,18 +2779,19 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
   const loadAll = async (force) => {
     if(!force){
       const cp=shopCacheGet("shopify_products"),cl=shopCacheGet("shopify_locations");
-      if(cp&&cl){setShopifyProds(cp);setLocations(cl);setLoading(false);return;}
+      if(cp&&cl){setShopifyProds(cp);setLocations(cl);
+        const cachedLinks=shopCacheGet("shopify_links");
+        if(cachedLinks)setShopifyLinks(cachedLinks);
+        setLoading(false);return;}
     }
     setLoading(true); setError(null);
     try {
-      const [d1, locs, linksData] = await Promise.all([
-        apiFetch("shopify_products"),
-        apiFetch("shopify_locations"),
-        apiFetch("shopify_links")
-      ]);
+      const d1 = await apiFetch("shopify_products");
       if(d1.error) setError(d1.error);
       else{setShopifyProds(d1.products||[]);shopCacheSet("shopify_products",d1.products||[]);}
+      const locs = await apiFetch("shopify_locations");
       setLocations(locs.locations||[]);shopCacheSet("shopify_locations",locs.locations||[]);
+      const linksData = await apiFetch("shopify_links");
       if(linksData.links){setShopifyLinks(linksData.links);shopCacheSet("shopify_links",linksData.links);}
     } catch(e) { setError(String(e)); }
     setLoading(false);
@@ -4187,21 +4188,23 @@ function AppInner({currentUser,onLogout}){
     // Load shopifyLinks globally so Restock can use them
     const cachedLinks=shopCacheGet("shopify_links");
     if(cachedLinks){setShopifyLinks(cachedLinks);}
-    // Preload ALL Shopify data at startup so tabs are instant
+    // Preload ALL Shopify data at startup so tabs are instant (sequential to avoid GAS rate limits)
     const preloadShopify=async()=>{
+      if(!SHEETS_URL)return;
+      const safeFetch=async(action)=>{
+        try{const r=await fetch(SHEETS_URL+"?action="+action,{redirect:"follow"});return JSON.parse(await r.text());}catch(e){return null;}
+      };
       try{
-        const [prodRes,linksRes,locRes,ordRes,statRes]=await Promise.allSettled([
-          fetch(SHEETS_URL+"?action=shopify_products",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
-          fetch(SHEETS_URL+"?action=shopify_links",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
-          fetch(SHEETS_URL+"?action=shopify_locations",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
-          fetch(SHEETS_URL+"?action=shopify_orders&status=open",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t)),
-          fetch(SHEETS_URL+"?action=shopify_status",{redirect:"follow"}).then(r=>r.text()).then(t=>JSON.parse(t))
-        ]);
-        if(prodRes.status==="fulfilled"&&prodRes.value?.products){shopCacheSet("shopify_products",prodRes.value.products);}
-        if(linksRes.status==="fulfilled"&&linksRes.value?.links){setShopifyLinks(linksRes.value.links);shopCacheSet("shopify_links",linksRes.value.links);}
-        if(locRes.status==="fulfilled"&&locRes.value?.locations){shopCacheSet("shopify_locations",locRes.value.locations);}
-        if(ordRes.status==="fulfilled"&&ordRes.value?.orders){shopCacheSet("shopify_orders",ordRes.value.orders);}
-        if(statRes.status==="fulfilled"){shopCacheSet("shopify_status",statRes.value?.ok===true);}
+        const links=await safeFetch("shopify_links");
+        if(links?.links){setShopifyLinks(links.links);shopCacheSet("shopify_links",links.links);}
+        const stat=await safeFetch("shopify_status");
+        if(stat)shopCacheSet("shopify_status",stat.ok===true);
+        const prods=await safeFetch("shopify_products");
+        if(prods?.products)shopCacheSet("shopify_products",prods.products);
+        const locs=await safeFetch("shopify_locations");
+        if(locs?.locations)shopCacheSet("shopify_locations",locs.locations);
+        const ords=await safeFetch("shopify_orders&status=open");
+        if(ords?.orders)shopCacheSet("shopify_orders",ords.orders);
       }catch(e){}
     };
     preloadShopify();
