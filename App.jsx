@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.5";
+const APP_VERSION = "v3.3.6";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2946,12 +2946,12 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                   <div style={{borderTop:"1px solid #f0f0f0",padding:"6px 0"}}>
                     {isColorOnly
                       ?/* Color-only product: flat row per color */
-                      colorGroups.map(([color, cvars])=>{
+                      colorGroups.map(([color, cvars],ci)=>{
                         const v=cvars[0];
                         const qty=v.inventory_quantity||0;
                         const colorLink = shopifyLinks.find(l=>l.shopifyProductId==String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
                         return(
-                          <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",borderTop:"1px solid #f5f5f5",fontSize:13,gap:8}}>
+                          <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:ci%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
                             <IC_PAINT size={11} color="#3b82f6"/>
                             <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{color==="_default_"?"Default":color}</div>
                             <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
@@ -2987,13 +2987,13 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                             </button>
                           </div>}
                           {/* Variants – single line per variant */}
-                          {cvars.map(v=>{
+                          {cvars.map((v,vi)=>{
                             const qty = v.inventory_quantity||0;
                             const sizePart = getSize(v);
                             const colorPart = hasMultipleColors ? color : "";
                             const label = hasMultipleColors ? `${colorPart} / ${sizePart}` : (v.title||"Default");
                             return(
-                              <div key={v.id} style={{display:"flex",alignItems:"center",padding:"7px 16px",borderTop:"1px solid #f5f5f5",fontSize:13,gap:8}}>
+                              <div key={v.id} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:vi%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
                                 <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</div>
                                 <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
                                 <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
