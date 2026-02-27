@@ -953,64 +953,74 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
   const btnPlus=(d)=>btn(30,false,d);
 
   return(
-    <div style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
+    <div style={{background:"#fff",borderRadius:16,border:"1px solid #e5e5e5",overflow:"hidden",display:"flex",flexDirection:"column"}}>
 
-      {/* ── Header – same structure as ProductCard ── */}
-      <div style={S.row10}>
-        {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0}}>⠿</div>}
-        <SmartDot item={prod} size={mobile?24:28}/>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{...F_HEAD_STYLE,fontSize:mobile?15:17,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
-          <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
-            <PriorityBadge priority={prod.priority}/>
-            {(prod.veredelung||[]).map(v=><VeredBadge key={v} type={v}/>)}
-            {blank&&<span style={{fontSize:10,color:"#aaa",display:"flex",alignItems:"center",gap:3}}><ColorDot hex={blank.colorHex} size={10}/>{blank.name}</span>}
+      {/* ── Header ── */}
+      <div style={{padding:mobile?"16px 16px 0":"16px 20px 0"}}>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+          {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0,marginTop:12}}>⠿</div>}
+          <SmartDot item={prod} size={mobile?36:44}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{...F_HEAD_STYLE,fontSize:mobile?17:20,fontWeight:800,color:"#111",letterSpacing:-0.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
+            <div style={{fontSize:12,color:"#aaa",marginTop:3,fontWeight:500}}>
+              {blank&&<span style={{display:"inline-flex",alignItems:"center",gap:3}}><ColorDot hex={blank.colorHex} size={10}/>{blank.name}</span>}
+              {!blank&&<span>Kein Blank</span>}
+            </div>
           </div>
-          {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic",marginTop:2}}>{prod.notes}</div>}
-          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-block",marginTop:2}}><IC_LINK size={11} color="#3b82f6"/> Design</a>}
-          <div style={{fontSize:11,marginTop:2,display:"flex",alignItems:"center",gap:5}}>
-            <span style={{color:"#aaa"}}>Shopify:</span>
-            <span style={{width:7,height:7,borderRadius:"50%",background:prod.shopifyProductLink?"#16a34a":"#ef4444",display:"inline-block",flexShrink:0}}/>
-            <span style={{fontWeight:700,color:prod.shopifyProductLink?"#16a34a":"#ef4444"}}>
-              {prod.shopifyProductLink?prod.shopifyProductLink.title:"nicht verknüpft"}
-            </span>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{display:"flex",alignItems:"baseline",gap:1,justifyContent:"flex-end"}}>
+              <span style={{...F_HEAD_STYLE,fontSize:mobile?32:36,fontWeight:900,color:"#111",lineHeight:1}}>{totalDone}</span>
+              <span style={{fontFamily:F_BODY,fontSize:16,fontWeight:700,color:"#ccc"}}>/{totalQty}</span>
+            </div>
+            <div style={{fontSize:10,fontWeight:700,color:allDone?"#16a34a":"#bbb",letterSpacing:1,marginTop:2}}>{allDone?"✓ DONE":"DONE"}</div>
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
-          <div style={{textAlign:"right"}}>
-            <div style={{...F_HEAD_STYLE,fontSize:mobile?32:38,fontWeight:900,color:"#111",lineHeight:1}}>{totalDone}<span style={{fontSize:14,color:"#bbb",fontWeight:500,fontStretch:"normal",fontFamily:F_BODY}}>/{totalQty}</span></div>
-            <div style={{fontSize:11,color:allDone?"#16a34a":"#bbb",fontWeight:700,letterSpacing:0.5}}>{allDone?"✓ DONE":"DONE"}</div>
-          </div>
-          <div style={S.col4}>
-            <button onClick={onDelete} style={iconBtn(true)}>✕</button>
-            <button onClick={onEdit} style={iconBtn()}><PENCIL/></button>
-          </div>
+
+        {/* Badges row */}
+        <div style={{display:"flex",gap:6,marginTop:14,flexWrap:"wrap",alignItems:"center"}}>
+          <PriorityBadge priority={prod.priority}/>
+          {(prod.veredelung||[]).map(v=><VeredBadge key={v} type={v}/>)}
+          {prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#f0fdf4",color:"#16a34a",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#16a34a"}}/>Shopify</span>}
+          {!prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#fef2f2",color:"#ef4444",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#ef4444"}}/>Shopify</span>}
+        </div>
+
+        {/* Notes + Design link */}
+        {(prod.notes||prod.designUrl)&&<div style={{marginTop:8,display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic"}}>{prod.notes}</div>}
+          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-flex",alignItems:"center",gap:3}}><IC_LINK size={11} color="#3b82f6"/> Design</a>}
+        </div>}
+
+        {/* Edit/Delete buttons */}
+        <div style={{display:"flex",gap:8,marginTop:14,justifyContent:"flex-end"}}>
+          <button onClick={onEdit} style={{width:40,height:40,borderRadius:10,border:"none",background:"#f5f5f5",color:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><PENCIL/></button>
+          <button onClick={onDelete} style={{width:40,height:40,borderRadius:10,border:"none",background:"#fef2f2",color:"#ef4444",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
         </div>
       </div>
 
       {/* Photos */}
       {prod.photos?.length>0&&(
-        <>
+        <div style={{padding:mobile?"8px 16px":"8px 20px"}}>
           <div style={{display:"flex",gap:6,overflowX:"auto"}}>
             {prod.photos.map((src,i)=><img key={i} src={src} alt="" onClick={()=>setLightbox(src)} style={{height:60,width:60,objectFit:"cover",borderRadius:8,border:"1px solid #ebebeb",flexShrink:0,cursor:"zoom-in"}}/>)}
           </div>
           <Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>
-        </>
+        </div>
       )}
 
       {/* Progress bar */}
       {totalQty>0&&(
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#bbb",fontWeight:700,marginBottom:3}}>
-            <span>{progress}% erledigt</span><span>{totalQty-totalDone} verbleibend</span>
+        <div style={{padding:mobile?"4px 16px":"4px 20px"}}>
+          <div style={{height:3,background:"#f0f0f0",borderRadius:3,overflow:"hidden"}}>
+            <div style={{height:3,background:allDone?"#16a34a":"#111",borderRadius:3,width:`${progress}%`,transition:"width 0.3s"}}/>
           </div>
-          <div style={{height:5,background:"#f0f0f0",borderRadius:99,overflow:"hidden"}}>
-            <div style={{height:"100%",width:`${progress}%`,background:allDone?"#16a34a":"#111",borderRadius:99,transition:"width 0.3s"}}/>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#ccc",fontWeight:600,marginTop:4}}>
+            <span>{progress}% erledigt</span><span>{totalQty-totalDone} verbleibend</span>
           </div>
         </div>
       )}
 
-      {/* ── Sizes / Cap colors – matching ProductCard grid style ── */}
+      {/* ── Sizes / Cap colors ── */}
+      <div style={{padding:mobile?"12px 16px 16px":"12px 20px 20px"}}>
       {isCap?(
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {(prod.capColors||[]).filter(c=>c.qty>0).map(c=>{
@@ -1065,9 +1075,10 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           })}
         </div>
       )}
+      </div>
 
       {/* ── Actions ── */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap",paddingTop:4,borderTop:"1px solid #f0f0f0"}}>
+      <div style={{padding:mobile?"8px 16px 16px":"8px 20px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap",borderTop:"1px solid #f0f0f0"}}>
         <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
           {!fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:fOk?"#dcfce7":"#fee2e2",color:fOk?"#16a34a":"#ef4444",border:`1px solid ${fOk?"#bbf7d0":"#fecaca"}`}}>
             {fOk?<IC_CHECK_CIRCLE size={13} color="#16a34a"/>:<IC_WARN size={13} color="#ef4444"/>} Blanks ({blankNeeded}/{blankAvail})
