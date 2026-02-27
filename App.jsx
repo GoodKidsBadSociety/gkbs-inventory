@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.9";
+const APP_VERSION = "v3.4.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -4699,12 +4699,18 @@ function AppInner({currentUser,onLogout}){
 
             {prodMainTab==="auftraege"&&<>
             {/* Filters – scrollable on mobile */}
-            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
               <div style={{display:"flex",gap:2,background:"#e8e8e8",borderRadius:9,padding:3,flexShrink:0}}>
-                {[["Alle","Alle"],["Drucken","Drucken"],["Sticken","Sticken"]].map(([v,lbl])=>(
-                  <button key={v} onClick={()=>setProdSubView(v)} style={{padding:"6px 12px",borderRadius:7,border:"none",background:prodSubView===v?"#fff":"transparent",color:prodSubView===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:12,whiteSpace:"nowrap"}}>{lbl}</button>
-                ))}
+                {[["Alle",null,"Alle"],["Drucken","print","Drucken"],["Sticken","stitch","Sticken"]].map(([v,icon,lbl])=>{
+                  const active=prodSubView===v;
+                  return <button key={v} onClick={()=>setProdSubView(v)} style={{padding:"6px 12px",borderRadius:7,border:"none",background:active?"#fff":"transparent",color:active?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:12,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4}}>
+                    {icon==="print"&&<IC_PRINT size={12} color={active?"#3b82f6":"#aaa"}/>}
+                    {icon==="stitch"&&<IC_STITCH size={12} color={active?"#a855f7":"#aaa"}/>}
+                    {lbl}
+                  </button>;
+                })}
               </div>
+              <div style={{width:1,height:20,background:"#e0e0e0",flexShrink:0}}/>
               {["Alle","Hoch","Mittel","Niedrig"].map(p=>{const s=PRIORITY[p]||{};const active=prioFilter===p;return <button key={p} onClick={()=>setPrioFilter(p)} style={{padding:"6px 11px",borderRadius:9,border:`1px solid ${active?(p==="Alle"?"#111":s.dot):"#e8e8e8"}`,background:active?(p==="Alle"?"#111":s.bg):"#fff",color:active?(p==="Alle"?"#fff":s.color):"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0}}>{p}</button>;})}
               <button onClick={()=>setProds(ps=>{const active=ps.filter(p=>p.status!=="Fertig");const done=ps.filter(p=>p.status==="Fertig");const sorted=[...active].sort((a,b)=>PRIORITY_ORDER[a.priority]-PRIORITY_ORDER[b.priority]);return [...sorted,...done];})} style={{padding:"6px 11px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0,marginLeft:4}}>↕ Sortieren</button>
             </div>
