@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.8.0";
+const APP_VERSION = "v3.9.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -690,7 +690,6 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
         ):(
           <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
             {value}
-            {minVal>0&&<span style={{fontSize:10,color:belowMin?"#e84142":"#bbb",fontWeight:700,marginLeft:3}}>/{minVal}</span>}
           </span>
         )}
         <div style={{display:"flex",gap:6}}>
@@ -710,7 +709,6 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
       ):(
         <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,cursor:"text"}}>{value}</span>
       )}
-      {minVal>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:belowMin?"#e84142":"#bbb",fontWeight:700}}>/{minVal}</span>}
       <div style={{display:"flex",gap:4}}>
         <button onClick={onDec} style={btn(30,true)}>−</button>
         <button onClick={onInc} style={btn(30)}>+</button>
@@ -720,6 +718,36 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
 }
 
 
+
+// ─── BlankPicker – custom dropdown with color circles ────────────
+function BlankPicker({products,value,onChange}){
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null);
+  const sel=products.find(p=>p.id===value);
+  useEffect(()=>{
+    if(!open)return;
+    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
+    document.addEventListener("mousedown",h);document.addEventListener("touchstart",h);
+    return()=>{document.removeEventListener("mousedown",h);document.removeEventListener("touchstart",h);};
+  },[open]);
+  return(
+    <div ref={ref} style={{position:"relative"}}>
+      <div onClick={()=>setOpen(!open)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",gap:8,boxSizing:"border-box"}}>
+        {sel?<><div style={{width:14,height:14,borderRadius:"50%",background:sel.colorHex||"#888",border:"1.5px solid #ccc",flexShrink:0}}/><span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sel.name} — {sel.color||"–"} — {sel.category}</span></>:<span style={{color:"#bbb"}}>-- Blank wählen --</span>}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,transform:open?"rotate(180deg)":"none",transition:"transform 0.15s"}}><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      {open&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.1)",maxHeight:240,overflowY:"auto",zIndex:10,marginTop:2}}>
+        <div onClick={()=>{onChange("");setOpen(false);}} style={{padding:"9px 12px",cursor:"pointer",fontSize:13,color:"#bbb",borderBottom:"1px solid #f0f0f0"}}>-- Blank wählen --</div>
+        {products.map(p=>(
+          <div key={p.id} onClick={()=>{onChange(p.id);setOpen(false);}} style={{padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,background:value===p.id?"#f0f7ff":"#fff",fontSize:13}}>
+            <div style={{width:14,height:14,borderRadius:"50%",background:p.colorHex||"#888",border:"1.5px solid #ccc",flexShrink:0}}/>
+            <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name} — {p.color||"–"} — {p.category}</span>
+          </div>
+        ))}
+      </div>}
+    </div>
+  );
+}
 
 // ─── PieDot – pie chart circle for any capColors array ──────────
 function PieDot({capColors,fallbackHex="#888",size=28,valueKey="stock"}){
@@ -867,7 +895,6 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
             <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>TOTAL</div>
           </div>
           <div style={S.col4}>
-            <button onClick={onDelete} style={iconBtn(true)}>✕</button>
             <button onClick={onEdit} style={iconBtn()}><PENCIL/></button>
           </div>
         </div>
@@ -1482,7 +1509,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   );
 }
 
-function ProductModal({categories,initial,onClose,onSave}){
+function ProductModal({categories,initial,onClose,onSave,onDelete}){
   const editing=!!initial;
   const [name,setName]=useState(initial?.name||"");
   const [category,setCategory]=useState(initial?.category||categories[0]||"");
@@ -1500,6 +1527,7 @@ function ProductModal({categories,initial,onClose,onSave}){
   const [showPresets, setShowPresets] = useState(false);
   const [presetProduct, setPresetProduct] = useState(null);
   const [presetCat, setPresetCat] = useState("T-Shirt");
+  const [confirmDeleteInModal, setConfirmDeleteInModal] = useState(false);
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
 
   const applyPreset = (preset, colorObj) => {
@@ -1524,7 +1552,11 @@ function ProductModal({categories,initial,onClose,onSave}){
   };
 
   return(
-    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSave()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>✓ Hinzufügen</button></div>}>
+    <ModalWrap onClose={onClose} onSave={doSave} width={620} footer={<div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{display:"flex",gap:10}}><button type="button" onClick={()=>onClose()} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={()=>doSave()} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>✓ {editing?"Speichern":"Hinzufügen"}</button></div>
+      {editing&&onDelete&&!confirmDeleteInModal&&<button type="button" onClick={()=>setConfirmDeleteInModal(true)} style={{width:"100%",padding:11,borderRadius:10,border:"1px solid #fee2e2",background:"#fff",color:"#e84142",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e84142" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Produkt löschen</button>}
+      {editing&&confirmDeleteInModal&&<div style={{display:"flex",gap:8,background:"#fef1f0",borderRadius:10,padding:10,alignItems:"center"}}><span style={{fontSize:13,color:"#e84142",fontWeight:700,flex:1}}>Wirklich löschen?</span><button type="button" onClick={()=>setConfirmDeleteInModal(false)} style={{padding:"8px 14px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#888",cursor:"pointer",fontWeight:700,fontSize:12}}>Nein</button><button type="button" onClick={()=>{onDelete();onClose();}} style={{padding:"8px 14px",borderRadius:8,border:"none",background:"#e84142",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:12}}>Ja, löschen</button></div>}
+    </div>}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
       {/* Stanley/Stella Preset Picker */}
@@ -3280,10 +3312,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
             </div>}
             {isFromShopify&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>GKBS PRODUKT (Blank)</div>
-              <select value={selGkbs||""} onChange={e=>setSelGkbs(e.target.value)} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none"}}>
-                <option value="">-- Blank wählen --</option>
-                {products.map(p=><option key={p.id} value={p.id}>{p.name} ({p.category})</option>)}
-              </select>
+              <BlankPicker products={products} value={selGkbs} onChange={setSelGkbs}/>
             </div>}
             {!isFromShopify&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SHOPIFY PRODUKT</div>
@@ -3705,10 +3734,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {!hasAnyMissing
             ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{marginBottom:12}}><IC_CHECK_CIRCLE size={40} color="#ccc"/></div>Kein Bestellbedarf</div>
-            : <div style={{display:"flex",justifyContent:"flex-end"}}>
+            : <div>
                 <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const hh=String(now.getHours()).padStart(2,"0");const mi=String(now.getMinutes()).padStart(2,"0");const ss=String(now.getSeconds()).padStart(2,"0");const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}/${mm}/${yy}+${hh}:${mi}:${ss}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
-                  style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
-                  ⬇ CSV Export
+                  style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"none",background:"#111",color:"#fff",fontSize:14,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  <IC_DOWN size={14} color="#fff"/> Order Export
                 </button>
               </div>
           }
@@ -3920,7 +3949,7 @@ const USERS = [
   {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#4078e0"},
   {name:"Merlin", hash:"eb14d69963691a08c6cae2708c3e37593f5fc636bf73d451d42afebb471d4529", avatar:"M", color:"#e84142"},
   {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#9b5de5"},
-  {name:"Demo",   hash:"_demo_", avatar:"🧪", color:"#f08328", isDemo:true},
+  {name:"Demo",   hash:"_demo_", avatar:"D", color:"#f08328", isDemo:true},
 ];
 
 // ─── Demo Data ───────────────────────────────────────────────────
@@ -4164,9 +4193,9 @@ function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSe
       {/* Activity Log Tab */}
       {tab==="log"&&(
         <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:8}}>
-          <div style={{fontSize:11,color:"#bbb"}}>Letzte 14 Tage · {logs.length} Einträge</div>
+          <div style={{fontSize:11,color:"#bbb",flexShrink:0}}>Letzte 14 Tage · {logs.length} Einträge</div>
           {logs.length===0&&<div style={{color:"#ccc",textAlign:"center",padding:40,fontSize:14}}>Noch keine Aktivitäten</div>}
-          <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:350,overflowY:"auto"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:"calc(92dvh - 220px)",overflowY:"auto"}}>
             {logs.map((l,i)=>{
               const col = userColors[l.user] || "#888";
               return(
@@ -4228,9 +4257,42 @@ function LoginScreen({onUnlock}){
     onUnlock(demoUser.name);
   };
 
+  // Gradient background animation
+  const bgRef=useRef(null);
+  const posRef=useRef({x:0,y:0});
+  const autoRef=useRef({angle:0,active:true});
+  const rafRef=useRef(null);
+
+  useEffect(()=>{
+    const el=bgRef.current;if(!el)return;
+    const update=(x,y)=>{el.style.setProperty("--posX",String(x));el.style.setProperty("--posY",String(y));};
+    const onMove=e=>{autoRef.current.active=false;const r=el.getBoundingClientRect();posRef.current={x:e.clientX-r.left-r.width/2,y:e.clientY-r.top-r.height/2};update(posRef.current.x*0.15,posRef.current.y*0.15);};
+    const onTouch=e=>{autoRef.current.active=false;const t=e.touches[0];const r=el.getBoundingClientRect();posRef.current={x:t.clientX-r.left-r.width/2,y:t.clientY-r.top-r.height/2};update(posRef.current.x*0.15,posRef.current.y*0.15);};
+    const onEnd=()=>{autoRef.current.active=true;};
+    const autoAnimate=()=>{
+      if(autoRef.current.active){autoRef.current.angle+=0.008;const x=Math.sin(autoRef.current.angle)*60;const y=Math.cos(autoRef.current.angle*0.7)*40;update(x,y);}
+      rafRef.current=requestAnimationFrame(autoAnimate);
+    };
+    el.addEventListener("mousemove",onMove);el.addEventListener("touchmove",onTouch,{passive:true});el.addEventListener("mouseleave",onEnd);el.addEventListener("touchend",onEnd);
+    rafRef.current=requestAnimationFrame(autoAnimate);
+    return()=>{el.removeEventListener("mousemove",onMove);el.removeEventListener("touchmove",onTouch);el.removeEventListener("mouseleave",onEnd);el.removeEventListener("touchend",onEnd);cancelAnimationFrame(rafRef.current);};
+  },[]);
+
   return(
-    <div style={{minHeight:"100vh",background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk', -apple-system, sans-serif",padding:20}}>
-      <div style={{background:"#fff",borderRadius:20,padding:"40px 32px",width:"100%",maxWidth:360,boxShadow:"0 20px 60px rgba(0,0,0,0.4)"}}>
+    <div ref={bgRef} style={{
+      minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk', -apple-system, sans-serif",padding:20,position:"relative",overflow:"hidden",
+      "--posX":"0","--posY":"0",
+      backgroundImage:[
+        "linear-gradient(115deg, rgb(40 0 0), rgb(0 0 0))",
+        "radial-gradient(90% 100% at calc(50% + calc(var(--posX) * 1px)) calc(0% + calc(var(--posY) * 1px)), rgb(120 20 20), rgb(15 0 0))",
+        "radial-gradient(100% 100% at calc(80% - calc(var(--posX) * 1px)) calc(0% - calc(var(--posY) * 1px)), rgb(180 30 30), rgb(20 0 0))",
+        "radial-gradient(150% 210% at calc(100% + calc(var(--posX) * 1px)) calc(0% + calc(var(--posY) * 1px)), rgb(100 10 10), rgb(0 0 0))",
+        "radial-gradient(100% 100% at calc(100% - calc(var(--posX) * 1px)) calc(30% - calc(var(--posY) * 1px)), rgb(232 65 66), rgb(40 0 0))",
+        "linear-gradient(60deg, rgb(150 20 20), rgb(30 0 0))"
+      ].join(","),
+      backgroundBlendMode:"overlay, overlay, difference, difference, difference, normal"
+    }}>
+      <div style={{background:"#fff",borderRadius:20,padding:"40px 32px",width:"100%",maxWidth:360,boxShadow:"0 20px 60px rgba(0,0,0,0.4)",position:"relative",zIndex:1}}>
         <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4,color:"#e84142"}}>GKBS</div>
         <div style={{fontSize:13,color:"#bbb",fontWeight:600,marginBottom:28}}>Inventory Management</div>
 
@@ -4258,13 +4320,16 @@ function LoginScreen({onUnlock}){
                 onKeyDown={e=>e.key==="Enter"&&check()}
                 style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#e84142":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef1f0":"#fff",transition:"border-color 0.2s"}}
               />
-              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",fontSize:18,padding:0,lineHeight:1}}>
-                {show?"🙈":"👁"}
+              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",padding:0,lineHeight:1,display:"flex"}}>
+                {show
+                  ?<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  :<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
               </button>
             </div>
             {error&&<div style={{color:"#e84142",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
             <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-              Einloggen →
+              Einloggen
             </button>
           </>
         )}
@@ -4272,7 +4337,8 @@ function LoginScreen({onUnlock}){
         {/* Demo button */}
         <div style={{borderTop:"1px solid #f0f0f0",marginTop:20,paddingTop:16}}>
           <button onClick={loginDemo} style={{width:"100%",padding:"12px",borderRadius:12,border:"1.5px dashed #f08328",background:"#fff8f0",color:"#f08328",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            🧪 Demo-Modus starten
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f08328" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v2H9zM10 8v5"/><path d="M14 8v3"/><rect x="4" y="5" width="16" height="16" rx="2"/></svg>
+            Demo-Modus starten
             <span style={{fontSize:10,color:"#cba46a",fontWeight:500}}>· ohne Login</span>
           </button>
         </div>
@@ -4825,7 +4891,7 @@ function AppInner({currentUser,onLogout}){
 
   return(
     <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"'Space Grotesk', -apple-system, sans-serif"}}>
-      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onSave={p=>{
+      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onDelete={showProdModal!=="add"?()=>{const p=showProdModal;setProducts(ps=>ps.filter(x=>x.id!==p.id));const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];const total=SIZES.reduce((a,s)=>a+((p.stock||{})[s]||0),0);log(`Produkt gelöscht – ${p.name}${total>0?` | ${total} Stk im Lager`:""}`);setShowProdModal(false);}:undefined} onSave={p=>{
         try{
           if(showProdModal==="add"){
             setProducts(ps=>[...ps,p]);
