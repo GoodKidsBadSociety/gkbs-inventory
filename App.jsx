@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.6.0";
+const APP_VERSION = "v3.6.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2186,6 +2186,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
 }
 
 function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGifts=[], setPromoGifts, sheetsUrl}){
+  const mobile = useIsMobile();
   const [open,setOpen]=useState({});
   const [finTab,setFinTab]=useState("dashboard");
   const toggle=(id)=>setOpen(o=>({...o,[id]:!o[id]}));
@@ -2231,33 +2232,33 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
             const allTotal=grandTotal+dtfTotal+shopGrandValue-verlusteTotal;
             return <>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                <div style={{background:"#fff",borderRadius:14,padding:mobile?"14px 14px":"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>BLANKS</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#1a9a50"}}>€{grandTotal.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:mobile?20:28,fontWeight:900,color:"#1a9a50"}}>€{grandTotal.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{grandQty} Stück</div>
                 </div>
-                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                <div style={{background:"#fff",borderRadius:14,padding:mobile?"14px 14px":"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_PRINT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>DTF</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#1a9a50"}}>€{dtfTotal.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:mobile?20:28,fontWeight:900,color:"#1a9a50"}}>€{dtfTotal.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{(dtfItems||[]).reduce((a,d)=>a+(d.stock||0),0)} Stück</div>
                 </div>
-                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                <div style={{background:"#fff",borderRadius:14,padding:mobile?"14px 14px":"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_SHOP size={16} color="#96bf48"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>SHOPIFY</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#1a9a50"}}>€{shopGrandValue.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:mobile?20:28,fontWeight:900,color:"#1a9a50"}}>€{shopGrandValue.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{shopGrandQty} Stück{shopProds.length===0?" · Laden...":""}</div>
                 </div>
-                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                <div style={{background:"#fff",borderRadius:14,padding:mobile?"14px 14px":"18px 20px",border:"1px solid #ebebeb"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_LOSS size={16} color="#e84142"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>VERLUSTE</div></div>
-                  <div style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#e84142"}}>−€{verlusteTotal.toFixed(2)}</div>
+                  <div style={{...F_HEAD_STYLE,fontSize:mobile?20:28,fontWeight:900,color:"#e84142"}}>−€{verlusteTotal.toFixed(2)}</div>
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{verluste.length+promoGifts.length} Einträge</div>
                 </div>
               </div>
-              <div style={{background:"#ddfce6",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0"}}>
-                <div>
+              <div style={{background:"#ddfce6",borderRadius:14,padding:mobile?"18px 16px":"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0",gap:10}}>
+                <div style={{flexShrink:0}}>
                   <div style={{fontSize:12,color:"#1a9a50",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
                   <div style={{fontSize:11,color:"#86efac",marginTop:4}}>Blanks + DTF + Shopify − Verluste</div>
                 </div>
-                <div style={{...F_HEAD_STYLE,fontSize:38,fontWeight:900,color:"#111"}}>€{allTotal.toFixed(2)}</div>
+                <div style={{...F_HEAD_STYLE,fontSize:mobile?26:38,fontWeight:900,color:"#111"}}>€{allTotal.toFixed(2)}</div>
               </div>
             </>;
           })()}
