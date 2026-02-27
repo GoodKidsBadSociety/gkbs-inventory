@@ -3369,6 +3369,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
 }
 
 function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser}){
+  const mobile = useIsMobile();
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
