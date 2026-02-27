@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.7.0";
+const APP_VERSION = "v3.7.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -3909,7 +3909,7 @@ function PrintPie({colors,r=10,vk="stock"}){
 // ─── Users (passwords stored as SHA-256 hashes) ───────────────────
 const USERS = [
   {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#4078e0"},
-  {name:"Merlin", hash:"62936c7f995c57dee05ec9666e6600fa1318448bd8b6373a99e7129e2106e14b", avatar:"M", color:"#e84142"},
+  {name:"Merlin", hash:"eb14d69963691a08c6cae2708c3e37593f5fc636bf73d451d42afebb471d4529", avatar:"M", color:"#e84142"},
   {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#9b5de5"},
   {name:"Demo",   hash:"_demo_", avatar:"🧪", color:"#f08328", isDemo:true},
 ];
