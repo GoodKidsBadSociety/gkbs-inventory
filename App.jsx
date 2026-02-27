@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.1";
+const APP_VERSION = "v3.3.3";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2543,6 +2543,21 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
         const allVars = sp.variants||[];
         const totalInv = allVars.reduce((a,v)=>a+(v.inventory_quantity||0),0);
         const img = sp.image?.src || sp.images?.[0]?.src;
+        // Group variants by color
+        const ALL_SIZES_SET = new Set(["XXS","XS","S","M","L","XL","XXL","XXXL","OS","ONE SIZE","O/S"]);
+        const getColor = (v) => {
+          const parts = (v.title||"").split("/").map(p=>p.trim());
+          if(parts.length<=1){if(ALL_SIZES_SET.has((parts[0]||"").toUpperCase())) return "_default_"; return parts[0]||"_default_";}
+          const firstIsSize = ALL_SIZES_SET.has(parts[0].toUpperCase());
+          if(firstIsSize) return parts.length>1?parts.slice(1).join("/"):"_default_";
+          const lastIsSize = ALL_SIZES_SET.has(parts[parts.length-1].toUpperCase());
+          if(lastIsSize) return parts.slice(0,-1).join("/");
+          return parts[0];
+        };
+        const colorMap = {};
+        allVars.forEach(v=>{const color=getColor(v);if(!colorMap[color])colorMap[color]=[];colorMap[color].push(v);});
+        const colorGroups = Object.entries(colorMap);
+        const hasMultipleColors = colorGroups.length > 1;
         return(
           <div key={sp.id} style={{background:"#fff",borderRadius:16,border:"1px solid #ebebeb",overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             {/* Product header */}
@@ -2551,50 +2566,60 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                   :<div style={{width:40,height:40,borderRadius:10,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={18} color="#ccc"/></div>}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sp.title}</div>
-                <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{allVars.length} Varianten · {totalInv} Stk gesamt</div>
+                <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{allVars.length} Varianten{hasMultipleColors?` · ${colorGroups.length} Farben`:""} · {totalInv} Stk</div>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#f97316",lineHeight:1}}>{lowVars.length}</div>
                 <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
               </div>
             </div>
-            {/* Linked blank info + Auftrag button */}
-            {(()=>{
-              const link=shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id));
-              const blank=link?products.find(p=>p.id===link.gkbsProductId):null;
-              if(!blank) return <div style={{padding:"0 18px 10px"}}><div style={{fontSize:11,color:"#bbb",fontStyle:"italic"}}>Kein Blank verknüpft</div></div>;
-              const dtf=(dtfItems||[]).find(d=>(blank.veredelung||[]).includes("Drucken")&&d.linkedProducts?.includes(blank.id));
-              return <div style={{padding:"0 18px 10px",display:"flex",alignItems:"center",gap:8}}>
-                <div style={{fontSize:11,color:"#888",flex:1}}>
-                  <IC_LINK size={11} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
-                  {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
-                </div>
-                <button onClick={()=>setRestockModal({product:sp,variants:allVars,blank,dtf,lowVars})} style={{padding:"6px 14px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:12,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
-                  <IC_PROD size={12} color="#fff"/> Auftrag
-                </button>
-              </div>;
-            })()}
-            {/* Size cells */}
-            <div style={{padding:"0 18px 16px",display:"flex",gap:6,flexWrap:"wrap"}}>
-              {allVars.map(v=>{
-                const size = parseSize(v.title);
-                const sizeLabel = size || v.title.split("/")[0].trim();
-                const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
-                const qty = v.inventory_quantity||0;
-                const isOut = qty===0;
-                return(
-                  <div key={v.id} style={{
-                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0,
-                    background:isOut?"#f0f0f0":"#f8f8f8",
-                    borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
-                  }}>
-                    <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{sizeLabel}</span>
-                    <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
-                    {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
+            {/* Color groups */}
+            {colorGroups.map(([color, cvars])=>{
+              const groupInv = cvars.reduce((a,v)=>a+(v.inventory_quantity||0),0);
+              const colorLink = shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
+              const productLink = shopifyLinks.find(l=>String(l.shopifyProductId)===String(sp.id)&&l.linkLevel!=="color");
+              const effectiveLink = colorLink || productLink;
+              const blank = effectiveLink?products.find(p=>p.id===effectiveLink.gkbsProductId):null;
+              const dtf = blank?(dtfItems||[]).find(d=>(blank.veredelung||[]).includes("Drucken")&&d.linkedProducts?.includes(blank.id)):null;
+              return(
+                <div key={color} style={{borderTop:"1px solid #f0f0f0"}}>
+                  {/* Color header */}
+                  <div style={{display:"flex",alignItems:"center",padding:"8px 18px",gap:8,background:hasMultipleColors?"#fafafa":"transparent"}}>
+                    {hasMultipleColors&&<IC_PAINT size={12} color="#555"/>}
+                    {hasMultipleColors&&<span style={{fontSize:13,fontWeight:800,color:"#333"}}>{color==="_default_"?"Standard":color}</span>}
+                    {blank?<div style={{fontSize:11,color:"#888",flex:1}}>
+                      <IC_LINK size={10} color="#3b82f6"/> <span style={{color:"#3b82f6",fontWeight:700}}>{blank.name}</span>
+                      {dtf&&<span style={{color:"#aaa"}}> · DTF: {dtf.name}</span>}
+                    </div>:<div style={{flex:1,fontSize:11,color:"#ccc",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
+                    {hasMultipleColors&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#888"}}>{groupInv}</span>}
+                    {blank&&<button onClick={()=>setRestockModal({product:sp,variants:cvars,blank,dtf,lowVars:cvars.filter(v=>{const sz=parseSize(v.title);const min=sz?RESTOCK_MIN[sz]:RESTOCK_DEFAULT;return(v.inventory_quantity||0)<min;})})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                      <IC_PROD size={11} color="#fff"/> Auftrag
+                    </button>}
                   </div>
-                );
-              })}
-            </div>
+                  {/* Size cells for this color group */}
+                  <div style={{padding:"6px 18px 14px",display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {cvars.map(v=>{
+                      const size = parseSize(v.title);
+                      const sizeLabel = size || v.title.split("/")[0].trim();
+                      const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
+                      const qty = v.inventory_quantity||0;
+                      const isOut = qty===0;
+                      return(
+                        <div key={v.id} style={{
+                          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:0,
+                          background:isOut?"#f0f0f0":"#f8f8f8",
+                          borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
+                        }}>
+                          <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{sizeLabel}</span>
+                          <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f97316":"#16a34a",lineHeight:1}}>{qty}</span>
+                          {min>0&&<span style={{position:"absolute",top:5,right:5,fontSize:9,color:qty<min?"#ef4444":"#bbb",fontWeight:700}}>/{min}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         );
       })}
@@ -3387,7 +3412,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"0 4px"}}>OFFENE BESTELLUNGEN · {offene.length}</div>
           {offene.map(b => (
-            <div key={b.id} style={{background:"#fff",borderRadius:14,padding:"14px 16px",border:"1px solid #fecaca",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",alignItems:"center",gap:12}}>
+            <div key={b.id} style={{background:"#fff",borderRadius:14,padding:"14px 16px",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",alignItems:"center",gap:12}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{b.produktName}</div>
                 <div style={{fontSize:12,color:"#888",marginTop:2}}>{b.isDtf?"DTF Transfer":b.label}</div>
@@ -3417,7 +3442,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,padding:"0 4px",marginTop:8}}>ZULETZT ERHALTEN</div>
           {erledigt.map(b => (
-            <div key={b.id} style={{background:"#f8f8f8",borderRadius:14,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12,opacity:0.7}}>
+            <div key={b.id} style={{background:"#f8f8f8",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:12,opacity:0.7}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:800,color:"#555"}}>{b.produktName}</div>
                 <div style={{fontSize:11,color:"#aaa",marginTop:2}}>{b.label}</div>
@@ -3638,20 +3663,19 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 {!mobile?<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {tileData.map(t=>{
                     const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
-                    const bg=state==="done"?"#f0f0f0":state==="orange"?"#fff7ed":"#fef2f2";
-                    const numColor=state==="done"?"#bbb":state==="orange"?"#f97316":"#ef4444";
-                    const mainNum=state==="done"?"✓":state==="orange"?remainMax:remainMin;
                     return(
-                      <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",
-                        background:bg,
+                      <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                        background:state==="done"?"#f0f0f0":"#f8f8f8",
                         borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer",opacity:state==="done"?0.6:1}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
-                        <span style={{...F_HEAD_STYLE,fontSize:16,color:state==="done"?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{label}</span>
-                        <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:numColor,lineHeight:1}}>{mainNum}</span>
-                        {state!=="done"&&<span style={{position:"absolute",top:5,right:6,fontSize:9,color:"#bbb",fontWeight:700}}>{avail}</span>}
-                        {state==="done"&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#16a34a"}}>✓</span>}
-                        {state==="orange"&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#f97316"}}>MAX</span>}
-                        {state==="red"&&<span style={{position:"absolute",bottom:5,fontSize:9,color:"#ef4444",fontWeight:700}}>MIN</span>}
+                        <span style={{...F_HEAD_STYLE,fontSize:16,color:state==="done"?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
+                        {state==="done"
+                          ?<span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#bbb",lineHeight:1}}>✓</span>
+                          :<div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                            <span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#ef4444",lineHeight:1}}>{remainMin}</span>
+                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800,color:"#f97316",lineHeight:1}}>/{remainMax}</span>}
+                          </div>}
+                        <span style={{position:"absolute",top:5,right:6,fontSize:9,color:"#bbb",fontWeight:700}}>{avail}</span>
                         {hasStCode&&<div style={{position:"absolute",bottom:4,right:4}}>
                           <button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
                             style={{padding:"1px 4px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
@@ -3664,21 +3688,20 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 </div>
                 :<div style={{display:"flex",flexDirection:"column",gap:4}}>
                   {tileData.map(t=>{
-                    const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor}=t;
-                    const bg=state==="done"?"#f0f0f0":state==="orange"?"#fff7ed":"#fef2f2";
-                    const numColor=state==="done"?"#bbb":state==="orange"?"#f97316":"#ef4444";
-                    const mainNum=state==="done"?"✓":state==="orange"?remainMax:remainMin;
+                    const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor,minStockVal}=t;
                     return(
                       <div key={key} onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                         style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,cursor:"pointer",
-                          background:bg,borderRadius:10,opacity:state==="done"?0.6:1}}>
+                          background:state==="done"?"#f0f0f0":"#f8f8f8",opacity:state==="done"?0.6:1}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:state==="done"?"#bbb":"#333",minWidth:40}}>{label}</span>
                         <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#16a34a":"#ef4444"}}>{avail}</strong></div>
-                        <div style={{display:"flex",alignItems:"baseline",gap:2,flexShrink:0}}>
-                          <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:numColor}}>{mainNum}</span>
-                          {state!=="done"&&<span style={{fontSize:10,fontWeight:700,color:"#bbb"}}>{state==="orange"?"MAX":"MIN"}</span>}
-                        </div>
+                        {state==="done"
+                          ?<span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#bbb",flexShrink:0}}>✓</span>
+                          :<div style={{display:"flex",alignItems:"baseline",gap:2,flexShrink:0}}>
+                            <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#ef4444"}}>{remainMin}</span>
+                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#f97316"}}>/{remainMax}</span>}
+                          </div>}
                         {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
                           style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0}}>
                           CSV
