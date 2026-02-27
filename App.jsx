@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v2.8.0";
+const APP_VERSION = "v2.9.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -521,10 +521,36 @@ const btn=(w,red=false,dis=false)=>({width:w,height:w,borderRadius:7,border:"non
   color:red?(dis?"#ccc":R):(dis?"#ccc":GR),
   fontSize:w>30?22:w>25?18:14,cursor:dis?"not-allowed":"pointer",
   display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800});
-const iconBtn=(red=false)=>({width:34,height:34,borderRadius:9,border:"none",background:"#f0f0f0",
-  color:red?R:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0});
+const iconBtn=(red=false)=>({width:38,height:38,borderRadius:10,border:"none",background:red?"#fef2f2":"#f0f0f0",
+  color:red?R:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,fontSize:16,fontWeight:800});
 const PENCIL=()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 const CHECK=()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+
+// ─── Plump Fill Icons (stroke 2.2 + light fill) ─────────────────
+const IC_PROD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>;
+const IC_BOX=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>;
+const IC_CART=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1" fill={color}/><circle cx="19" cy="21" r="1" fill={color}/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>;
+const IC_CHART=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 18v-1"/><path d="M14 18v-3"/><path d="M10 13V9"/><path d="M14 13v-1"/></svg>;
+const IC_DOLLAR=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+const IC_SHOP=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
+const IC_PRINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
+const IC_STITCH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m18.5 2-5 5M12 7l-1.5 1.5"/><path d="M3.27 13.22A5 5 0 0 0 2 16.5V22h5.5a5 5 0 0 0 3.28-1.27l.22-.22"/><path d="m14.5 9.5-5 5"/></svg>;
+const IC_CHECK_CIRCLE=({size=16,color="#22c55e"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"20"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
+const IC_WARN=({size=16,color="#ef4444"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"20"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
+const IC_LOSS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>;
+const IC_CLOCK=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const IC_LINK=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
+const IC_RULER=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>;
+const IC_GIFT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>;
+const IC_CLOUD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
+const IC_FOLDER=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>;
+const IC_SEARCH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+const IC_REFRESH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>;
+const IC_TRASH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
+const IC_TSHIRT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 2 12 5.5 8 2l-4.38 1.46a2 2 0 0 0-1.34 1.88v14.8a1 1 0 0 0 1.17.98L8 20l4-3 4 3 4.45 1.12a1 1 0 0 0 1.17-.98V5.34a2 2 0 0 0-1.24-1.88Z"/></svg>;
+const IC_THREAD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4.8Z"/><path d="M4 22V12c0-2 1-4 4-4h3"/><path d="M15 6c0 3 2 4 4 4s4-1 4-4-2-4-4-4-4 1-4 4Z"/><path d="M11 8c-3 0-4 2-4 4v4c0 2 1 4 4 4"/></svg>;
+const IC_DOWN=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>;
+const IC_LAYOUT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color+"18"} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>;
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
 const DEMO_PRODUCTS = [
@@ -571,7 +597,7 @@ function PriorityBadge({priority}){
 function VeredBadge({type}){
   const styles={"Drucken":{bg:"#eff6ff",color:"#3b82f6"},"Sticken":{bg:"#fdf4ff",color:"#a855f7"}};
   const s=styles[type]||{bg:"#f0f0f0",color:"#666"};
-  return <span style={{fontSize:11,background:s.bg,color:s.color,borderRadius:6,padding:"2px 7px",fontWeight:700}}>{type==="Drucken"?"🖨 Drucken":"🪡 Sticken"}</span>;
+  return <span style={{fontSize:11,background:s.bg,color:s.color,borderRadius:6,padding:"3px 8px",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}>{type==="Drucken"?<IC_PRINT size={12} color={s.color}/>:<IC_STITCH size={12} color={s.color}/>}{type}</span>;
 }
 
 
@@ -936,7 +962,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             {blank&&<span style={{fontSize:10,color:"#aaa",display:"flex",alignItems:"center",gap:3}}><ColorDot hex={blank.colorHex} size={10}/>{blank.name}</span>}
           </div>
           {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic",marginTop:2}}>{prod.notes}</div>}
-          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-block",marginTop:2}}>🔗 Design</a>}
+          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",display:"inline-block",marginTop:2}}><IC_LINK size={11} color="#3b82f6"/> Design</a>}
           <div style={{fontSize:11,marginTop:2,display:"flex",alignItems:"center",gap:5}}>
             <span style={{color:"#aaa"}}>Shopify:</span>
             <span style={{width:7,height:7,borderRadius:"50%",background:prod.shopifyProductLink?"#16a34a":"#ef4444",display:"inline-block",flexShrink:0}}/>
@@ -947,8 +973,8 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:mobile?26:30,fontWeight:900,color:"#111",lineHeight:1}}>{totalDone}<span style={{fontSize:12,color:"#bbb",fontWeight:400}}>/{totalQty}</span></div>
-            <div style={{fontSize:10,color:allDone?"#16a34a":"#bbb",fontWeight:700}}>{allDone?"✓ DONE":"DONE"}</div>
+            <div style={{fontSize:mobile?32:38,fontWeight:900,color:"#111",lineHeight:1}}>{totalDone}<span style={{fontSize:14,color:"#bbb",fontWeight:500}}>/{totalQty}</span></div>
+            <div style={{fontSize:11,color:allDone?"#16a34a":"#bbb",fontWeight:700,letterSpacing:0.5}}>{allDone?"✓ DONE":"DONE"}</div>
           </div>
           <div style={S.col4}>
             <button onClick={onDelete} style={iconBtn(true)}>✕</button>
@@ -1039,7 +1065,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap",paddingTop:4,borderTop:"1px solid #f0f0f0"}}>
         <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
           {!fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:fOk?"#dcfce7":"#fee2e2",color:fOk?"#16a34a":"#ef4444",border:`1px solid ${fOk?"#bbf7d0":"#fecaca"}`}}>
-            {fOk?"✅":"⛔️"} Blanks ({blankNeeded}/{blankAvail})
+            {fOk?<IC_CHECK_CIRCLE size={13} color="#16a34a"/>:<IC_WARN size={13} color="#ef4444"/>} Blanks ({blankNeeded}/{blankAvail})
           </span>}
           {fUnknown&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:"#f5f5f5",color:"#bbb",border:"1px solid #e8e8e8"}}>— Kein Blank</span>}
           {dtfItem&&(()=>{
@@ -1047,7 +1073,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             const avail=dtfItem.stock||0;
             const ok=avail>=needed;
             return <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:20,fontSize:11,fontWeight:800,background:ok?"#dcfce7":"#fee2e2",color:ok?"#16a34a":"#ef4444",border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`}}>
-              {ok?"✅":"⛔️"} DTF ({needed}/{avail})
+              {ok?<IC_CHECK_CIRCLE size={13} color="#16a34a"/>:<IC_WARN size={13} color="#ef4444"/>} DTF ({needed}/{avail})
             </span>;
           })()}
         </div>
@@ -1258,7 +1284,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
         style={{width:"100%",padding:"11px 14px",borderRadius:10,border:`1.5px solid ${value?"#bbf7d0":"#e8e8e8"}`,background:value?"#f0fdf4":"#f8f8f8",color:value?"#16a34a":"#888",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
         {loading?"⟳ Laden...": value
           ? <><span style={{flex:1}}>✓ {value.title}</span><span style={{fontSize:11,opacity:0.6}}>({value.variants?.length} Varianten)</span></>
-          : <span style={{flex:1}}>🛍 Shopify Produkt auswählen...</span>}
+          : <span style={{flex:1}}>Shopify Produkt auswählen...</span>}
         {value && <span onClick={clear} style={{fontSize:16,color:"#ef4444",lineHeight:1,padding:"0 4px"}}>✕</span>}
         {!value && <span style={{fontSize:12,color:"#bbb"}}>{open?"▲":"▼"}</span>}
       </button>
@@ -1268,7 +1294,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
         <div style={{border:"1px solid #e8e8e8",borderRadius:10,marginTop:4,overflow:"hidden",background:"#fff"}}>
           <div style={{padding:"8px 10px",borderBottom:"1px solid #f0f0f0"}}>
             <input value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder="🔍 Suchen..."
+              placeholder="Suchen..."
               style={{width:"100%",padding:"7px 10px",borderRadius:8,border:"1px solid #e8e8e8",fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
           <div style={{maxHeight:220,overflowY:"auto"}}>
@@ -1280,7 +1306,7 @@ function ShopifyProdPicker({sheetsUrl, value, onChange}){
                 onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
                 {sp.images?.[0]?.src
                   ?<img src={sp.images[0].src} style={{width:28,height:28,borderRadius:5,objectFit:"cover",flexShrink:0}} alt=""/>
-                  :<div style={{width:28,height:28,borderRadius:5,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14}}>👕</div>}
+                  :<div style={{width:28,height:28,borderRadius:5,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={14} color="#aaa"/></div>}
                 <span style={{fontSize:13,fontWeight:600}}>{sp.title}</span>
               </div>
             ))}
@@ -1353,7 +1379,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
       <div>
         <div style={S.secLabel}>VEREDELUNG</div>
         <div style={{display:"flex",gap:8}}>
-          {VEREDELUNG_TYPES.map(v=>{const active=veredelung.includes(v);const sc={"Drucken":{ac:"#3b82f6",bg:"#eff6ff"},"Sticken":{ac:"#a855f7",bg:"#fdf4ff"}}[v];return <button key={v} type="button" onClick={()=>toggleV(v)} style={{flex:1,padding:"11px",borderRadius:10,border:`1.5px solid ${active?sc.ac:"#e8e8e8"}`,background:active?sc.bg:"#fff",color:active?sc.ac:"#999",cursor:"pointer",fontWeight:700,fontSize:13}}>{v==="Drucken"?"🖨 Drucken":"🪡 Sticken"}</button>;})}
+          {VEREDELUNG_TYPES.map(v=>{const active=veredelung.includes(v);const sc={"Drucken":{ac:"#3b82f6",bg:"#eff6ff"},"Sticken":{ac:"#a855f7",bg:"#fdf4ff"}}[v];return <button key={v} type="button" onClick={()=>toggleV(v)} style={{flex:1,padding:"11px",borderRadius:10,border:`1.5px solid ${active?sc.ac:"#e8e8e8"}`,background:active?sc.bg:"#fff",color:active?sc.ac:"#999",cursor:"pointer",fontWeight:700,fontSize:13}}>{v==="Drucken"?"<IC_PRINT size={12} color="#3b82f6"/> Drucken":"<IC_STITCH size={12} color="#a855f7"/> Sticken"}</button>;})}
 
         {veredelung.includes("Drucken")&&dtfItems.length>0&&<div>
           <div style={S.secLabel}>DTF TRANSFER VERKNÜPFEN</div>
@@ -1365,7 +1391,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
         </div>}
         </div>
       </div>
-      <input style={inp} placeholder="🔗 Design-Link" value={designUrl} onChange={e=>setDesignUrl(e.target.value)}/>
+      <input style={inp} placeholder="Design-Link" value={designUrl} onChange={e=>setDesignUrl(e.target.value)}/>
       <div>
         <div style={S.secLabel}>FOTOS (max. 5)</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
@@ -1432,7 +1458,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
       )}
       {/* Shopify Verknüpfung */}
       <div>
-        <div style={S.secLabel}>🛍 SHOPIFY PRODUKT VERKNÜPFEN</div>
+        <div style={S.secLabel}>SHOPIFY PRODUKT VERKNÜPFEN</div>
         <ShopifyProdPicker
           sheetsUrl={SHEETS_URL}
           value={shopifyProductLink}
@@ -1622,7 +1648,7 @@ function CategoryModal({categories,onClose,onSave}){
 function DeleteConfirmModal({name,onConfirm,onCancel}){
   return(
     <ModalWrap onClose={onCancel} width={360}>
-      <div style={{width:48,height:48,borderRadius:"50%",background:"#fef2f2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🗑</div>
+      <div style={{width:48,height:48,borderRadius:"50%",background:"#fef2f2",display:"flex",alignItems:"center",justifyContent:"center"}}><IC_TRASH size={22} color="#ef4444"/></div>
       <div><div style={{fontSize:17,fontWeight:800,color:"#111",marginBottom:4}}>Löschen?</div><div style={{fontSize:14,color:"#888"}}><strong style={{color:"#111"}}>{name}</strong> wird dauerhaft entfernt.</div></div>
       <div style={{display:"flex",gap:10}}>
         <button type="button" onClick={onCancel} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#666",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
@@ -1907,15 +1933,15 @@ function DtfCard({item, onUpdate, onDelete, onEdit, linkedProds}){
   return(
     <div style={{background:"#fff",borderRadius:14,padding:mobile?"14px 14px":"16px 20px",border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-        <div style={{width:36,height:36,borderRadius:10,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🖨</div>
+        <div style={{width:36,height:36,borderRadius:10,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_PRINT size={18} color="#fff"/></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{item.name}</div>
           {linkedProds.length>0&&<div style={{fontSize:11,color:"#3b82f6",fontWeight:600,marginTop:2}}>
-            🔗 {linkedProds.map(p=>p.name).join(", ")}
+            <IC_LINK size={11} color="#3b82f6"/> {linkedProds.map(p=>p.name).join(", ")}
           </div>}
-          {item.designsPerMeter>1&&<div style={{fontSize:11,color:"#888",marginTop:2}}>📏 {item.designsPerMeter} Designs/m</div>}
+          {item.designsPerMeter>1&&<div style={{fontSize:11,color:"#888",marginTop:2}}><IC_RULER size={11} color="#888"/> {item.designsPerMeter} Designs/m</div>}
         </div>
-        <button onClick={onEdit} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",fontSize:12,fontWeight:700,cursor:"pointer"}}>✏️</button>
+        <button onClick={onEdit} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",fontSize:12,fontWeight:700,cursor:"pointer"}}><PENCIL/></button>
         <button onClick={onDelete} style={{padding:"6px 10px",borderRadius:8,border:"1px solid #fee2e2",background:"#fff",color:"#ef4444",fontSize:12,fontWeight:700,cursor:"pointer"}}>✕</button>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:16,background:"#f8f8f8",borderRadius:12,padding:"12px 16px"}}>
@@ -1936,7 +1962,7 @@ function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {dtfItems.length===0&&(
         <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>🖨</div>
+          <div style={{marginBottom:12}}><IC_PRINT size={40} color="#ccc"/></div>
           Noch keine DTF-Transfers angelegt
         </div>
       )}
@@ -2006,7 +2032,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["fehler","🔴 Produktionsfehler"],["promo","🎁 Promo Gifts"]].map(([v,lbl])=>(
+        {[["fehler","Produktionsfehler"],["promo","Promo Gifts"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -2040,7 +2066,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
           {promoGifts.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
           {promoGifts.map(g=>(
             <div key={g.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
-              <div style={{fontSize:20,flexShrink:0}}>🎁</div>
+              <IC_GIFT size={20} color="#f97316"/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
                 <div style={{fontSize:11,color:"#aaa"}}>{g.info?`${g.info} · `:""}  {new Date(g.datum).toLocaleDateString("de-AT")}</div>
@@ -2056,7 +2082,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
       )}
       {showAddFehler&&(
         <ModalWrap onClose={()=>setShowAddFehler(false)} onSave={addFehler} width={480}>
-          <div style={{fontSize:16,fontWeight:800}}>🔴 Produktionsfehler eintragen</div>
+          <div style={{fontSize:16,fontWeight:800}}>Produktionsfehler eintragen</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <select style={inp} value={fProd} onChange={e=>setFProd(e.target.value)}>
               <option value="">— Produkt (Blank) wählen —</option>
@@ -2095,13 +2121,13 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
           </div>
           <div style={{display:"flex",gap:10,marginTop:4}}>
             <button type="button" onClick={()=>setShowAddFehler(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-            <button type="button" onClick={addFehler} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#ef4444",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>🔴 Eintragen</button>
+            <button type="button" onClick={addFehler} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#ef4444",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Eintragen</button>
           </div>
         </ModalWrap>
       )}
       {showAddPromo&&(
         <ModalWrap onClose={()=>setShowAddPromo(false)} onSave={addPromo} width={480}>
-          <div style={{fontSize:16,fontWeight:800}}>🎁 Promo Gift eintragen</div>
+          <div style={{fontSize:16,fontWeight:800}}>Promo Gift eintragen</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <input style={inp} placeholder="Name (z.B. @influencer)" value={pName} onChange={e=>setPName(e.target.value)}/>
             <input style={inp} placeholder="Info (z.B. Hoodie Black XL)" value={pInfo} onChange={e=>setPInfo(e.target.value)}/>
@@ -2120,7 +2146,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
           </div>
           <div style={{display:"flex",gap:10,marginTop:4}}>
             <button type="button" onClick={()=>setShowAddPromo(false)} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
-            <button type="button" onClick={addPromo} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#f97316",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>🎁 Eintragen</button>
+            <button type="button" onClick={addPromo} style={{flex:2,padding:12,borderRadius:10,border:"none",background:"#f97316",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Eintragen</button>
           </div>
         </ModalWrap>
       )}
@@ -2134,7 +2160,7 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
 
 function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGifts=[], setPromoGifts, sheetsUrl}){
   const [open,setOpen]=useState({});
-  const [finTab,setFinTab]=useState("blanks");
+  const [finTab,setFinTab]=useState("dashboard");
   const toggle=(id)=>setOpen(o=>({...o,[id]:!o[id]}));
   const grandTotal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
   const grandQty=products.reduce((a,p)=>a+(totalStock(p)),0);
@@ -2156,7 +2182,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
     }catch(e){}
     setShopLoading(false);
   };
-  useEffect(()=>{if(finTab==="shopify"&&shopProds.length===0)loadShopify();},[finTab]);
+  useEffect(()=>{if((finTab==="shopify"||finTab==="dashboard")&&shopProds.length===0)loadShopify();},[finTab]);
   // Filter out Online Exclusives
   const shopFiltered=shopProds.filter(sp=>!ONLINE_EXCLUSIVE_PRODUCTS.some(oe=>sp.title.toUpperCase().includes(oe.toUpperCase())));
   const shopGrandQty=shopFiltered.reduce((a,sp)=>(sp.variants||[]).reduce((b,v)=>b+(v.inventory_quantity||0),0)+a,0);
@@ -2164,10 +2190,50 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   return(
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["blanks","👕 Textilien"],["dtf","🖨 DTF"],["verluste","📉 Verluste"],["shopify","🛍 Shopify"]].map(([v,lbl])=>(
+        {[["dashboard","Dashboard"],["blanks","Textilien"],["dtf","DTF"],["shopify","Shopify"],["verluste","Verluste"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
+      {finTab==="dashboard"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {/* Verlust totals for dashboard */}
+          {(()=>{
+            const verlusteTotal=verluste.reduce((a,v)=>a+v.gesamt,0)+promoGifts.reduce((a,g)=>a+g.gesamt,0);
+            const allTotal=grandTotal+dtfTotal+shopGrandValue-verlusteTotal;
+            return <>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_TSHIRT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>TEXTILIEN</div></div>
+                  <div style={{fontSize:28,fontWeight:900,color:"#111"}}>€{grandTotal.toFixed(2)}</div>
+                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{grandQty} Stück</div>
+                </div>
+                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_PRINT size={16} color="#111"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>DTF</div></div>
+                  <div style={{fontSize:28,fontWeight:900,color:"#111"}}>€{dtfTotal.toFixed(2)}</div>
+                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{(dtfItems||[]).reduce((a,d)=>a+(d.stock||0),0)} Stück</div>
+                </div>
+                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_SHOP size={16} color="#96bf48"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>SHOPIFY</div></div>
+                  <div style={{fontSize:28,fontWeight:900,color:"#111"}}>€{shopGrandValue.toFixed(2)}</div>
+                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{shopGrandQty} Stück{shopProds.length===0?" · Laden...":""}</div>
+                </div>
+                <div style={{background:"#fff",borderRadius:14,padding:"18px 20px",border:"1px solid #ebebeb"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><IC_LOSS size={16} color="#ef4444"/><div style={{fontSize:11,color:"#999",fontWeight:700,letterSpacing:0.5}}>VERLUSTE</div></div>
+                  <div style={{fontSize:28,fontWeight:900,color:"#ef4444"}}>−€{verlusteTotal.toFixed(2)}</div>
+                  <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{verluste.length+promoGifts.length} Einträge</div>
+                </div>
+              </div>
+              <div style={{background:"#111",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:12,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
+                  <div style={{fontSize:11,color:"#666",marginTop:4}}>Textilien + DTF + Shopify − Verluste</div>
+                </div>
+                <div style={{fontSize:38,fontWeight:900,color:"#fff"}}>€{allTotal.toFixed(2)}</div>
+              </div>
+            </>;
+          })()}
+        </div>
+      )}
       {finTab==="dtf"&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {(dtfItems||[]).filter(d=>d.pricePerMeter).map(d=>{
@@ -2272,7 +2338,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
                   <span style={{fontSize:12,color:"#bbb"}}>{isOpen?"▾":"▸"}</span>
                   {sp.images?.[0]?.src
                     ?<img src={sp.images[0].src} style={{width:28,height:28,borderRadius:6,objectFit:"cover",flexShrink:0}} alt=""/>
-                    :<div style={{width:28,height:28,borderRadius:6,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>👕</div>}
+                    :<div style={{width:28,height:28,borderRadius:6,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={14} color="#aaa"/></div>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:14,fontWeight:700,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sp.title}</div>
                     <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten</div>
@@ -2470,7 +2536,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setBlankPickerData(null)}>
           <div style={{background:"#fff",borderRadius:18,width:440,maxWidth:"95vw",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
             <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0"}}>
-              <div style={{fontSize:16,fontWeight:800}}>📦 Blank auswählen</div>
+              <div style={{fontSize:16,fontWeight:800}}>Blank auswählen</div>
               <div style={{fontSize:12,color:"#aaa",marginTop:2}}>
                 {blankPickerData.line.title} · Größe: <b style={{color:"#111"}}>{blankPickerData.size}</b> · {blankPickerData.line.quantity}×
               </div>
@@ -2505,7 +2571,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
 
       {/* Header */}
       <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-        <div style={{width:36,height:36,borderRadius:10,background:"#96bf48",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🛍</div>
+        <div style={{width:36,height:36,borderRadius:10,background:"#96bf48",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SHOP size={18} color="#fff"/></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:15,fontWeight:800}}>Shopify Sync</div>
           <div style={{fontSize:11,color:"#aaa",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
@@ -2516,12 +2582,12 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
         </div>
         {syncMsg&&<div style={{fontSize:12,fontWeight:700,color:syncMsg.startsWith("✓")?"#16a34a":"#f97316",padding:"6px 12px",background:syncMsg.startsWith("✓")?"#f0fdf4":"#fff7ed",borderRadius:8}}>{syncMsg}</div>}
         <button onClick={()=>{checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13}}>⟳ Reload</button>
-        <button onClick={async()=>{await apiPost({action:"clear_cache"});checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontWeight:700,fontSize:13}}>🗑 Cache</button>
+        <button onClick={async()=>{await apiPost({action:"clear_cache"});checkConnection();loadAll();}} style={{padding:"8px 14px",borderRadius:9,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontWeight:700,fontSize:13}}><IC_TRASH size={13} color="#ef4444"/> Cache</button>
       </div>
 
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["products","🛍 Produkte"],["orders","📦 Bestellungen"],["sync","🔄 Bestand Sync"]].map(([t,lbl])=>(
+        {[["products","Produkte"],["orders","Bestellungen"],["sync","Bestand Sync"]].map(([t,lbl])=>(
           <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -2532,7 +2598,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
       {/* Products */}
       {tab==="products"&&!loading&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <input value={prodSearch} onChange={e=>setProdSearch(e.target.value)} placeholder="🔍 Produkt suchen..." style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
+          <input value={prodSearch} onChange={e=>setProdSearch(e.target.value)} placeholder="Produkt suchen..." style={{padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box",background:"#f8f8f8"}}/>
           {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).length===0&&<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Treffer</div>}
           {shopifyProds.filter(sp=>!prodSearch||sp.title.toLowerCase().includes(prodSearch.toLowerCase())).map(sp=>{
             const link = shopifyLinks.find(l=>l.shopifyProductId==sp.id&&l.linkLevel!=="variant");
@@ -2546,12 +2612,12 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                 <div onClick={()=>toggleExpand(sp.id)} style={{padding:"14px 16px",display:"flex",gap:12,alignItems:"center",cursor:"pointer",userSelect:"none"}}>
                   {sp.images?.[0]?.src
                     ?<img src={sp.images[0].src} style={{width:48,height:48,borderRadius:8,objectFit:"cover",flexShrink:0}} alt=""/>
-                    :<div style={{width:48,height:48,borderRadius:8,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>👕</div>}
+                    :<div style={{width:48,height:48,borderRadius:8,background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_TSHIRT size={20} color="#aaa"/></div>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:13,fontWeight:800}}>{sp.title}</div>
                     <div style={{fontSize:11,color:"#aaa"}}>{variants.length} Varianten · {sp.status}</div>
                     {gkbs&&<div style={{fontSize:11,color:"#16a34a",marginTop:2,fontWeight:700}}>✓ {gkbs.name}</div>}
-                    {!gkbs&&varLinkCount>0&&<div style={{fontSize:11,color:"#3b82f6",marginTop:2,fontWeight:700}}>🔗 {varLinkCount} Farbe{varLinkCount>1?"n":""} verknüpft</div>}
+                    {!gkbs&&varLinkCount>0&&<div style={{fontSize:11,color:"#3b82f6",marginTop:2,fontWeight:700}}><IC_LINK size={11} color="#3b82f6"/> {varLinkCount} Farbe{varLinkCount>1?"n":""} verknüpft</div>}
                   </div>
                   <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
                     <div style={{fontSize:10,color:"#aaa"}}>Gesamt</div>
@@ -2560,7 +2626,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                   <span style={{fontSize:14,color:"#bbb",flexShrink:0,transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
                   <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true});}}
                     style={{width:40,height:40,borderRadius:10,border:"1px solid",borderColor:link?"#bbf7d0":varLinkCount>0?"#93c5fd":"#e8e8e8",background:link?"#f0fdf4":varLinkCount>0?"#eff6ff":"#f8f8f8",color:link?"#16a34a":varLinkCount>0?"#3b82f6":"#999",cursor:"pointer",fontWeight:700,fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
-                    {link?"🔗":varLinkCount>0?"🔗":"🔗"}
+                    <IC_LINK size={14} color="#3b82f6"/>
                   </button>
                 </div>
                 {expanded&&variants.length>0&&(()=>{
@@ -2611,13 +2677,13 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, onAddProd,
                           {hasMultipleColors&&<div style={{display:"flex",alignItems:"center",padding:"8px 16px",background:"#fafafa",borderTop:"1px solid #f0f0f0",gap:8}}>
                             <div style={{flex:1,minWidth:0}}>
                               <div style={{fontSize:12,fontWeight:800,color:"#333"}}>🎨 {color}</div>
-                              {linkedGkbs&&<div style={{fontSize:10,color:colorLink?"#3b82f6":"#16a34a",fontWeight:700,marginTop:1}}>{colorLink?"🔗 ":"↑ "}{linkedGkbs.name}</div>}
+                              {linkedGkbs&&<div style={{fontSize:10,color:colorLink?"#3b82f6":"#16a34a",fontWeight:700,marginTop:1}}><IC_LINK size={10} color={colorLink?"#3b82f6":"#16a34a"}/> {linkedGkbs.name}</div>}
                             </div>
                             <div style={{fontSize:11,color:"#888",fontWeight:700}}>{cvars.length} Var.</div>
                             <div style={{fontSize:15,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#111",minWidth:30,textAlign:"right"}}>{groupInv}</div>
                             <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
                               style={{width:36,height:36,borderRadius:9,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",color:colorLink?"#3b82f6":"#999",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
-                              🔗
+                              <IC_LINK size={14} color="#3b82f6"/>
                             </button>
                           </div>}
                           {/* Individual variants */}
@@ -2819,7 +2885,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
       <div style={{background:"#fff",borderRadius:18,width:460,maxWidth:"95vw",maxHeight:"88vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
         <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div>
-            <div style={{fontSize:16,fontWeight:800}}>🔗 {preColorGroup?"Farbe":"Shopify"} verknüpfen</div>
+            <div style={{fontSize:16,fontWeight:800}}>{preColorGroup?"Farbe":"Shopify"} verknüpfen</div>
             <div style={{fontSize:12,color:"#aaa",marginTop:2}}>
               {prod?.name||prod?.title}
               {preColorGroup&&<span style={{color:"#3b82f6",fontWeight:700}}> → {preColorGroup} ({preColorVariants?.length} Varianten)</span>}
@@ -2849,7 +2915,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>SHOPIFY PRODUKT</div>
               <div style={{position:"relative"}}>
                 <input value={linkSearch} onChange={e=>{setLinkSearch(e.target.value);setLinkDropOpen(true);}} onFocus={()=>setLinkDropOpen(true)}
-                  placeholder="🔍 Shopify Produkt suchen..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+                  placeholder="Shopify Produkt suchen..." style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid #e8e8e8",background:"#f8f8f8",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
                 {selSP&&!linkDropOpen&&<div style={{fontSize:12,color:"#16a34a",fontWeight:700,marginTop:4}}>✓ {selSP.title}</div>}
                 {linkDropOpen&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.1)",maxHeight:200,overflowY:"auto",zIndex:10,marginTop:2}}>
                   {shopifyProds.filter(sp=>!linkSearch||sp.title.toLowerCase().includes(linkSearch.toLowerCase())).slice(0,20).map(sp=>(
@@ -2937,7 +3003,7 @@ function AllBestellungModal({blank, sizes, onClose, onDirectAdd}){
       <div style={{background:"#fff",borderRadius:18,width:400,maxWidth:"95vw",maxHeight:"85vh",display:"flex",flexDirection:"column",boxShadow:"0 8px 40px rgba(0,0,0,0.2)"}}
         onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px 12px",borderBottom:"1px solid #f0f0f0",flexShrink:0}}>
-          <div style={{fontSize:16,fontWeight:800}}>📦 {blank.name}</div>
+          <div style={{fontSize:16,fontWeight:800}}>{blank.name}</div>
           <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
         </div>
         <div style={{overflowY:"auto",padding:"12px 20px",display:"flex",flexDirection:"column",gap:8,flex:1}}>
@@ -2989,7 +3055,7 @@ function BestellungAufgebenModal({blank, sizeKey, isCapKey, capColor, toOrder, i
   useEffect(()=>{ setTimeout(()=>inputRef.current?.select(), 50); }, []);
   return(
     <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(stueckVorschau)}>
-      <div style={{fontSize:17,fontWeight:800}}>{isDtf?"🖨 DTF bestellen":"📦 Bestellung aufgeben"}</div>
+      <div style={{fontSize:17,fontWeight:800}}>{isDtf?"DTF bestellen":"Bestellung aufgeben"}</div>
       <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 16px"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{blank.name}</div>
         <div style={{fontSize:12,color:"#888",marginTop:2}}>{label}{blank.color?" · "+blank.color:""}</div>
@@ -3022,7 +3088,7 @@ function WareneingangModal({bestellung, onClose, onConfirm}){
   const stueckVorschau = isMeter ? menge*dpm : menge;
   return(
     <ModalWrap onClose={onClose} width={360} onSave={()=>onConfirm(menge)}>
-      <div style={{fontSize:17,fontWeight:800}}>✅ Wareneingang</div>
+      <div style={{fontSize:17,fontWeight:800}}>Wareneingang</div>
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"14px 16px",borderLeft:"3px solid #16a34a"}}>
         <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{bestellung.produktName}</div>
         <div style={{fontSize:12,color:"#888",marginTop:2}}>{isMeter?"DTF Transfer":bestellung.label}</div>
@@ -3071,7 +3137,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["textilien","🧵 Textilien",offenTextilien],["dtf","🖨 DTF",offenDtf]].map(([v,lbl,count])=>(
+        {[["textilien","Textilien",offenTextilien],["dtf","DTF",offenDtf]].map(([v,lbl,count])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {lbl}{count>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
           </button>
@@ -3079,7 +3145,7 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
       </div>
       {offene.length === 0 && (
         <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>{subTab==="dtf"?"🖨":"📦"}</div>
+          <div style={{fontSize:40,marginBottom:12}}>subTab==="dtf"?<IC_PRINT size={40} color="#ccc"/>:<IC_BOX size={40} color="#ccc"/></div>
           Keine offenen Bestellungen
         </div>
       )}
@@ -3209,7 +3275,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     <div style={S.col12}>
       {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
-        {[["textilien","🧵 Textilien"],["dtf","🖨 DTF"]].map(([v,lbl])=>(
+        {[["textilien","Textilien"],["dtf","DTF"]].map(([v,lbl])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -3223,7 +3289,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 return(
                   <div key={dtf.id} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:32,height:32,borderRadius:8,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>🖨</div>
+                      <div style={{width:32,height:32,borderRadius:8,background:"#111",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_PRINT size={14} color="#fff"/></div>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:14,fontWeight:800}}>{dtf.name}</div>
                         <div style={{fontSize:11,color:"#aaa",marginTop:1}}>
@@ -3260,7 +3326,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
       {subTab==="textilien"&&(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {!hasAnyMissing
-            ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>✅</div>Kein Bestellbedarf</div>
+            ? <div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}><div style={{marginBottom:12}}><IC_CHECK_CIRCLE size={40} color="#ccc"/></div>Kein Bestellbedarf</div>
             : <div style={{display:"flex",justifyContent:"flex-end"}}>
                 <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const hh=String(now.getHours()).padStart(2,"0");const mi=String(now.getMinutes()).padStart(2,"0");const ss=String(now.getSeconds()).padStart(2,"0");const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}/${mm}/${yy}+${hh}:${mi}:${ss}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
                   style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#111",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>
@@ -3394,7 +3460,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 function SheetsSetupModal({onClose}){
   return(
     <ModalWrap onClose={onClose} width={400}>
-      <div style={{fontSize:17,fontWeight:800}}>☁️ Google Sheets</div>
+      <div style={{fontSize:17,fontWeight:800}}>Google Sheets</div>
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
         <span style={{fontSize:28}}>✓</span>
         <div>
@@ -3487,7 +3553,7 @@ function ActivityLogModal({onClose}){
   USERS.forEach(u => userColors[u.name] = u.color);
   return(
     <ModalWrap onClose={onClose} width={540}>
-      <div style={{fontSize:17,fontWeight:800}}>📋 Activity Log</div>
+      <div style={{fontSize:17,fontWeight:800}}>Activity Log</div>
       <div style={{fontSize:11,color:"#bbb",marginTop:-8}}>Letzte 14 Tage · {logs.length} Einträge</div>
       {logs.length===0&&<div style={{color:"#ccc",textAlign:"center",padding:40,fontSize:14}}>Noch keine Aktivitäten</div>}
       <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:400,overflowY:"auto"}}>
@@ -3996,7 +4062,7 @@ function AppInner({currentUser,onLogout}){
     if(prod.shopifyProductLink && !isCap){
       const link = prod.shopifyProductLink;
       const doneSizes = prod.done || {};
-      const debugLines = [`🛍 Push zu: ${link.title}`, `locationId: ${link.locationId||"LEER"}`, `Varianten: ${(link.variants||[]).length}`];
+      const debugLines = [`Push zu: ${link.title}`, `locationId: ${link.locationId||"LEER"}`, `Varianten: ${(link.variants||[]).length}`];
       DEFAULT_SIZES.forEach(size => {
         const qty = doneSizes[size] || 0;
         if(qty <= 0) return;
@@ -4052,7 +4118,7 @@ function AppInner({currentUser,onLogout}){
     } catch(e) { console.warn("Shopify push failed",e); }
   };
 
-  const TABS=[["production","🏭 Produktion"],["inventory","📦 Bestand"],["bestellungen","🛒 Bestellte Ware"],["bestellbedarf","📋 Bestellbedarf"],["finance","💶 Finanzen"],["shopify","🛍 Shopify"]];
+  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellungen","Bestellte Ware",IC_CART],["bestellbedarf","Bestellbedarf",IC_CHART],["shopify","Shopify",IC_SHOP],["finance","Finanzen",IC_DOLLAR]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [bestellModal,setBestellModal]=useState(null);
   const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
@@ -4142,7 +4208,7 @@ function AppInner({currentUser,onLogout}){
           <div style={{display:"flex",gap:6,alignItems:"center"}}>
             {/* Sheets */}
             <button onClick={()=>setShowSheetsSetup(true)} style={{padding:mobile?"8px 10px":"9px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:sheetsUrl?"#f0fdf4":"#fff",color:sheetsUrl?"#16a34a":"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>
-              ☁️{!mobile&&(sheetsUrl?" Verbunden":" Sheets")}
+              <IC_CLOUD size={14} color={sheetsUrl?"#16a34a":"#555"}/>{!mobile&&(sheetsUrl?" Verbunden":" Sheets")}
             </button>
             {/* Undo */}
             <button onClick={undo} disabled={!canUndo} title="Rückgängig"
@@ -4150,31 +4216,32 @@ function AppInner({currentUser,onLogout}){
               ↩{!mobile&&` Undo`}{canUndo&&<span style={{fontSize:10,color:"#bbb",fontWeight:500}}>({historyRef.current.length})</span>}
             </button>
 {view==="inventory"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
-              {inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}>🗂{!mobile&&" Kategorien"}</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
+              {inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}><IC_FOLDER size={14} color="#555"/>{!mobile&&" Kategorien"}</button>
               <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
               {inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
             </>}
             {view==="production"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
               <button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>
             </>}
             {view==="bestellbedarf"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
             </>}
             {view==="finance"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:16}}>🕓</button>
+              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
             </>}
           </div>
         </div>
         </div>
         {/* Tab bar – desktop only, mobile uses bottom bar */}
-        {!mobile&&<div style={{overflowX:"auto",padding:"4px 24px 12px",marginTop:4}}>
-          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,width:"fit-content"}}>
-            {TABS.map(([v,lbl])=>(
+        {!mobile&&<div style={{padding:"4px 24px 12px",marginTop:4}}>
+          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto"}}>
+            {TABS.map(([v,lbl,Icon])=>(
               <button key={v} onClick={()=>setView(v)}
-                style={{padding:mobile?"8px 14px":"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
-                {mobile?lbl.split(" ")[0]:lbl}
+                style={{flex:1,padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
+                <Icon size={15} color={view===v?"#111":"#aaa"}/>
+                {lbl}
                 {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
                 {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#f97316",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
               </button>
@@ -4211,7 +4278,7 @@ function AppInner({currentUser,onLogout}){
             {/* Filters – scrollable on mobile */}
             <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
               <div style={{display:"flex",gap:2,background:"#e8e8e8",borderRadius:9,padding:3,flexShrink:0}}>
-                {[["Alle","Alle"],["Drucken","🖨"],["Sticken","🪡"]].map(([v,lbl])=>(
+                {[["Alle","Alle"],["Drucken","Drucken"],["Sticken","Sticken"]].map(([v,lbl])=>(
                   <button key={v} onClick={()=>setProdSubView(v)} style={{padding:"6px 12px",borderRadius:7,border:"none",background:prodSubView===v?"#fff":"transparent",color:prodSubView===v?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:12,whiteSpace:"nowrap"}}>{lbl}</button>
                 ))}
               </div>
@@ -4263,7 +4330,7 @@ function AppInner({currentUser,onLogout}){
           <>
             {/* Sub-tabs: Textil / DTF */}
             <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
-              {[["textil","👕 Textil"],["dtf","🖨 DTF"]].map(([t,lbl])=>(
+              {[["textil","Textil"],["dtf","DTF"]].map(([t,lbl])=>(
                 <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#888",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
               ))}
             </div>
@@ -4275,7 +4342,7 @@ function AppInner({currentUser,onLogout}){
             {inventoryTab==="textil"&&<>
             {/* Search + filters – scrollable */}
             <div style={{display:"flex",gap:8,marginBottom:14,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
-              <input placeholder="🔍 Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
+              <input placeholder="Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
                 style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"9px 13px",fontSize:16,outline:"none",width:mobile?120:160,flexShrink:0}}/>
               {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"8px 12px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
             </div>
@@ -4314,11 +4381,11 @@ function AppInner({currentUser,onLogout}){
       {/* Mobile bottom tab bar */}
       {mobile&&(
         <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#fff",borderTop:"1px solid #ebebeb",display:"flex",padding:"10px 0 env(safe-area-inset-bottom,12px)",zIndex:50}}>
-          {TABS.map(([v,lbl])=>(
-            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#bbb"}}>
-              <span style={{fontSize:18}}>{lbl.split(" ")[0]}</span>
-              <span style={{fontSize:9,fontWeight:700}}>{lbl.split(" ").slice(1).join(" ")}</span>
-              {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:6,background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
+          {TABS.map(([v,lbl,Icon])=>(
+            <button key={v} onClick={()=>setView(v)} style={{flex:1,border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 0",color:view===v?"#111":"#bbb",position:"relative"}}>
+              <Icon size={18} color={view===v?"#111":"#bbb"}/>
+              <span style={{fontSize:9,fontWeight:700}}>{lbl}</span>
+              {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:2,right:"25%",background:"#ef4444",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{activeProdsArr.length}</span>}
             </button>
           ))}
         </div>
