@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.3.4";
+const APP_VERSION = "v3.3.5";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2940,10 +2940,33 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                   });
                   const colorGroups = Object.entries(colorMap);
                   const hasMultipleColors = colorGroups.length > 1;
+                  const isColorOnly = hasMultipleColors && colorGroups.every(([,cvs])=>cvs.length===1);
 
                   return(
                   <div style={{borderTop:"1px solid #f0f0f0",padding:"6px 0"}}>
-                    {colorGroups.map(([color, cvars])=>{
+                    {isColorOnly
+                      ?/* Color-only product: flat row per color */
+                      colorGroups.map(([color, cvars])=>{
+                        const v=cvars[0];
+                        const qty=v.inventory_quantity||0;
+                        const colorLink = shopifyLinks.find(l=>l.shopifyProductId==String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
+                        return(
+                          <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",borderTop:"1px solid #f5f5f5",fontSize:13,gap:8}}>
+                            <IC_PAINT size={11} color="#3b82f6"/>
+                            <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{color==="_default_"?"Default":color}</div>
+                            <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
+                            <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
+                              <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
+                            </div>
+                            <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
+                              style={{width:28,height:28,borderRadius:7,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
+                              <IC_LINK size={11} color="#3b82f6"/>
+                            </button>
+                          </div>
+                        );
+                      })
+                      :/* Size-based product: color group headers + variant rows */
+                      colorGroups.map(([color, cvars])=>{
                       const groupInv = cvars.reduce((a,v)=>a+(v.inventory_quantity||0),0);
                       const colorLink = shopifyLinks.find(l=>l.shopifyProductId==String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
                       const effectiveLink = colorLink || link;
