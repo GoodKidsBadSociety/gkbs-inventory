@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.2.0";
+const APP_VERSION = "v3.3.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -1008,7 +1008,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       {/* Counter + Progress bar */}
       {totalQty>0&&(
         <div style={{padding:mobile?"8px 16px 4px":"8px 20px 4px"}}>
-          <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:6}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:6,justifyContent:"flex-end"}}>
             <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:allDone?"#16a34a":"#111",lineHeight:1}}>{totalDone}</span>
             <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#ccc",lineHeight:1}}>/{totalQty}</span>
           </div>
@@ -1999,9 +1999,9 @@ function DtfView({dtfItems, prods, onUpdate, onDelete, onEdit, onAdd}){
 
 // ─── Verluste View ───────────────────────────────────────────────
 function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setPromoGifts}){
-  const [tab, setTab] = useState("fehler");
   const [showAddFehler, setShowAddFehler] = useState(false);
   const [showAddPromo, setShowAddPromo] = useState(false);
+  const [grouped, setGrouped] = useState(false);
   const [fProd, setFProd] = useState("");
   const [fGrund, setFGrund] = useState("Druckfehler");
   const [fDtf, setFDtf] = useState("");
@@ -2047,57 +2047,68 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
   const totalPromo = promoGifts.reduce((a,g)=>a+g.gesamt,0);
   const inp = {padding:"10px 14px",borderRadius:10,border:"1.5px solid #e8e8e8",fontSize:14,outline:"none",width:"100%",boxSizing:"border-box"};
 
+  // Combined + sorted list
+  const allItems = [
+    ...verluste.map(v=>({...v,_type:"fehler",_date:v.datum,_amount:v.gesamt})),
+    ...promoGifts.map(g=>({...g,_type:"promo",_date:g.datum,_amount:g.gesamt}))
+  ].sort((a,b)=>new Date(b._date)-new Date(a._date));
+
+  const renderItem = (item) => {
+    if(item._type==="fehler") return(
+      <div key={item.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:10,height:10,borderRadius:"50%",background:item.produktHex,flexShrink:0,border:"1px solid #ddd"}}/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.produktName}</div>
+          <div style={{fontSize:11,color:"#aaa"}}>{item.grund}{item.dtfName?` + ${item.dtfName}`:""}{item.notiz?` · ${item.notiz}`:""} · {new Date(item.datum).toLocaleDateString("de-AT")}</div>
+        </div>
+        <div style={{textAlign:"right",flexShrink:0}}>
+          <div style={{fontSize:14,fontWeight:800,color:"#ef4444"}}>−€{item.gesamt.toFixed(2)}</div>
+          <div style={{fontSize:11,color:"#bbb"}}>{item.anzahl} Stk · €{(item.preisProStk||0).toFixed(2)}/St</div>
+        </div>
+        <button onClick={()=>setVerluste(vv=>vv.filter(x=>x.id!==item.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fee2e2",color:"#ef4444",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
+      </div>
+    );
+    return(
+      <div key={item.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+        <IC_GIFT size={16} color="#f97316"/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.name}</div>
+          <div style={{fontSize:11,color:"#aaa"}}>{item.info?`${item.info} · `:""}{new Date(item.datum).toLocaleDateString("de-AT")}</div>
+        </div>
+        <div style={{textAlign:"right",flexShrink:0}}>
+          <div style={{fontSize:14,fontWeight:800,color:"#f97316"}}>−€{item.gesamt.toFixed(2)}</div>
+          <div style={{fontSize:11,color:"#bbb"}}>{item.anzahl} Stk · €{item.preis.toFixed(2)}/St</div>
+        </div>
+        <button onClick={()=>setPromoGifts(gg=>gg.filter(x=>x.id!==item.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fff7ed",color:"#f97316",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
+      </div>
+    );
+  };
+
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["fehler","Produktionsfehler"],["promo","Promo Gifts"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
-        ))}
+      {/* Action buttons */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+        <button onClick={()=>setShowAddFehler(true)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",fontSize:12,fontWeight:800,cursor:"pointer"}}>+ Fehler</button>
+        <button onClick={()=>setShowAddPromo(true)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #fed7aa",background:"#fff7ed",color:"#f97316",fontSize:12,fontWeight:800,cursor:"pointer"}}>+ Promo</button>
+        <button onClick={()=>setGrouped(g=>!g)} style={{padding:"10px 12px",borderRadius:10,border:"1px solid #e8e8e8",background:grouped?"#f0f0f0":"#fff",color:"#555",fontSize:12,fontWeight:800,cursor:"pointer"}}>{grouped?"↕ Gemischt":"↕ Gruppiert"}</button>
       </div>
-      {tab==="fehler"&&(
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <button onClick={()=>setShowAddFehler(true)} style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#ef4444",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>+ Fehler eintragen</button>
-          </div>
-          {verluste.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
-          {verluste.map(v=>(
-            <div key={v.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
-              <div style={{width:10,height:10,borderRadius:"50%",background:v.produktHex,flexShrink:0,border:"1px solid #ddd"}}/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.produktName}</div>
-                <div style={{fontSize:11,color:"#aaa"}}>{v.grund}{v.dtfName?` + ${v.dtfName}`:""}{v.notiz?` · ${v.notiz}`:""} · {new Date(v.datum).toLocaleDateString("de-AT")}</div>
-              </div>
-              <div style={{textAlign:"right",flexShrink:0}}>
-                <div style={{fontSize:14,fontWeight:800,color:"#ef4444"}}>−€{v.gesamt.toFixed(2)}</div>
-                <div style={{fontSize:11,color:"#bbb"}}>{v.anzahl} Stk · €{(v.preisProStk||0).toFixed(2)}/St</div>
-              </div>
-              <button onClick={()=>setVerluste(vv=>vv.filter(x=>x.id!==v.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fee2e2",color:"#ef4444",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
-            </div>
-          ))}
-        </div>
-      )}
-      {tab==="promo"&&(
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <button onClick={()=>setShowAddPromo(true)} style={{padding:"8px 16px",borderRadius:9,border:"none",background:"#f97316",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>+ Promo Gift eintragen</button>
-          </div>
-          {promoGifts.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
-          {promoGifts.map(g=>(
-            <div key={g.id} style={{background:"#fff",borderRadius:12,padding:"12px 16px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
-              <IC_GIFT size={20} color="#f97316"/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
-                <div style={{fontSize:11,color:"#aaa"}}>{g.info?`${g.info} · `:""}  {new Date(g.datum).toLocaleDateString("de-AT")}</div>
-              </div>
-              <div style={{textAlign:"right",flexShrink:0}}>
-                <div style={{fontSize:14,fontWeight:800,color:"#f97316"}}>−€{g.gesamt.toFixed(2)}</div>
-                <div style={{fontSize:11,color:"#bbb"}}>{g.anzahl} Stk · €{g.preis.toFixed(2)}/St</div>
-              </div>
-              <button onClick={()=>setPromoGifts(gg=>gg.filter(x=>x.id!==g.id))} style={{width:28,height:28,borderRadius:"50%",border:"none",background:"#fff7ed",color:"#f97316",cursor:"pointer",fontSize:14,fontWeight:900,flexShrink:0}}>✕</button>
-            </div>
-          ))}
-        </div>
-      )}
+
+      {allItems.length===0&&<div style={{textAlign:"center",padding:40,color:"#ccc",fontSize:14}}>Keine Einträge</div>}
+
+      {!grouped&&<div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {allItems.map(renderItem)}
+      </div>}
+
+      {grouped&&<>
+        {verluste.length>0&&<div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{fontSize:11,fontWeight:700,color:"#ef4444",letterSpacing:0.8,padding:"4px 2px"}}>PRODUKTIONSFEHLER · −€{totalFehler.toFixed(2)}</div>
+          {verluste.map(v=>renderItem({...v,_type:"fehler"}))}
+        </div>}
+        {promoGifts.length>0&&<div style={{display:"flex",flexDirection:"column",gap:8,marginTop:verluste.length>0?8:0}}>
+          <div style={{fontSize:11,fontWeight:700,color:"#f97316",letterSpacing:0.8,padding:"4px 2px"}}>PROMO & GIFTS · −€{totalPromo.toFixed(2)}</div>
+          {promoGifts.map(g=>renderItem({...g,_type:"promo"}))}
+        </div>}
+      </>}
       {showAddFehler&&(
         <ModalWrap onClose={()=>setShowAddFehler(false)} onSave={addFehler} width={480}>
           <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>Produktionsfehler eintragen</div>
@@ -2168,9 +2179,9 @@ function VerlustTab({products, dtfItems, verluste, setVerluste, promoGifts, setP
           </div>
         </ModalWrap>
       )}
-      <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>Fehler: −€{totalFehler.toFixed(2)} · Promo: −€{totalPromo.toFixed(2)}</div></div>
-        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#fff"}}>−€{(totalFehler+totalPromo).toFixed(2)}</div>
+      <div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>GESAMTVERLUST</div><div style={{fontSize:11,color:"#999",marginTop:3}}>Fehler: −€{totalFehler.toFixed(2)} · Promo: −€{totalPromo.toFixed(2)}</div></div>
+        <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#ef4444"}}>−€{(totalFehler+totalPromo).toFixed(2)}</div>
       </div>
     </div>
   );
@@ -2243,12 +2254,12 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
                   <div style={{fontSize:11,color:"#bbb",marginTop:4}}>{verluste.length+promoGifts.length} Einträge</div>
                 </div>
               </div>
-              <div style={{background:"#111",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{background:"#dcfce7",borderRadius:14,padding:"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0"}}>
                 <div>
-                  <div style={{fontSize:12,color:"#fff",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
-                  <div style={{fontSize:11,color:"#666",marginTop:4}}>Textilien + DTF + Shopify − Verluste</div>
+                  <div style={{fontSize:12,color:"#16a34a",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
+                  <div style={{fontSize:11,color:"#86efac",marginTop:4}}>Textilien + DTF + Shopify − Verluste</div>
                 </div>
-                <div style={{...F_HEAD_STYLE,fontSize:38,fontWeight:900,color:"#fff"}}>€{allTotal.toFixed(2)}</div>
+                <div style={{...F_HEAD_STYLE,fontSize:38,fontWeight:900,color:"#111"}}>€{allTotal.toFixed(2)}</div>
               </div>
             </>;
           })()}
@@ -2325,8 +2336,8 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
           </div>
         );
       })}
-      <div style={{background:"#111",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:11,color:"#fff",fontWeight:700,letterSpacing:0.8}}>BLANKS LAGERWERT</div><div style={{fontSize:11,color:"#aaa",marginTop:3}}>{grandQty} Stück total</div></div>
+      <div style={{background:"#f0f0f0",borderRadius:14,padding:"18px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:0.8}}>BLANKS LAGERWERT</div><div style={{fontSize:11,color:"#999",marginTop:3}}>{grandQty} Stück total</div></div>
         <div style={{...F_HEAD_STYLE,fontSize:32,fontWeight:900,color:"#16a34a"}}>€{grandTotal.toFixed(2)}</div>
       </div>
       </>}
@@ -2587,7 +2598,11 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
     return JSON.parse(await r.text());
   };
 
-  const loadAll = async () => {
+  const loadAll = async (force) => {
+    if(!force){
+      const cp=shopCacheGet("shopify_products"),cl=shopCacheGet("shopify_locations");
+      if(cp&&cl){setShopifyProds(cp);setLocations(cl);setLoading(false);return;}
+    }
     setLoading(true); setError(null);
     try {
       const [d1, locs, linksData] = await Promise.all([
@@ -2596,19 +2611,20 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
         apiFetch("shopify_links")
       ]);
       if(d1.error) setError(d1.error);
-      else setShopifyProds(d1.products||[]);
-      setLocations(locs.locations||[]);
+      else{setShopifyProds(d1.products||[]);shopCacheSet("shopify_products",d1.products||[]);}
+      setLocations(locs.locations||[]);shopCacheSet("shopify_locations",locs.locations||[]);
       if(linksData.links) setShopifyLinks(linksData.links);
     } catch(e) { setError(String(e)); }
     setLoading(false);
   };
 
-  const loadOrders = async () => {
+  const loadOrders = async (force) => {
+    if(!force){const co=shopCacheGet("shopify_orders");if(co){setShopifyOrders(co);return;}}
     setLoading(true); setError(null);
     try {
       const data = await apiFetch("shopify_orders","&status=open");
       if(data.error) setError(data.error);
-      else setShopifyOrders(data.orders||[]);
+      else{setShopifyOrders(data.orders||[]);shopCacheSet("shopify_orders",data.orders||[]);}
     } catch(e) { setError(String(e)); }
     setLoading(false);
   };
@@ -2843,31 +2859,30 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                         <div key={color}>
                           {/* Color group header */}
                           {hasMultipleColors&&<div style={{display:"flex",alignItems:"center",padding:"8px 16px",background:"#fafafa",borderTop:"1px solid #f0f0f0",gap:8}}>
+                            <IC_PAINT size={12} color="#3b82f6"/>
                             <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:12,fontWeight:800,color:"#333",display:"flex",alignItems:"center",gap:5}}><IC_PAINT size={12} color="#3b82f6"/> {color}</div>
-                              {linkedGkbs&&<div style={{fontSize:10,color:colorLink?"#3b82f6":"#16a34a",fontWeight:700,marginTop:1}}><IC_LINK size={10} color={colorLink?"#3b82f6":"#16a34a"}/> {linkedGkbs.name}</div>}
+                              <span style={{fontSize:12,fontWeight:800,color:"#333"}}>{color}</span>
+                              {linkedGkbs&&<span style={{fontSize:10,color:"#3b82f6",fontWeight:700,marginLeft:8}}><IC_LINK size={9} color="#3b82f6"/> {linkedGkbs.name}</span>}
                             </div>
-                            <div style={{fontSize:11,color:"#888",fontWeight:700}}>{cvars.length} Var.</div>
-                            <div style={{fontSize:15,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#111",minWidth:30,textAlign:"right"}}>{groupInv}</div>
+                            <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:groupInv===0?"#ef4444":groupInv<5?"#f97316":"#111"}}>{groupInv}</span>
                             <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
-                              style={{width:36,height:36,borderRadius:9,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",color:colorLink?"#3b82f6":"#999",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
-                              <IC_LINK size={14} color="#3b82f6"/>
+                              style={{width:30,height:30,borderRadius:8,border:"1px solid",borderColor:colorLink?"#93c5fd":"#e8e8e8",background:colorLink?"#eff6ff":"#f8f8f8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
+                              <IC_LINK size={12} color="#3b82f6"/>
                             </button>
                           </div>}
-                          {/* Individual variants */}
+                          {/* Variants – single line per variant */}
                           {cvars.map(v=>{
                             const qty = v.inventory_quantity||0;
                             const sizePart = getSize(v);
+                            const colorPart = hasMultipleColors ? color : "";
+                            const label = hasMultipleColors ? `${colorPart} / ${sizePart}` : (v.title||"Default");
                             return(
-                              <div key={v.id} style={{display:"flex",alignItems:"center",padding:hasMultipleColors?"6px 16px 6px 32px":"8px 16px",borderTop:"1px solid #f8f8f8",fontSize:13}}>
-                                <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{hasMultipleColors?sizePart:(v.title||"Default")}</div>
-                                {!mobile&&<div style={{width:100,textAlign:"right",fontSize:11,color:"#aaa",fontFamily:"monospace"}}>{v.sku||"–"}</div>}
-                                <div style={{width:50,textAlign:"right",fontSize:12,color:"#666"}}>€{Number(v.price||0).toFixed(0)}</div>
-                                <div style={{width:55,textAlign:"right"}}>
-                                  <span style={{fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
+                              <div key={v.id} style={{display:"flex",alignItems:"center",padding:"7px 16px",borderTop:"1px solid #f5f5f5",fontSize:13,gap:8}}>
+                                <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</div>
+                                <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
+                                <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
+                                  <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#ef4444":qty<=3?"#f97316":"#16a34a"}}>{qty}</span>
                                 </div>
-                                {!hasMultipleColors&&<div style={{width:120}}/>}
-                                {hasMultipleColors&&<div style={{width:98}}/>}
                               </div>
                             );
                           })}
@@ -2878,7 +2893,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                     <div style={{display:"flex",padding:"8px 16px",borderTop:"1px solid #f0f0f0",background:"#fafafa",fontSize:12,fontWeight:700}}>
                       <div style={{flex:1,color:"#888"}}>{variants.length} Varianten{hasMultipleColors?` · ${colorGroups.length} Farben`:""}</div>
                       <div style={{width:55,textAlign:"right",color:"#111"}}>{totalInv} Stk</div>
-                      {hasMultipleColors?<div style={{width:98}}/>:<div style={{width:120}}/>}
+                      
                     </div>
                   </div>
                 );})()}
@@ -3032,7 +3047,10 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
               {preColorGroup&&<span style={{color:"#3b82f6",fontWeight:700}}> → {preColorGroup} ({preColorVariants?.length} Varianten)</span>}
             </div>
           </div>
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+          <div style={{display:"flex",gap:6}}>
+            {canSave&&<button onClick={doSave} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#16a34a",color:"#fff",fontSize:16,cursor:"pointer",fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✓</button>}
+            <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f0f0f0",color:"#666",fontSize:16,cursor:"pointer",fontWeight:900}}>✕</button>
+          </div>
         </div>
         <div style={{overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:14,flex:1}}>
           {loading&&<div style={{textAlign:"center",padding:40,color:"#aaa"}}>⟳ Lade Shopify Daten...</div>}
@@ -3074,7 +3092,7 @@ function ShopifyLinkModal({prod, products, sheetsUrl, links, shopifyProds:spIn, 
             {selSP&&!preColorGroup&&<div>
               <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:8}}>VARIANTE</div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                {(selSP.variants||[]).map(v=>(
+                {(()=>{const vv=selSP.variants||[];if(vv.length===1&&!selVar)setTimeout(()=>setSelVar(vv[0]),0);return vv;})().map(v=>(
                   <button key={v.id} type="button" onClick={()=>setSelVar(v)}
                     style={{padding:"10px 14px",borderRadius:10,border:`1.5px solid ${selVar?.id===v.id?"#111":"#e8e8e8"}`,background:selVar?.id===v.id?"#111":"#f8f8f8",color:selVar?.id===v.id?"#fff":"#555",cursor:"pointer",fontWeight:700,fontSize:13,textAlign:"left",display:"flex",justifyContent:"space-between"}}>
                     <span>{v.title}</span><span style={{fontSize:11,opacity:0.6}}>Lager: {v.inventory_quantity}</span>
@@ -4333,16 +4351,15 @@ function AppInner({currentUser,onLogout}){
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
         <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{display:"flex",alignItems:"baseline",gap:6}}><div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#ef4444"}}>GKBS</div><div style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</div></div>
-            {!mobile&&<div style={{fontSize:12,color:"#bbb",fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
-              {syncStatus==="loading"&&<span style={{color:"#f97316"}}>Laden...</span>}
-              {syncStatus==="saving"&&<span style={{color:"#f97316"}}>Speichern...</span>}
-              {syncStatus==="ok"&&<span style={{color:"#16a34a"}}>Gespeichert</span>}
-              {syncStatus==="error"&&<span style={{color:"#ef4444"}}>Sync Fehler</span>}
-            </div>}
-            {mobile&&syncStatus==="saving"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#f97316",animation:"pulse 1s infinite",flexShrink:0}}/>}
-            {mobile&&syncStatus==="ok"&&<div style={{width:8,height:8,borderRadius:"50%",background:"#16a34a",flexShrink:0}}/>}
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#ef4444"}}>GKBS</div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:10,fontWeight:700,color:"#bbb",letterSpacing:0.5}}>{APP_VERSION}</span>
+              {syncStatus==="loading"&&<span style={{fontSize:10,color:"#f97316",fontWeight:600}}>· Laden...</span>}
+              {syncStatus==="saving"&&<span style={{fontSize:10,color:"#f97316",fontWeight:600}}>· Speichern...</span>}
+              {syncStatus==="ok"&&<span style={{width:6,height:6,borderRadius:"50%",background:"#16a34a",display:"inline-block"}}/>}
+              {syncStatus==="error"&&<span style={{fontSize:10,color:"#ef4444",fontWeight:600}}>· Fehler</span>}
+            </div>
           </div>
           <div style={{display:"flex",gap:6,alignItems:"center"}}>
             {/* Sheets */}
@@ -4354,22 +4371,11 @@ function AppInner({currentUser,onLogout}){
               style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:canUndo?"#fff":"#f5f5f5",color:canUndo?"#333":"#ccc",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
             </button>
-{view==="inventory"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
-              {inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{padding:mobile?"8px 10px":"9px 13px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:mobile?12:13}}><IC_FOLDER size={14} color="#555"/>{!mobile&&" Kategorien"}</button>
+            <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_CLOCK size={15} color="#555"/></button>
+            {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>
               <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
-              {inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
-            </>}
-            {view==="production"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
-              {prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
-            </>}
-            {view==="bestellbedarf"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
-            </>}
-            {view==="finance"&&<>
-              <button onClick={()=>setShowActivityLog(true)} title="Activity Log" style={{padding:"8px 10px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center"}}><IC_CLOCK size={16} color="#555"/></button>
-            </>}
+            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
+            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#16a34a",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
             <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
               {currentUser.avatar}
             </button>
