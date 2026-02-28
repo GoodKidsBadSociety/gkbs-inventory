@@ -1044,9 +1044,9 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       <div style={{padding:mobile?"16px 16px 0":"16px 20px 0"}}>
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0,marginTop:12}}>⠿</div>}
-          <SmartDot item={prod} size={mobile?44:52}/>
+          <SmartDot item={prod} size={mobile?36:44}/>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,color:"#111",letterSpacing:-0.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
+            <div style={{...F_HEAD_STYLE,fontSize:mobile?17:20,fontWeight:800,color:"#111",letterSpacing:-0.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
             <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3,flexWrap:"wrap"}}>
               {blank&&<span style={{fontSize:13,color:"#999",fontWeight:500}}>{blank.name} {blank.color}</span>}
               {!blank&&<span style={{fontSize:13,color:"#bbb"}}>Kein Blank</span>}
@@ -1099,8 +1099,8 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
               </div>
             </div>
             <div style={{display:"flex",alignItems:"baseline",gap:1,flexShrink:0}}>
-              <span style={{...F_HEAD_STYLE,fontSize:mobile?30:36,fontWeight:900,color:allDone?"#1a9a50":"#111",lineHeight:1}}>{totalDone}</span>
-              <span style={{...F_HEAD_STYLE,fontSize:mobile?30:36,fontWeight:900,color:"#999",lineHeight:1}}>/{totalQty}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:allDone?"#1a9a50":"#111",lineHeight:1}}>{totalDone}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#999",lineHeight:1}}>/{totalQty}</span>
             </div>
           </div>
         </div>
