@@ -2564,6 +2564,12 @@ function StStImportModal({info, onClose, onConfirm}){
   const setMinVal = (sz, val) => { const n=parseInt(val)||0; setMinStock(prev=>({...prev,[sz]:Math.max(0,n)})); };
   const totalQty = DEFAULT_SIZES.reduce((a,sz)=>a+(stock[sz]||0),0);
   const hasAnySizes = im.sizes && im.sizes.length > 0;
+  // Normalize S/S size codes to our format: 3XL→XXXL, 2XL→XXL, etc.
+  const normSize = (sz) => {
+    const map = {"3XL":"XXXL","2XL":"XXL","XXL":"XXL","XL":"XL","L":"L","M":"M","S":"S","XS":"XS","2XS":"XXS","XXS":"XXS"};
+    return map[sz] || map[sz?.toUpperCase()] || sz;
+  };
+  const normalizedSizes = hasAnySizes ? im.sizes.map(normSize) : [];
   return(
     <ModalWrap onClose={onClose} width={440}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Blank importieren</div>
@@ -2594,13 +2600,13 @@ function StStImportModal({info, onClose, onConfirm}){
           <input type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}
             placeholder="z.B. 4.15" style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:28,fontSize:14,fontWeight:700,outline:"none",boxSizing:"border-box",color:buyPrice?"#1a9a50":"#ccc",background:buyPrice?"#f0fdf4":"#fafafa"}}/>
         </div>
-        {im.buyPrice && <span style={{fontSize:10,color:"#bbb"}}>S/S: €{Number(im.buyPrice).toFixed(2)}</span>}
+        {im.buyPrice && <span style={{fontSize:10,color:"#bbb"}}>S/S Preis</span>}
       </div>
       {/* Stock per size */}
       <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Bestand pro Größe</div>
       <div style={{display:"flex",flexDirection:"column",gap:4}}>
         {DEFAULT_SIZES.map(sz => {
-          const available = !hasAnySizes || im.sizes.includes(sz);
+          const available = !hasAnySizes || normalizedSizes.includes(sz);
           const qty = stock[sz]||0;
           return <div key={sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
             <div style={{width:42,fontSize:13,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
@@ -2615,22 +2621,22 @@ function StStImportModal({info, onClose, onConfirm}){
           </div>;
         })}
       </div>
-      {/* Sollbestand (min stock) */}
+      {/* Sollbestand */}
       <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6,marginTop:12}}>Sollbestand (Minimum)</div>
       <div style={{display:"flex",flexDirection:"column",gap:4}}>
         {DEFAULT_SIZES.map(sz => {
-          const available = !hasAnySizes || im.sizes.includes(sz);
-          const qty = minStock[sz]||0;
-          return <div key={sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
+          const available = !hasAnySizes || normalizedSizes.includes(sz);
+          const mq = minStock[sz]||0;
+          return <div key={"min_"+sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
             <div style={{width:42,fontSize:13,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
-            <button onClick={()=>available&&adjMin(sz,-1)} disabled={!available||qty===0}
-              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:qty>0?"#f08328":"#ccc",cursor:available&&qty>0?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-            <input type="number" value={qty||""} placeholder="0" onChange={e=>available&&setMinVal(sz,e.target.value)}
-              style={{width:56,height:32,borderRadius:8,border:"1px solid #e8e8e8",textAlign:"center",fontSize:14,fontWeight:800,color:qty>0?"#f08328":"#ccc",outline:"none",background:qty>0?"#fef6ed":"#fafafa"}}
+            <button onClick={()=>available&&adjMin(sz,-1)} disabled={!available||mq===0}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:mq>0?"#f08328":"#ccc",cursor:available&&mq>0?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+            <input type="number" value={mq||""} placeholder="0" onChange={e=>available&&setMinVal(sz,e.target.value)}
+              style={{width:56,height:32,borderRadius:8,border:"1px solid #e8e8e8",textAlign:"center",fontSize:14,fontWeight:800,color:mq>0?"#f08328":"#ccc",outline:"none",background:mq>0?"#fef6ed":"#fafafa"}}
               disabled={!available}/>
             <button onClick={()=>available&&adjMin(sz,1)} disabled={!available}
               style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:available?"#f08328":"#ccc",cursor:available?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
-            {qty>0 && <span style={{fontSize:11,color:"#f08328",fontWeight:700}}>{qty} Min</span>}
+            {mq>0 && <span style={{fontSize:11,color:"#f08328",fontWeight:700}}>{mq} Min</span>}
           </div>;
         })}
       </div>
@@ -2684,6 +2690,50 @@ function StStFilterChips({label, value, options, onChange}){
 }
 
 // ─── S/S Color Filter (individual colors with hex circles) ────────
+// Multi-select filter chip (for product names)
+function StStMultiFilter({label, values, options, onChange}){
+  const [open, setOpen] = useState(false);
+  const [filterText, setFilterText] = useState("");
+  const ref = useRef(null);
+  const active = values.length > 0;
+  useEffect(()=>{
+    if(!open) return;
+    const handler = (e) => { if(ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return ()=> document.removeEventListener("mousedown", handler);
+  },[open]);
+  const toggle = (v) => {
+    onChange(values.includes(v) ? values.filter(x=>x!==v) : [...values, v]);
+  };
+  const shown = filterText ? options.filter(o => o.toLowerCase().includes(filterText.toLowerCase())) : options;
+  return(
+    <div style={{position:"relative"}} ref={ref}>
+      <button onClick={()=>setOpen(!open)}
+        style={{height:30,borderRadius:8,border:"1px solid",borderColor:active?"#1a9a50":"#e8e8e8",
+          background:active?"#f0fdf4":"#fff",color:active?"#1a9a50":"#666",
+          cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 10px",display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}>
+        {label}{active?` (${values.length})`:""} <span style={{fontSize:8,marginLeft:2}}>{open?"▲":"▼"}</span>
+      </button>
+      {open && <div style={{position:"absolute",top:34,left:0,zIndex:100,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",minWidth:200,maxHeight:320,overflowY:"auto",padding:4}}>
+        {options.length > 8 && <input value={filterText} onChange={e=>setFilterText(e.target.value)} placeholder="Suchen..." autoFocus
+          style={{width:"100%",padding:"7px 10px",border:"1px solid #eee",borderRadius:8,fontSize:12,outline:"none",boxSizing:"border-box",marginBottom:4}}/>}
+        <button onClick={()=>{onChange([]);setOpen(false);}}
+          style={{width:"100%",padding:"7px 12px",border:"none",background:!active?"#f0fdf4":"transparent",color:!active?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:!active?800:600,borderRadius:8}}>
+          Alle ({options.length})
+        </button>
+        {shown.map(o=>{
+          const sel = values.includes(o);
+          return <button key={o} onClick={()=>toggle(o)}
+            style={{width:"100%",padding:"7px 12px",border:"none",background:sel?"#f0fdf4":"transparent",color:sel?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:sel?800:600,borderRadius:8,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6}}>
+            <span style={{width:14,height:14,borderRadius:4,border:"2px solid",borderColor:sel?"#1a9a50":"#ddd",background:sel?"#1a9a50":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:9,color:"#fff"}}>{sel?"✓":""}</span>
+            {o}
+          </button>;
+        })}
+      </div>}
+    </div>
+  );
+}
+
 function StStColorFilter({value, colors, onChange}){
   const [open, setOpen] = useState(false);
   const [colorSearch, setColorSearch] = useState("");
@@ -2744,6 +2794,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [typeFilter, setTypeFilter] = useState("all");
   const [fitFilter, setFitFilter] = useState("all");
   const [colorFilter, setColorFilter] = useState("all"); // ColorCode e.g. "C002"
+  const [nameFilter, setNameFilter] = useState([]); // Multi-select: StyleName values
   const [detail, setDetail] = useState(null); // style detail modal
   const [imgCache, setImgCache] = useState({}); // {styleCode: [{url,...}]}
   const [importModal, setImportModal] = useState(null); // {styleName, styleCode, color, colorCode, hexCode, sizes, ...}
@@ -2751,33 +2802,73 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [ststColorData, setStstColorData] = useState([]); // Full color objects [{code, name, hex, group}]
   const [ststPrices, setStstPrices] = useState({}); // {StyleCode: price}
 
-  // Load S/S prices
   const loadPrices = async () => {
     if(!sheetsUrl) return;
-    try{const c=JSON.parse(localStorage.getItem("stst_prices"));if(c&&c.ts&&(Date.now()-c.ts)<24*60*60*1000&&c.data&&Object.keys(c.data).length>0){setStstPrices(c.data);return;}}catch(e){}
+    try { const c = JSON.parse(localStorage.getItem("stst_prices")); if(c && c.ts && (Date.now()-c.ts) < 86400000 && c.data && Object.keys(c.data).length > 0) { setStstPrices(c.data); console.log("[S/S Prices] From cache:", Object.keys(c.data).length); return; } } catch(e) {}
     try {
-      const r = await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_prices"})});
-      const t = await r.text();
-      const d = JSON.parse(t);
-      if(d.error) { console.warn("[S/S Prices] Error:", d.error); return; }
+      const r = await fetch(sheetsUrl, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain"}, body:JSON.stringify({action:"stst_prices"})});
+      const t = await r.text(); const d = JSON.parse(t);
+      if(d.error) { console.warn("[S/S Prices] API error:", d.error, d.detail||""); }
       let prices = d.prices;
-      if(prices && !Array.isArray(prices)) prices = prices.result || prices.data || [];
-      if(Array.isArray(prices) && prices.length > 0){
-        console.log("[S/S Prices] Fields:", Object.keys(prices[0]));
-        console.log("[S/S Prices] First:", JSON.stringify(prices[0]).substring(0,400));
+      console.log("[S/S Prices] Raw type:", typeof prices, "isArray:", Array.isArray(prices));
+      if(prices && typeof prices === "object" && !Array.isArray(prices)) {
+        console.log("[S/S Prices] Object keys:", Object.keys(prices).slice(0,10));
+        // Could be {StyleCode: price} map directly
+        const keys = Object.keys(prices);
+        if(keys.length > 0 && typeof prices[keys[0]] === "number") {
+          console.log("[S/S Prices] Direct map format detected");
+          setStstPrices(prices);
+          try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:prices})); } catch(e) {}
+          return;
+        }
+        prices = prices.result || prices.data || prices.records || [];
+      }
+      if(Array.isArray(prices) && prices.length > 0) {
+        console.log("[S/S Prices] Array[0] fields:", Object.keys(prices[0]));
+        console.log("[S/S Prices] Array[0]:", JSON.stringify(prices[0]).substring(0,500));
         const map = {};
         prices.forEach(p => {
-          const style = p.StyleCode || p.Style || p.ProductCode || "";
-          let price = p.Price || p.UnitPrice || p.B2BPrice || p.SalesPrice || p.price || null;
-          if(price === null) for(const [k,v] of Object.entries(p)){ if(typeof v === "number" && v > 0 && v < 200) { price = v; break; } }
-          if(style && price != null) map[style] = typeof price === "string" ? parseFloat(price) : price;
+          const sc = p.StyleCode || p.Style || p.ProductCode || p.style_code || "";
+          let pr = p.Price || p.UnitPrice || p.B2BPrice || p.SalesPrice || p.price || p.unit_price || null;
+          if(pr === null) { for(const [k,v] of Object.entries(p)) { if(typeof v === "number" && v > 0 && v < 200) { pr = v; break; } } }
+          if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
         });
-        console.log("[S/S Prices] Loaded", Object.keys(map).length, "prices");
-        setStstPrices(map);
-        try{localStorage.setItem("stst_prices",JSON.stringify({ts:Date.now(),data:map}));}catch(e){}
+        if(Object.keys(map).length > 0) {
+          console.log("[S/S Prices] Parsed", Object.keys(map).length, "prices. Sample:", Object.entries(map).slice(0,3));
+          setStstPrices(map);
+          try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
+          return;
+        }
       }
+      console.log("[S/S Prices] No prices from API. Will try extracting from product data.");
     } catch(e) { console.warn("[S/S Prices] fetch error:", e); }
   };
+
+  // Fallback: extract prices from V2 products data (runs after products load)
+  useEffect(() => {
+    if(Object.keys(ststPrices).length > 0 || !ststProducts) return;
+    const prods = Array.isArray(ststProducts) ? ststProducts : [];
+    if(prods.length === 0) return;
+    const map = {};
+    prods.forEach(s => {
+      const sc = s.StyleCode || "";
+      // Try various price fields on style level
+      let pr = s.Price || s.B2BPrice || s.UnitPrice || s.SalesPrice || s.price || null;
+      // Try on variant level
+      if(pr == null && s.Variants && s.Variants.length > 0) {
+        const v = s.Variants[0];
+        pr = v.Price || v.B2BPrice || v.UnitPrice || v.SalesPrice || v.price || null;
+      }
+      if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
+    });
+    if(Object.keys(map).length > 0) {
+      console.log("[S/S Prices] Extracted from products:", Object.keys(map).length, "Sample:", Object.entries(map).slice(0,3));
+      setStstPrices(map);
+      try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
+    } else {
+      console.log("[S/S Prices] No prices found in product data either. Check Console for [S/S Prices] logs.");
+    }
+  }, [ststProducts, ststPrices]);
 
   // Load S/S color palette (ColorCode → hex)
   const loadColors = async () => {
@@ -2970,13 +3061,15 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       genders: Array.from(genders).sort(),
       types: Array.from(types).sort(),
       fits: Array.from(fits).sort(),
-      colors
+      colors,
+      names: [...new Set(styles.map(s => s.StyleName || s.StyleCode).filter(Boolean))].sort()
     };
   }, [styles, colorHexMap]);
 
   // Filtered + searched styles
   const filtered = useMemo(() => {
     let f = styles;
+    if(nameFilter.length > 0) f = f.filter(s => nameFilter.includes(s.StyleName || s.StyleCode));
     if(catFilter !== "all") f = f.filter(s => s.Category === catFilter);
     if(genderFilter !== "all") f = f.filter(s => s.Gender === genderFilter);
     if(typeFilter !== "all") f = f.filter(s => s.Type === typeFilter);
@@ -2993,8 +3086,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       );
     }
     return f;
-  }, [styles, catFilter, genderFilter, typeFilter, fitFilter, colorFilter, search]);
-  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorFilter].filter(f => f !== "all").length;
+  }, [styles, catFilter, genderFilter, typeFilter, fitFilter, colorFilter, nameFilter, search]);
+  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorFilter].filter(f => f !== "all").length + (nameFilter.length > 0 ? 1 : 0);
 
   // Helper: get stock for a SKU
   const getStock = (sku) => ststStock ? (ststStock[sku] || 0) : null;
@@ -3026,15 +3119,19 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      {/* Header */}
-      <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-        <div style={{flex:1,minWidth:200}}>
-          <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:"#111"}}>Stanley/Stella</div>
-          <div style={{fontSize:12,color:"#bbb"}}>{styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}</div>
+      {/* Header — matches Shopify Sync style */}
+      <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:36,height:36,borderRadius:10,background:"#2d2d2d",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_STELLA size={18} color="#fff"/></div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800}}>Stanley/Stella Sync</div>
+          <div style={{fontSize:11,color:"#bbb",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:styles.length>0?"#1a9a50":loading?"#d1d5db":error?"#e84142":"#d1d5db",display:"inline-block",flexShrink:0}}/>
+            <span>{styles.length>0?"Verbunden":loading?"Verbinden...":error?"Fehler":"..."} · {styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}{Object.keys(ststPrices).length>0?` · Preise geladen`:""}</span>
+          </div>
         </div>
         <button onClick={()=>{setStstProducts(null);setStstStock(null);setColorHexMap({});setStstPrices({});try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");localStorage.removeItem("stst_prices");}catch(e){}loadProducts(true);loadStock(true);loadColors();loadPrices();}}
-          style={{height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#f8f8f8",color:"#888",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:5}}>
-          <IC_REFRESH size={12} color="#888"/> Neu laden
+          style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}>
+          <IC_REFRESH size={14} color="#555"/> Reload
         </button>
       </div>
 
@@ -3046,7 +3143,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
               style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter("all");setGenderFilter("all");setTypeFilter("all");setFitFilter("all");setColorFilter("all");}}
+          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter("all");setGenderFilter("all");setTypeFilter("all");setFitFilter("all");setColorFilter("all");setNameFilter([]);}}
             style={{height:36,borderRadius:10,border:"1px solid #fee2e2",background:"#fff",color:"#e84142",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:4}}>
             ✕ Filter zurücksetzen ({activeFilterCount})
           </button>}
@@ -3061,6 +3158,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
           {filterOpts.types.length > 1 && <StStFilterChips label="Type" value={typeFilter} options={filterOpts.types} onChange={setTypeFilter}/>}
           {/* Fit */}
           {filterOpts.fits.length > 1 && <StStFilterChips label="Fit" value={fitFilter} options={filterOpts.fits} onChange={setFitFilter}/>}
+          {/* Produkt (multi-select) */}
+          {filterOpts.names.length > 1 && <StStMultiFilter label="Produkt" values={nameFilter} options={filterOpts.names} onChange={setNameFilter}/>}
           {/* Color */}
           {filterOpts.colors.length > 1 && <StStColorFilter value={colorFilter} colors={filterOpts.colors} onChange={setColorFilter}/>}
         </div>
@@ -3087,7 +3186,6 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       {!loading && !error && filtered.length === 0 && styles.length > 0 && <div style={{textAlign:"center",padding:40,color:"#bbb",fontSize:13}}>Keine Treffer für "{search}"</div>}
       {!loading && filtered.map(style => {
         let colorGroups = groupByColor(style.Variants, style);
-        // If color filter active, show only that color
         if(colorFilter !== "all") colorGroups = colorGroups.filter(cg => cg.colorCode === colorFilter);
         if(colorGroups.length === 0) return null;
         const totalStock = getStyleStock(style);
@@ -5348,6 +5446,8 @@ function AppInner({currentUser,onLogout}){
   },[triggerSave]);
   const [catFilter,setCatFilter]=useState("All");
   const [search,setSearch]=useState("");
+  const [invNameFilter, setInvNameFilter] = useState([]); // Multi-select product names
+  const [expandedGroups, setExpandedGroups] = useState({}); // {name: bool}
   const [view,setView]=useState("production");
   const [inventoryTab,setInventoryTab]=useState("textil");
   const [shopifyLinks,setShopifyLinks]=useState([]);
@@ -5368,19 +5468,13 @@ function AppInner({currentUser,onLogout}){
   const [prioFilter,setPrioFilter]=useState("Alle");
   const dragItem=useRef(null),dragOver=useRef(null);
 
-  const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(!search||(p.name||"").toLowerCase().includes(search.toLowerCase())||((p.color||"").toLowerCase().includes(search.toLowerCase()))));
-  // Group filtered products by name, sorted alphabetically
+  const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(invNameFilter.length===0||invNameFilter.includes(p.name||""))&&(!search||(p.name||"").toLowerCase().includes(search.toLowerCase())||((p.color||"").toLowerCase().includes(search.toLowerCase())))).sort((a,b)=>(a.name||"").localeCompare(b.name||"")||(a.color||"").localeCompare(b.color||""));
+  const invProductNames = useMemo(() => [...new Set(products.map(p=>p.name||"").filter(Boolean))].sort(), [products]);
   const groupedProducts = useMemo(() => {
+    if(filtered.length === 0) return [];
     const groups = {};
-    filtered.forEach(p => {
-      const key = p.name || "Unbenannt";
-      if(!groups[key]) groups[key] = [];
-      groups[key].push(p);
-    });
-    // Sort groups alphabetically, sort colors within group by color name
-    return Object.entries(groups)
-      .sort(([a],[b]) => a.localeCompare(b))
-      .map(([name, items]) => ({name, items: items.sort((a,b) => (a.color||"").localeCompare(b.color||""))}));
+    filtered.forEach(p => { const k = (p.name||"Unbenannt").trim(); if(!groups[k]) groups[k]=[]; groups[k].push(p); });
+    return Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([name,items])=>({name,items:items.sort((a,b)=>(a.color||"").localeCompare(b.color||""))}));
   }, [filtered]);
   const totalQty=products.reduce((a,p)=>a+(totalStock(p)),0);
   const textilVal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
@@ -5839,22 +5933,28 @@ function AppInner({currentUser,onLogout}){
               onAdd={()=>setShowDtfModal("add")}/>}
             {inventoryTab==="textil"&&<>
             {/* Search + filters – scrollable */}
-            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
+            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,alignItems:"center",flexWrap:"wrap"}}>
               <input placeholder="Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
                 style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:9,color:"#111",padding:"6px 11px",fontSize:12,outline:"none",width:mobile?100:140,flexShrink:0,fontWeight:500}}/>
+              {invProductNames.length > 1 && <StStMultiFilter label="Produkt" values={invNameFilter} options={invProductNames} onChange={setInvNameFilter}/>}
               {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"6px 11px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {filtered.length===0
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
                 :groupedProducts.map(group=>{
-                  const showHeader = groupedProducts.length>1;
-                  return <div key={group.name} style={{display:"flex",flexDirection:"column",gap:6}}>
-                    {showHeader && <div style={{fontSize:13,fontWeight:800,color:"#444",padding:"8px 2px 4px",display:"flex",alignItems:"center",gap:6}}>
-                      {group.name} {group.items.length>1 && <span style={{fontSize:11,color:"#bbb",fontWeight:600}}>{group.items.length} Farben</span>}
+                  const isOpen = expandedGroups[group.name] !== false; // default open
+                  const groupStock = group.items.reduce((a,p)=>{const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];return a+SIZES.reduce((b,s)=>b+((p.stock||{})[s]||0),0);},0);
+                  return <div key={group.name}>
+                    {groupedProducts.length>1 && <div onClick={()=>setExpandedGroups(prev=>({...prev,[group.name]:!isOpen}))}
+                      style={{fontSize:13,fontWeight:800,color:"#333",padding:"10px 2px 6px",display:"flex",alignItems:"center",gap:8,cursor:"pointer",userSelect:"none"}}>
+                      <span style={{fontSize:11,color:"#bbb",transition:"transform 0.2s",transform:isOpen?"rotate(90deg)":"rotate(0deg)",display:"inline-block"}}>▶</span>
+                      {group.name}
+                      <span style={{fontSize:11,color:"#bbb",fontWeight:600}}>{group.items.length} Farbe{group.items.length!==1?"n":""}</span>
+                      <span style={{fontSize:11,color:groupStock>0?"#1a9a50":"#ccc",fontWeight:700,marginLeft:"auto"}}>{groupStock} Stk</span>
                     </div>}
-                    {group.items.map(p=>(
-                      <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
+                    {(isOpen || groupedProducts.length<=1) && group.items.map(p=>(
+                      <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s",marginBottom:4}}>
                         <ProductCard product={p} onUpdate={u=>{
   const old=products.find(x=>x.id===u.id);
   const changes=[];
@@ -5876,6 +5976,7 @@ function AppInner({currentUser,onLogout}){
                   </div>;
                 })}
             </div>
+
             </>}
           </div>
         )}
