@@ -1,4 +1,4 @@
-// GKBS INVENTORY v4.0.4
+// GKBS INVENTORY v4.0.5
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.0.4";
+const APP_VERSION = "v4.0.5";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -630,6 +630,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
 // ─── Production Card ──────────────────────────────────────────────
 function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmProduce}){
   const mobile=useIsMobile();
+  const [expanded,setExpanded]=useState(false);
   const [lightbox,setLightbox]=useState(null);
   const isCap=prod.isCapOrder;
   const totalQty=totalProdQty(prod);
@@ -675,11 +676,13 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
   const btnMinus=btn(30,true);
   const btnPlus=(d)=>btn(30,false,d);
 
+  const showBody = !mobile || expanded;
+
   return(
     <div style={{background:"#fff",borderRadius:16,border:"1px solid #e5e5e5",overflow:"hidden",display:"flex",flexDirection:"column"}}>
 
-      {/* ── Header ── */}
-      <div style={{padding:mobile?"16px 16px 0":"16px 20px 0"}}>
+      {/* ── Header (always visible, clickable on mobile) ── */}
+      <div onClick={mobile?()=>setExpanded(o=>!o):undefined} style={{padding:mobile?"16px 16px 0":"16px 20px 0",cursor:mobile?"pointer":undefined,userSelect:mobile?"none":undefined}}>
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0,marginTop:12}}>⠿</div>}
           <SmartDot item={prod} size={mobile?36:44}/>
@@ -692,7 +695,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
               {blank?.fit&&<span style={{fontSize:11,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.fit}</span>}
             </div>
           </div>
-          <div style={{display:"flex",gap:6,flexShrink:0}}>
+          <div style={{display:"flex",gap:6,flexShrink:0}} onClick={e=>e.stopPropagation()}>
             <button onClick={onEdit} style={{width:38,height:38,borderRadius:10,border:"none",background:"#f8f8f8",color:"#111",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><PENCIL/></button>
             <button onClick={onDelete} style={{width:38,height:38,borderRadius:10,border:"none",background:"#fef1f0",color:"#e84142",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
           </div>
@@ -706,28 +709,18 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           {!prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#fef1f0",color:"#e84142",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#e84142"}}/>Shopify</span>}
         </div>
 
-        {/* Notes + Design link */}
-        {(prod.notes||prod.designUrl)&&<div style={{marginTop:8,display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+        {/* Notes + Design link (only when expanded on mobile) */}
+        {showBody&&(prod.notes||prod.designUrl)&&<div style={{marginTop:8,display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           {prod.notes&&<div style={{fontSize:11,color:"#bbb",fontStyle:"italic"}}>{prod.notes}</div>}
-          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#4078e0",display:"inline-flex",alignItems:"center",gap:3}}><IC_LINK size={11} color="#4078e0"/> Design</a>}
+          {prod.designUrl&&<a href={prod.designUrl.startsWith("http")?prod.designUrl:"https://"+prod.designUrl} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:"#4078e0",display:"inline-flex",alignItems:"center",gap:3}}><IC_LINK size={11} color="#4078e0"/> Design</a>}
         </div>}
 
 
       </div>
 
-      {/* Photos */}
-      {prod.photos?.length>0&&(
-        <div style={{padding:mobile?"8px 16px":"8px 20px"}}>
-          <div style={{display:"flex",gap:6,overflowX:"auto"}}>
-            {prod.photos.map((src,i)=><img key={i} src={src} alt="" onClick={()=>setLightbox(i)} style={{height:60,width:60,objectFit:"cover",borderRadius:8,border:"1px solid #ebebeb",flexShrink:0,cursor:"zoom-in"}}/>)}
-          </div>
-          <Lightbox photos={prod.photos} startIndex={lightbox} onClose={()=>setLightbox(null)}/>
-        </div>
-      )}
-
-      {/* Counter + Progress bar */}
+      {/* Counter + Progress bar (always visible) */}
       {totalQty>0&&(
-        <div style={{padding:mobile?"8px 16px 4px":"8px 20px 4px"}}>
+        <div onClick={mobile?()=>setExpanded(o=>!o):undefined} style={{padding:mobile?"8px 16px 4px":"8px 20px 4px",cursor:mobile?"pointer":undefined,userSelect:mobile?"none":undefined}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{flex:1}}>
               <div style={{height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden"}}>
@@ -742,10 +735,30 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
               <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#999",lineHeight:1}}>/{totalQty}</span>
             </div>
           </div>
+          {/* Collapse indicator on mobile */}
+          {mobile&&<div style={{textAlign:"center",paddingTop:4,paddingBottom:2}}>
+            <span style={{fontSize:10,color:"#ccc",fontWeight:700,letterSpacing:1,transition:"transform 0.2s",display:"inline-block",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
+          </div>}
+        </div>
+      )}
+      {/* Collapse indicator when no qty */}
+      {totalQty===0&&mobile&&(
+        <div onClick={()=>setExpanded(o=>!o)} style={{textAlign:"center",padding:"6px 0 8px",cursor:"pointer"}}>
+          <span style={{fontSize:10,color:"#ccc",fontWeight:700,letterSpacing:1,transition:"transform 0.2s",display:"inline-block",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
         </div>
       )}
 
-      {/* ── Sizes / Cap colors ── */}
+      {/* ── Collapsible body (expanded on mobile, always on desktop) ── */}
+      {showBody&&<>
+      {/* Photos */}
+      {prod.photos?.length>0&&(
+        <div style={{padding:mobile?"8px 16px":"8px 20px"}}>
+          <div style={{display:"flex",gap:6,overflowX:"auto"}}>
+            {prod.photos.map((src,i)=><img key={i} src={src} alt="" onClick={()=>setLightbox(i)} style={{height:60,width:60,objectFit:"cover",borderRadius:8,border:"1px solid #ebebeb",flexShrink:0,cursor:"zoom-in"}}/>)}
+          </div>
+          <Lightbox photos={prod.photos} startIndex={lightbox} onClose={()=>setLightbox(null)}/>
+        </div>
+      )}
       <div style={{padding:mobile?"12px 16px 16px":"12px 20px 20px"}}>
       {isCap?(
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -824,6 +837,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           {prod.status==="Fertig"&&<span style={{fontSize:12,color:"#1a9a50",fontWeight:700}}>✓ Abgeschlossen</span>}
         </div>
       </div>
+      </>}
     </div>
   );
 }
@@ -5141,6 +5155,48 @@ function AppInner({currentUser,onLogout}){
   const [bestellungen,__setBestellungen]=useState([]);
   const [dtfItems,__setDtfItems]=useState([]);
   const [bedarfQty,setBedarfQty]=useState({});
+
+
+  // ── Moved state declarations (fix TDZ) ──
+
+  const [categories,__setCategories]=useState(DEFAULT_CATEGORIES);
+  const [variantCats,__setVariantCats]=useState(()=>{try{const s=localStorage.getItem("gkbs_variant_cats");return s?JSON.parse(s):DEFAULT_VARIANT_CATS;}catch(e){return DEFAULT_VARIANT_CATS;}});
+  const variantCatsRef=useRef(variantCats);
+  const [catFilter,setCatFilter]=useState("All");
+  const [search,setSearch]=useState("");
+  const [invNameFilter, setInvNameFilter] = useState([]); // Multi-select product names
+  const [expandedGroups, setExpandedGroups] = useState({}); // {name: bool}
+  const [view,setView]=useState("production");
+  const [inventoryTab,setInventoryTab]=useState("textil");
+  const [shopifyLinks,setShopifyLinks]=useState([]);
+  const [restockMins,setRestockMins]=useState({});
+  const [shopifyLinkModal,setShopifyLinkModal]=useState(null); // prod object to link
+  const [prodMainTab,setProdMainTab]=useState("auftraege");
+  const [shopifyBadge,setShopifyBadge]=useState(0);
+  const [prodSubView,setProdSubView]=useState("Alle");
+  const [showProdModal,setShowProdModal]=useState(false);
+  const [showPAModal,setShowPAModal]=useState(false);
+  const [showCats,setShowCats]=useState(false);
+  const [showBestellbedarf,setShowBestellbedarf]=useState(false);
+  const [showManualBestell,setShowManualBestell]=useState(false);
+  const [showArchive,setShowArchive]=useState(false);
+  const [showSheetsSetup,setShowSheetsSetup]=useState(false);
+  const [confirmDelete,setConfirmDelete]=useState(null);
+  const [confirmProduce,setConfirmProduce]=useState(null);
+  const [prioFilter,setPrioFilter]=useState("Alle");
+  const dragItem=useRef(null),dragOver=useRef(null);
+  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["stanley","S/S",IC_STELLA],["finance","Finanzen",IC_DOLLAR]];
+  const [showActivityLog,setShowActivityLog]=useState(false);
+  const [showSettings,setShowSettings]=useState(false);
+  const [appSettings,setAppSettings]=useState(()=>{try{const r=localStorage.getItem("gkbs_settings");return r?JSON.parse(r):{orderFilter:"oe"};}catch(e){return {orderFilter:"oe"};}});
+  const [userOverrides,setUserOverrides]=useState(()=>{try{const r=localStorage.getItem("gkbs_user_overrides");return r?JSON.parse(r):{};}catch(e){return {};}});
+  const [bestellModal,setBestellModal]=useState(null);
+  const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
+  const [promoGifts,setPromoGiftsRaw]=useState(()=>{try{const r=localStorage.getItem("gkbs_promo");return r?JSON.parse(r):[];}catch(e){return [];}});
+  const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
+  const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
+
+
   const [syncStatus,setSyncStatus]=useState(isDemo?"demo":"idle");
   const [shopifyDebug,setShopifyDebug]=useState([]);
   useEffect(()=>{if(shopifyDebug.length>0){const t=setTimeout(()=>setShopifyDebug([]),3500);return ()=>clearTimeout(t);}},[shopifyDebug]);
@@ -5185,6 +5241,25 @@ function AppInner({currentUser,onLogout}){
   // ── Sync bedarfQty ref + save on change ──
   const bedarfQtyInit=useRef(false);
   useEffect(()=>{bedarfQtyRef.current=bedarfQty;if(bedarfQtyInit.current)triggerSave();bedarfQtyInit.current=true;},[bedarfQty]);
+
+
+  // ── Moved callback declarations (fix TDZ) ──
+
+  const setVariantCats=useCallback((vc)=>{variantCatsRef.current=vc;__setVariantCats(vc);try{localStorage.setItem("gkbs_variant_cats",JSON.stringify(vc));}catch(e){}triggerSave(null,null,null,null,null,null,null,vc);},[triggerSave]);
+  const isVariantCat=useCallback((cat)=>variantCatsRef.current.includes(cat),[]);
+  const setCategories=useCallback((cats)=>{
+    historyRef.current=[{products:productsRef.current,prods:prodsRef.current,categories:categoriesRef.current},...historyRef.current].slice(0,MAX_HISTORY);
+    categoriesRef.current=cats;
+    __setCategories(cats);
+    try{localStorage.setItem("gkbs_categories",JSON.stringify(cats));}catch(e){}
+    triggerSave(null,null,null,null,cats);
+  },[triggerSave]);
+  const updateSettings=(s)=>{setAppSettings(s);try{localStorage.setItem("gkbs_settings",JSON.stringify(s));}catch(e){}};
+  const updateUser=(u)=>{const o={...userOverrides,[u.name]:{hash:u.hash,displayName:u.name}};setUserOverrides(o);try{localStorage.setItem("gkbs_user_overrides",JSON.stringify(o));}catch(e){};};
+  const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}verlusteRef.current=next;triggerSave(null,null,null,null,null,next,null);return next;});
+  const setPromoGifts=(fn)=>setPromoGiftsRaw(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_promo",JSON.stringify(next));}catch(e){}promoRef.current=next;triggerSave(null,null,null,null,null,null,next);return next;});
+
+
 
   // ── Setters ────────────────────────────────────────────────────
   const setDtfItems = useCallback((updater) => {
@@ -5452,41 +5527,6 @@ function AppInner({currentUser,onLogout}){
   // sync count after mutations
   const canUndo=historyRef.current.length>0;
 
-  const [categories,__setCategories]=useState(DEFAULT_CATEGORIES);
-  const [variantCats,__setVariantCats]=useState(()=>{try{const s=localStorage.getItem("gkbs_variant_cats");return s?JSON.parse(s):DEFAULT_VARIANT_CATS;}catch(e){return DEFAULT_VARIANT_CATS;}});
-  const variantCatsRef=useRef(variantCats);
-  const setVariantCats=useCallback((vc)=>{variantCatsRef.current=vc;__setVariantCats(vc);try{localStorage.setItem("gkbs_variant_cats",JSON.stringify(vc));}catch(e){}triggerSave(null,null,null,null,null,null,null,vc);},[triggerSave]);
-  const isVariantCat=useCallback((cat)=>variantCatsRef.current.includes(cat),[]);
-  const setCategories=useCallback((cats)=>{
-    historyRef.current=[{products:productsRef.current,prods:prodsRef.current,categories:categoriesRef.current},...historyRef.current].slice(0,MAX_HISTORY);
-    categoriesRef.current=cats;
-    __setCategories(cats);
-    try{localStorage.setItem("gkbs_categories",JSON.stringify(cats));}catch(e){}
-    triggerSave(null,null,null,null,cats);
-  },[triggerSave]);
-  const [catFilter,setCatFilter]=useState("All");
-  const [search,setSearch]=useState("");
-  const [invNameFilter, setInvNameFilter] = useState([]); // Multi-select product names
-  const [expandedGroups, setExpandedGroups] = useState({}); // {name: bool}
-  const [view,setView]=useState("production");
-  const [inventoryTab,setInventoryTab]=useState("textil");
-  const [shopifyLinks,setShopifyLinks]=useState([]);
-  const [restockMins,setRestockMins]=useState({});
-  const [shopifyLinkModal,setShopifyLinkModal]=useState(null); // prod object to link
-  const [prodMainTab,setProdMainTab]=useState("auftraege");
-  const [shopifyBadge,setShopifyBadge]=useState(0);
-  const [prodSubView,setProdSubView]=useState("Alle");
-  const [showProdModal,setShowProdModal]=useState(false);
-  const [showPAModal,setShowPAModal]=useState(false);
-  const [showCats,setShowCats]=useState(false);
-  const [showBestellbedarf,setShowBestellbedarf]=useState(false);
-  const [showManualBestell,setShowManualBestell]=useState(false);
-  const [showArchive,setShowArchive]=useState(false);
-  const [showSheetsSetup,setShowSheetsSetup]=useState(false);
-  const [confirmDelete,setConfirmDelete]=useState(null);
-  const [confirmProduce,setConfirmProduce]=useState(null);
-  const [prioFilter,setPrioFilter]=useState("Alle");
-  const dragItem=useRef(null),dragOver=useRef(null);
 
   const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(invNameFilter.length===0||invNameFilter.includes(p.name||""))&&(!search||(p.name||"").toLowerCase().includes(search.toLowerCase())||((p.color||"").toLowerCase().includes(search.toLowerCase())))).sort((a,b)=>(a.name||"").localeCompare(b.name||"")||(a.color||"").localeCompare(b.color||""));
   const invProductNames = useMemo(() => [...new Set(products.map(p=>p.name||"").filter(Boolean))].sort(), [products]);
@@ -5691,20 +5731,6 @@ function AppInner({currentUser,onLogout}){
     } catch(e) { console.warn("Shopify push failed",e); }
   };
 
-  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["stanley","S/S",IC_STELLA],["finance","Finanzen",IC_DOLLAR]];
-  const [showActivityLog,setShowActivityLog]=useState(false);
-  const [showSettings,setShowSettings]=useState(false);
-  const [appSettings,setAppSettings]=useState(()=>{try{const r=localStorage.getItem("gkbs_settings");return r?JSON.parse(r):{orderFilter:"oe"};}catch(e){return {orderFilter:"oe"};}});
-  const updateSettings=(s)=>{setAppSettings(s);try{localStorage.setItem("gkbs_settings",JSON.stringify(s));}catch(e){}};
-  const [userOverrides,setUserOverrides]=useState(()=>{try{const r=localStorage.getItem("gkbs_user_overrides");return r?JSON.parse(r):{};}catch(e){return {};}});
-  const updateUser=(u)=>{const o={...userOverrides,[u.name]:{hash:u.hash,displayName:u.name}};setUserOverrides(o);try{localStorage.setItem("gkbs_user_overrides",JSON.stringify(o));}catch(e){};};
-  const [bestellModal,setBestellModal]=useState(null);
-  const [verluste,setVerluste]=useState(()=>{try{const r=localStorage.getItem("gkbs_verluste");return r?JSON.parse(r):[];}catch(e){return [];}});
-  const setVerlusteAndSave=(fn)=>setVerluste(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_verluste",JSON.stringify(next));}catch(e){}verlusteRef.current=next;triggerSave(null,null,null,null,null,next,null);return next;});
-  const [promoGifts,setPromoGiftsRaw]=useState(()=>{try{const r=localStorage.getItem("gkbs_promo");return r?JSON.parse(r):[];}catch(e){return [];}});
-  const setPromoGifts=(fn)=>setPromoGiftsRaw(prev=>{const next=typeof fn==="function"?fn(prev):fn;try{localStorage.setItem("gkbs_promo",JSON.stringify(next));}catch(e){}promoRef.current=next;triggerSave(null,null,null,null,null,null,next);return next;});
-  const [showDtfModal,setShowDtfModal]=useState(false); // false | "add" | item // {blank,key,isCapKey,capColor,toOrder}
-  const [wareneingangModal,setWareneingangModal]=useState(null); // bestellung object
 
   return(
     <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"'Space Grotesk', -apple-system, sans-serif"}}>
