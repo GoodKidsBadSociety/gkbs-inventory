@@ -3877,31 +3877,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 
   const renderDetail=(t,blankId,blank)=>{
     const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state}=t;
+    const items=breakdownMap[blankId]?.[key]||[];
     return(
-      <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"10px 14px",display:"flex",flexDirection:"column",gap:8,flexBasis:"100%",width:"100%",marginTop:4,marginBottom:2}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-          {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
-          <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800}}>{label}</span>
-          <span style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:state==="none"?"#bbb":"#111"}}>{needed}</strong> · Lager: <strong style={{color:state==="none"?"#bbb":avail>=needed?"#1a9a50":"#e84142"}}>{avail}</strong></span>
-          {state==="none"&&<span style={{fontSize:10,color:"#bbb",fontStyle:"italic"}}>Kein Bedarf</span>}
-          {minStockVal>0&&<span style={{fontSize:10,color:"#bbb"}}>· Soll: {minStockVal}</span>}
-          {t.oQty>0&&<span style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>· ✓ {t.oQty} bestellt</span>}
-          <div style={{marginLeft:"auto",display:"flex",gap:6}}>
-            <button type="button" disabled={remainMin===0} onClick={()=>{if(remainMin>0)onBestellen(blank,key,isCapKey,capColor,remainMin);}}
-              style={{background:remainMin===0?"#f0f0f0":"#fef1f0",borderRadius:8,padding:"4px 10px",textAlign:"center",width:52,border:`1px solid ${remainMin===0?"#ddd":"#fcc8c6"}`,cursor:remainMin===0?"not-allowed":"pointer",flexShrink:0,opacity:remainMin===0?0.5:1}}>
-              <div style={{fontSize:8,color:remainMin===0?"#bbb":"#e84142",fontWeight:700}}>{remainMin===0?"✓":"MIN"}</div>
-              <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#e84142",lineHeight:1}}>{remainMin===0?"–":remainMin}</div>
-            </button>
-            {minStockVal>0&&<button type="button" disabled={remainMax===0} onClick={()=>{if(remainMax>0)onBestellen(blank,key,isCapKey,capColor,remainMax);}}
-              style={{background:remainMax===0?"#f0f0f0":"#fef6ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:52,border:`1px solid ${remainMax===0?"#ddd":"#fcd5a8"}`,cursor:remainMax===0?"not-allowed":"pointer",flexShrink:0,opacity:remainMax===0?0.5:1}}>
-              <div style={{fontSize:8,color:remainMax===0?"#bbb":"#f08328",fontWeight:700}}>{remainMax===0?"✓":"MAX"}</div>
-              <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#f08328",lineHeight:1}}>{remainMax===0?"–":remainMax}</div>
-            </button>}
-          </div>
-        </div>
-        {(breakdownMap[blankId]?.[key]||[]).length>0&&<div style={{display:"flex",flexDirection:"column",gap:4}}>
+      <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,flexBasis:"100%",width:"100%",marginTop:4,marginBottom:2}}>
+        {items.length>0&&<div style={{display:"flex",flexDirection:"column",gap:4}}>
           <div style={{fontSize:9,color:"#bbb",fontWeight:700,letterSpacing:0.6}}>AUFTRÄGE</div>
-          {(breakdownMap[blankId]?.[key]||[]).map((item,i)=>(
+          {items.map((item,i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
               <ColorDot hex={item.colorHex} size={12}/>
               <span style={{flex:1,fontSize:11,fontWeight:600,color:"#333"}}>{item.name}</span>
@@ -3909,6 +3890,19 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             </div>
           ))}
         </div>}
+        {t.oQty>0&&<div style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {t.oQty} bereits bestellt</div>}
+        <div style={{display:"flex",gap:6}}>
+          <button type="button" disabled={remainMin===0} onClick={()=>{if(remainMin>0)onBestellen(blank,key,isCapKey,capColor,remainMin);}}
+            style={{background:remainMin===0?"#f0f0f0":"#fef1f0",borderRadius:8,padding:"6px 12px",textAlign:"center",flex:1,border:`1px solid ${remainMin===0?"#ddd":"#fcc8c6"}`,cursor:remainMin===0?"not-allowed":"pointer",opacity:remainMin===0?0.5:1}}>
+            <div style={{fontSize:9,color:remainMin===0?"#bbb":"#e84142",fontWeight:700}}>{remainMin===0?"✓":"MIN"}</div>
+            <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:remainMin===0?"#bbb":"#e84142",lineHeight:1}}>{remainMin===0?"–":remainMin}</div>
+          </button>
+          {minStockVal>0&&<button type="button" disabled={remainMax===0} onClick={()=>{if(remainMax>0)onBestellen(blank,key,isCapKey,capColor,remainMax);}}
+            style={{background:remainMax===0?"#f0f0f0":"#fef6ed",borderRadius:8,padding:"6px 12px",textAlign:"center",flex:1,border:`1px solid ${remainMax===0?"#ddd":"#fcd5a8"}`,cursor:remainMax===0?"not-allowed":"pointer",opacity:remainMax===0?0.5:1}}>
+            <div style={{fontSize:9,color:remainMax===0?"#bbb":"#f08328",fontWeight:700}}>{remainMax===0?"✓":"MAX"}</div>
+            <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:remainMax===0?"#bbb":"#f08328",lineHeight:1}}>{remainMax===0?"–":remainMax}</div>
+          </button>}
+        </div>
       </div>
     );
   };
