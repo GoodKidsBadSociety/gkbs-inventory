@@ -4374,6 +4374,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const [openSize,setOpenSize]=useState(null);
   const [allModal,setAllModal]=useState(null);
   const [csvSelected,setCsvSelected]=useState({});
+  const [expandedBlanks,setExpandedBlanks]=useState({});
   const customQty=bedarfQty;
   const setCustomQty=setBedarfQty;
   const bedarfMap={};
@@ -4560,12 +4561,14 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             const activeTiles=tileData.filter(t=>t.state!=="done"&&t.state!=="none");
             const minSizes=activeTiles.filter(t=>t.remainMin>0).map(t=>({key:t.key,label:t.label,toOrder:t.remainMin}));
             const maxSizes=activeTiles.filter(t=>t.remainMax>0).map(t=>({key:t.key,label:t.label,toOrder:t.remainMax}));
+            const toggleBlank=()=>setExpandedBlanks(prev=>({...prev,[blankId]:!prev[blankId]}));
+            const blankOpen=!mobile||expandedBlanks[blankId]===true;
             return(
-              <div key={blankId} style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
-                <div style={S.cardHdr}>
+              <div key={blankId} style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:blankOpen?12:0}}>
+                <div onClick={mobile?toggleBlank:undefined} style={{...S.cardHdr,cursor:mobile?"pointer":undefined,userSelect:mobile?"none":undefined}}>
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color} · {blank.category}{blank.fit?` · ${blank.fit}`:""}</div></div>
-                  <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
+                  <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}} onClick={e=>e.stopPropagation()}>
                     {hasStCode&&<button type="button" onClick={toggleProduct}
                       style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:11,fontWeight:800,cursor:"pointer",border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,letterSpacing:0.5}}>
                       CSV
@@ -4583,7 +4586,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   </div>
                 </div>
                 {/* Size cells – boxes on desktop, rows on mobile */}
-                {!mobile?<>
+                {blankOpen&&<>{!mobile?<>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {tileData.map(t=>{
                     const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
@@ -4675,6 +4678,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     </React.Fragment>);
                   })}
                 </div>}
+                </>}
                 </div>
             );
           })}
