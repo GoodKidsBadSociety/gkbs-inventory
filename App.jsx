@@ -29,6 +29,8 @@ function shopCacheGet(key){const e=_shopCache[key];if(!e)return null;if(Date.now
 function shopCacheSet(key,data){_shopCache[key]={data,ts:Date.now()};}
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
+// Categories that use color variants instead of sizes (XXS-XXXL)
+const DEFAULT_VARIANT_CATS = ["Cap","Bag","Other"];
 const LOW_STOCK = 3;
 const PRESET_COLORS = ["#000000","#ffffff","#e5e5e5","#6b7280","#4078e0","#10b981","#e84142","#f08328","#eab308","#8b5cf6","#ec4899","#a16207","#1e3a5f","#d4a574"];
 const STATUS_STYLE = {"Geplant":{bg:"#f0f0f0",color:"#666"},"In Produktion":{bg:"#fef9c3",color:"#a16207"},"Fertig":{bg:"#ddfce6",color:"#1a9a50"}};
@@ -64,7 +66,7 @@ async function sheetsLogActivity(user, action){
   }catch(e){}
 }
 
-async function sheetsSave(products, prods, dtfItems, bestellungen, categories, verluste, promoGifts) {
+async function sheetsSave(products, prods, dtfItems, bestellungen, categories, verluste, promoGifts, variantCats) {
   const url = SHEETS_URL;
   if (!url) return;
   try {
@@ -72,7 +74,7 @@ async function sheetsSave(products, prods, dtfItems, bestellungen, categories, v
       method: "POST",
       redirect: "follow",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories, verluste, promoGifts }),
+      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories, verluste, promoGifts, variantCats }),
     });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 }
@@ -544,7 +546,7 @@ const IC_CHART=({size=16,color="currentColor"})=><svg width={size} height={size}
 const IC_DOLLAR=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
 const IC_SHOP=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
 const IC_PRINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
-const IC_STITCH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m18.5 2-5 5M12 7l-1.5 1.5"/><path d="M3.27 13.22A5 5 0 0 0 2 16.5V22h5.5a5 5 0 0 0 3.28-1.27l.22-.22"/><path d="m14.5 9.5-5 5"/></svg>;
+const IC_STITCH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 8.5-8.5"/><circle cx="14.5" cy="9.5" r="1"/><path d="m14.5 9.5 5-5"/><path d="m18 3 3 3"/><path d="M3 16c4-1 6-3.5 8-6"/></svg>;
 const IC_CHECK_CIRCLE=({size=16,color="#22c55e"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
 const IC_WARN=({size=16,color="#e84142"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
 const IC_LOSS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>;
@@ -568,8 +570,8 @@ const IC_HANGER=({size=16,color="currentColor"})=><svg width={size} height={size
 const IC_PACKAGE=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m16.5 9.4-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
 const IC_GRID4=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
 const IC_TREND_DOWN=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
-const IC_ROLL=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c-4.97 0-9-2.24-9-5V7c0-2.76 4.03-5 9-5s9 2.24 9 5v10c0 2.76-4.03 5-9 5z"/><ellipse cx="12" cy="7" rx="9" ry="5"/><path d="M3 12c0 2.76 4.03 5 9 5s9-2.24 9-5"/></svg>;
-const IC_SHIRT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 2 13.5 5.5a2 2 0 0 1-3 0L8 2 3.62 3.46a2 2 0 0 0-1.34 1.88V18a2 2 0 0 0 2 2h15.44a2 2 0 0 0 2-2V5.34a2 2 0 0 0-1.34-1.88Z"/></svg>;
+const IC_ROLL=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>;
+const IC_SHIRT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2l5 4-3 2v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8L4 6l5-4"/><path d="M9 2a4 4 0 0 0 6 0"/></svg>;
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
 const DEMO_PRODUCTS = [
@@ -584,7 +586,7 @@ const DEMO_PRODS = [
 
 
 // ─── Helpers ─────────────────────────────────────────────────────
-const totalStock = (p) => p.category==="Cap"
+const totalStock = (p) => (p.capColors?.length>0)
   ? (p.capColors||[]).reduce((a,c)=>a+c.stock,0)
   : Object.values(p.stock||{}).reduce((a,b)=>a+b,0);
 const totalProdQty = (p) => p.isCapOrder
@@ -796,7 +798,7 @@ function PieDot({capColors,fallbackHex="#888",size=28,valueKey="stock"}){
 }
 // ─── SmartDot – auto picks between ColorDot and PieDot ───────────
 function SmartDot({item,size=28}){
-  const isCap=item.category==="Cap"||item.isCapOrder;
+  const isCap=(item.capColors?.length>0)||item.isCapOrder;
   if(!isCap) return <ColorDot hex={item.colorHex} size={size}/>;
   const key=item.isCapOrder?"qty":"stock";
   return <PieDot capColors={item.capColors} fallbackHex={item.colorHex} size={size} valueKey={key}/>;
@@ -877,7 +879,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
 // ─── Product Card ─────────────────────────────────────────────────
 function ProductCard({product,onUpdate,onDelete,onEdit}){
   const mobile=useIsMobile();
-  const isCap=product.category==="Cap"||product.category==="Bag";
+  const isCap=(product.capColors?.length>0);
   const total=totalStock(product);
   const vals=isCap?(product.capColors||[]).map(c=>c.stock):Object.values(product.stock||{});
   const allOut=vals.every(v=>v===0),someOut=!allOut&&vals.some(v=>v===0),hasLow=!allOut&&!someOut&&vals.some(v=>v>0&&v<=LOW_STOCK);
@@ -893,7 +895,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{...F_HEAD_STYLE,fontSize:mobile?15:17,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{product.name}</div>
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#bbb"}}>{product.color}</span>}
-            {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category==="Bag"?"BAG":"CAP"}</span>}
+            {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category?.toUpperCase()||"VARIANT"}</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
@@ -909,15 +911,16 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
       {/* Stock grid */}
       {isCap?(
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {(product.capColors||[]).filter(c=>c.stock>0).map(c=>{
-            const isLow=c.stock<=LOW_STOCK;
+          {(product.capColors||[]).map(c=>{
+            const isOut=c.stock===0;
+            const isLow=!isOut&&c.stock<=LOW_STOCK;
             return(
-              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110}}>
+              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110,opacity:isOut?0.6:1}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
-                <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
-                <CapStockNum value={c.stock} color={sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
+                <span style={{fontSize:10,color:isOut?"#bbb":"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
+                <CapStockNum value={c.stock} color={isOut?"#bbb":sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
                 <div style={{display:"flex",gap:4}}>
-                  <button onClick={()=>adjCap(c.id,-1)} style={btn(30,true)}>−</button>
+                  <button onClick={()=>adjCap(c.id,-1)} style={btn(30,true,isOut)}>−</button>
                   <button onClick={()=>adjCap(c.id,1)} style={btn(30)}>+</button>
                 </div>
               </div>
@@ -1391,7 +1394,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const [done,setDone]=useState(initial?.done||mkQty());
   const [shopifyProductLink,setShopifyProductLink]=useState(initial?.shopifyProductLink||null); // {shopifyProductId, title, variants:[{id,title,inventory_item_id}], locationId}
   const getCapColorsFromBlank=(blankProd,existingCapColors)=>{
-    if(!blankProd||blankProd.category!=="Cap")return existingCapColors||[];
+    if(!blankProd||!(blankProd.capColors?.length>0))return existingCapColors||[];
     // Map blank's capColors to order format, preserving qty/done if already set
     return (blankProd.capColors||[]).map(bc=>{
       const existing=(existingCapColors||[]).find(ec=>ec.id===bc.id||ec.name===bc.name);
@@ -1404,7 +1407,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   });
   const fileRef=useRef();
   const blank=products.find(p=>p.id===blankId);
-  const isCap=blank?.category==="Cap";
+  const isCap=(blank?.capColors?.length>0);
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
   const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
@@ -1456,7 +1459,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
         <select value={blankId} onChange={e=>{
           const p=products.find(x=>x.id===e.target.value);
           setBlankId(e.target.value);
-          if(p?.category==="Cap") setCapColors(getCapColorsFromBlank(p, capColors));
+          if(p?.capColors?.length>0) setCapColors(getCapColorsFromBlank(p, capColors));
         }} style={{width:"100%",padding:"12px 14px",borderRadius:10,border:"1.5px solid #e8e8e8",fontSize:14,fontWeight:600,outline:"none",background:"#fff",appearance:"none",cursor:"pointer"}}>
           <option value="">— Blank auswählen —</option>
           {products.map(p=>(
@@ -1516,7 +1519,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   );
 }
 
-function ProductModal({categories,initial,onClose,onSave,onDelete}){
+function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
   const editing=!!initial;
   const [name,setName]=useState(initial?.name||"");
   const [category,setCategory]=useState(initial?.category||categories[0]||"");
@@ -1528,9 +1531,8 @@ function ProductModal({categories,initial,onClose,onSave,onDelete}){
   const [stock,setStock]=useState(initial?.stock||mkQty());
   const [minStock,setMinStock]=useState(initial?.minStock||mkQty());
   const [capColors,setCapColors]=useState(initial?.capColors||[{id:mkId(),name:"Black",hex:"#111111",stock:0}]);
-  // Cap-style (color variants, no sizes): Cap and Bag categories
-  const CAP_STYLE_CATS=["Cap","Bag"];
-  const isCap=CAP_STYLE_CATS.includes(category);
+  // Variant categories use color variants; all others use sizes (XXS-XXXL)
+  const isCap=(variantCats||DEFAULT_VARIANT_CATS).includes(category);
   const [showPresets, setShowPresets] = useState(false);
   const [presetProduct, setPresetProduct] = useState(null);
   const [presetCat, setPresetCat] = useState("T-Shirt");
@@ -1547,7 +1549,7 @@ function ProductModal({categories,initial,onClose,onSave,onDelete}){
     setStColorCode(colorObj.code||"");
     if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
     // Bag & Cap: load ALL colors from preset as capColors
-    if(["Cap","Bag"].includes(newCat)){
+    if((variantCats||DEFAULT_VARIANT_CATS).includes(newCat)){
       setCapColors(preset.colors.map(c=>({id:mkId(),name:c.name,hex:c.hex,stColorCode:c.code||"",stock:0,minStock:0})));
     }
     setShowPresets(false);
@@ -1675,23 +1677,52 @@ function ProductModal({categories,initial,onClose,onSave,onDelete}){
   );
 }
 
-function CategoryModal({categories,onClose,onSave}){
+function CategoryModal({categories,variantCats,onClose,onSave}){
   const [cats,setCats]=useState([...categories]);
+  const [vCats,setVCats]=useState([...(variantCats||[])]);
   const [newCat,setNewCat]=useState("");
+  const [newCatType,setNewCatType]=useState("sizes"); // "sizes" | "variants"
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,outline:"none"};
+  const addCat=()=>{
+    const n=newCat.trim();if(!n||cats.includes(n))return;
+    setCats([...cats,n]);
+    if(newCatType==="variants") setVCats([...vCats,n]);
+    setNewCat("");setNewCatType("sizes");
+  };
+  const removeCat=(i)=>{const name=cats[i];setCats(cats.filter((_,j)=>j!==i));setVCats(vCats.filter(v=>v!==name));};
+  const toggleType=(name)=>{setVCats(vc=>vc.includes(name)?vc.filter(v=>v!==name):[...vc,name]);};
   return(
-    <ModalWrap onClose={onClose} width={380}>
+    <ModalWrap onClose={onClose} width={420}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>Kategorien</div>
       <div style={{display:"flex",flexDirection:"column",gap:7}}>
-        {cats.map((c,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f8f8",borderRadius:10,padding:"10px 12px"}}><span style={{flex:1,fontSize:14,fontWeight:600}}>{c}</span><button type="button" onClick={()=>setCats(cats.filter((_,j)=>j!==i))} style={{background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:18}}>✕</button></div>)}
+        {cats.map((c,i)=>{
+          const isVar=vCats.includes(c);
+          return <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f8f8",borderRadius:10,padding:"10px 12px"}}>
+            <span style={{flex:1,fontSize:14,fontWeight:600}}>{c}</span>
+            <button type="button" onClick={()=>toggleType(c)}
+              style={{padding:"3px 8px",borderRadius:6,border:"1px solid #ddd",background:isVar?"#f0f0f0":"#fff",color:"#666",fontSize:10,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>
+              {isVar?"Farben":"Größen"}
+            </button>
+            <button type="button" onClick={()=>removeCat(i)} style={{background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:18}}>✕</button>
+          </div>;
+        })}
       </div>
-      <div style={{display:"flex",gap:8}}>
-        <input style={{...inp,flex:1}} placeholder="Neue Kategorie..." value={newCat} onChange={e=>setNewCat(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&newCat.trim()){setCats([...cats,newCat.trim()]);setNewCat("");}}}/>
-        <button type="button" onClick={()=>{if(newCat.trim()){setCats([...cats,newCat.trim()]);setNewCat("");}}} style={{padding:"11px 16px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}>+</button>
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        <div style={{display:"flex",gap:8}}>
+          <input style={{...inp,flex:1}} placeholder="Neue Kategorie..." value={newCat} onChange={e=>setNewCat(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addCat();}}/>
+          <button type="button" onClick={addCat} style={{padding:"11px 16px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}>+</button>
+        </div>
+        {newCat.trim()&&<div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:10,padding:3}}>
+          {[["sizes","Größen (XXS–3XL)",IC_SHIRT],["variants","Farbvarianten",IC_PAINT]].map(([v,lbl,Icon])=>(
+            <button key={v} type="button" onClick={()=>setNewCatType(v)} style={{flex:1,padding:"7px 12px",borderRadius:8,border:"none",background:newCatType===v?"#fff":"transparent",color:newCatType===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:12,boxShadow:newCatType===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+              <Icon size={12} color={newCatType===v?"#111":"#999"}/>{lbl}
+            </button>
+          ))}
+        </div>}
       </div>
       <div style={{display:"flex",gap:10}}>
         <button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700}}>Abbrechen</button>
-        <button type="button" onClick={()=>onSave(cats)} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Speichern</button>
+        <button type="button" onClick={()=>onSave(cats,vCats)} style={{flex:2,padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>Speichern</button>
       </div>
     </ModalWrap>
   );
@@ -2291,7 +2322,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               <div style={{background:"#ddfce6",borderRadius:14,padding:mobile?"18px 16px":"22px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid #bbf7d0",gap:10}}>
                 <div style={{flexShrink:0}}>
                   <div style={{fontSize:12,color:"#1a9a50",fontWeight:700,letterSpacing:0.8}}>GRAND TOTAL</div>
-                  <div style={{fontSize:11,color:"#86efac",marginTop:4}}>Blanks + DTF + Shopify − Verluste</div>
+
                 </div>
                 <div style={{...F_HEAD_STYLE,fontSize:mobile?26:38,fontWeight:900,color:"#111"}}>€{allTotal.toFixed(2)}</div>
               </div>
@@ -2328,7 +2359,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
         </div>
       )}
       {finTab==="blanks"&&<>{products.map(p=>{
-        const isCap=p.category==="Cap";
+        const isCap=(p.capColors?.length>0);
         const qty=isCap?(p.capColors||[]).reduce((a,c)=>a+c.stock,0):Object.values(p.stock||{}).reduce((a,b)=>a+b,0);
         const tot=p.buyPrice!=null?qty*p.buyPrice:null;
         const isOpen=open[p.id];
@@ -2952,7 +2983,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
               </div>
             </div>
             <div style={{maxHeight:340,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:6}}>
-              {products.filter(p=>p.category!=="Cap").map(p=>{
+              {products.filter(p=>!(p.capColors?.length>0)).map(p=>{
                 const stock = Object.values(p.stock||{}).reduce((a,b)=>a+b,0);
                 const sizeStock = (p.stock||{})[blankPickerData.size]||0;
                 return(
@@ -3635,7 +3666,7 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAdd}){
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,width:"100%",outline:"none",boxSizing:"border-box"};
   const prod=products.find(p=>p.id===selProd);
   const dtf=dtfItems.find(d=>d.id===selDtf);
-  const isCap=prod&&(prod.category==="Cap"||prod.category==="Bag");
+  const isCap=(prod?.capColors?.length>0);
   const totalQty=typ==="blank"?(isCap?(prod?.capColors||[]).reduce((a,c)=>a+(qty["cap_"+c.id]||0),0):DEFAULT_SIZES.reduce((a,s)=>a+(qty[s]||0),0)):parseInt(dtfMenge)||0;
 
   const doSave=()=>{
@@ -3673,24 +3704,32 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAdd}){
       {typ==="blank"&&<>
         <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8}}>BLANK AUSWÄHLEN</div>
         <BlankPicker products={products} value={selProd} onChange={v=>{setSelProd(v);setQty({});}}/>
-        {prod&&!isCap&&<div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-          {DEFAULT_SIZES.map(s=>(
-            <div key={s} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"#f8f8f8",borderRadius:10,padding:"8px 6px",flex:1,minWidth:50}}>
-              <span style={{fontSize:12,fontWeight:800,color:"#555"}}>{s}</span>
-              <input type="number" inputMode="numeric" min="0" value={qty[s]||""} onChange={e=>setQty(q=>({...q,[s]:parseInt(e.target.value)||0}))}
-                style={{width:48,textAlign:"center",border:"1px solid #e8e8e8",borderRadius:8,padding:"6px 2px",fontSize:16,fontWeight:900,outline:"none",background:"#fff"}}/>
-            </div>
-          ))}
+        {prod&&!isCap&&<div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+          {DEFAULT_SIZES.map(s=>{
+            const v=qty[s]||0;
+            return <div key={s} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:12,padding:"10px 6px"}}>
+              <span style={{fontSize:12,fontWeight:800,color:v>0?"#111":"#888"}}>{s}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:v>0?"#111":"#bbb",lineHeight:1}}>{v}</span>
+              <div style={{display:"flex",gap:4}}>
+                <button type="button" onClick={()=>setQty(q=>({...q,[s]:Math.max(0,(q[s]||0)-1)}))} style={btn(30,true,v===0)}>−</button>
+                <button type="button" onClick={()=>setQty(q=>({...q,[s]:(q[s]||0)+1}))} style={btn(30)}>+</button>
+              </div>
+            </div>;
+          })}
         </div>}
-        {prod&&isCap&&<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-          {(prod.capColors||[]).map(c=>(
-            <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f8f8",borderRadius:10,padding:"8px 12px",flex:1,minWidth:120}}>
-              <div style={{width:16,height:16,borderRadius:"50%",background:c.hex,border:"1.5px solid #444",flexShrink:0}}/>
-              <span style={{fontSize:12,fontWeight:700,flex:1}}>{c.name}</span>
-              <input type="number" inputMode="numeric" min="0" value={qty["cap_"+c.id]||""} onChange={e=>setQty(q=>({...q,["cap_"+c.id]:parseInt(e.target.value)||0}))}
-                style={{width:52,textAlign:"center",border:"1px solid #e8e8e8",borderRadius:8,padding:"6px 2px",fontSize:16,fontWeight:900,outline:"none",background:"#fff"}}/>
-            </div>
-          ))}
+        {prod&&isCap&&<div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+          {(prod.capColors||[]).map(c=>{
+            const v=qty["cap_"+c.id]||0;
+            return <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:12,padding:"10px 6px"}}>
+              <div style={{width:18,height:18,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/>
+              <span style={{fontSize:10,fontWeight:700,color:v>0?"#111":"#888",textAlign:"center",lineHeight:1.2}}>{c.name}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:v>0?"#111":"#bbb",lineHeight:1}}>{v}</span>
+              <div style={{display:"flex",gap:4}}>
+                <button type="button" onClick={()=>setQty(q=>({...q,["cap_"+c.id]:Math.max(0,(q["cap_"+c.id]||0)-1)}))} style={btn(30,true,v===0)}>−</button>
+                <button type="button" onClick={()=>setQty(q=>({...q,["cap_"+c.id]:(q["cap_"+c.id]||0)+1}))} style={btn(30)}>+</button>
+              </div>
+            </div>;
+          })}
         </div>}
       </>}
 
@@ -3850,18 +3889,16 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           }
           {Object.entries(bedarfMap).map(([blankId,sizeNeeds])=>{
             const blank=products.find(p=>p.id===blankId);if(!blank)return null;
-            const relKeys=Object.keys(sizeNeeds).filter(k=>{
-              const needed=sizeNeeds[k]||0;if(needed===0)return false;
-              const isCapKey=k.startsWith("cap_");
-              const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===k):null;
-              const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[k]||0);
-              const minStockVal=isCapKey?0:((blank.minStock||{})[k]||0);
-              return Math.max(0,needed+minStockVal-avail)>0;
-            });
-            if(relKeys.length===0)return null;
+            const isCap=!!(blank.capColors?.length>0);
+            // Show ALL sizes, not just needed ones
+            const allKeys=isCap
+              ?(blank.capColors||[]).map(cc=>"cap_"+cc.id+"_"+cc.name)
+              :DEFAULT_SIZES;
+            const relKeys=allKeys;
             const orderedQty=(key)=>(bestellungen||[]).filter(b=>!b.isDtf&&b.status==="offen"&&(b.blankId===blankId||b.produktId===blankId)&&b.sizeKey===key).reduce((a,b)=>a+(b.menge||0),0);
             const hasStCode=!!blank.stProductId;
-            const productKeys=relKeys.map(k=>blankId+"__"+k);
+            const activeKeys=relKeys.filter(k=>{const needed=sizeNeeds[k]||0;if(needed===0)return false;const isCapKey=k.startsWith("cap_");const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===k):null;const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[k]||0);const minStockVal=isCapKey?0:((blank.minStock||{})[k]||0);return Math.max(0,needed+minStockVal-avail)>0;});
+            const productKeys=activeKeys.map(k=>blankId+"__"+k);
             const allCsvSelected=hasStCode&&productKeys.every(k=>csvSelected[k]);
             const someCsvSelected=hasStCode&&productKeys.some(k=>csvSelected[k]);
             const toggleProduct=()=>{const next=!allCsvSelected;setCsvSelected(s=>{const n={...s};productKeys.forEach(k=>{if(next)n[k]=true;else delete n[k];});return n;});};
@@ -3879,12 +3916,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               const oQty=orderedQty(key);
               const remainMin=Math.max(0,toOrder-oQty);
               const remainMax=Math.max(0,toOrderMax-oQty);
-              // state: "red" | "orange" | "done"
-              const state=remainMin>0?"red":remainMax>0?"orange":"done";
+              // state: "red" | "orange" | "done" | "none"
+              const state=needed===0?"none":remainMin>0?"red":remainMax>0?"orange":"done";
               return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state};
             });
-            const allDone=tileData.every(t=>t.state==="done");
-            const activeTiles=tileData.filter(t=>t.state!=="done");
+            const allDone=tileData.every(t=>t.state==="done"||t.state==="none");
+            const activeTiles=tileData.filter(t=>t.state!=="done"&&t.state!=="none");
             const minSizes=activeTiles.filter(t=>t.remainMin>0).map(t=>({key:t.key,label:t.label,toOrder:t.remainMin}));
             const maxSizes=activeTiles.filter(t=>t.remainMax>0).map(t=>({key:t.key,label:t.label,toOrder:t.remainMax}));
             return(
@@ -3914,13 +3951,16 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 {!mobile?<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {tileData.map(t=>{
                     const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
+                    const isInactive=state==="done"||state==="none";
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                        background:state==="done"?"#f0f0f0":"#f8f8f8",
-                        borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer",opacity:state==="done"?0.6:1}}
+                        background:isInactive?"#f0f0f0":"#f8f8f8",
+                        borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer",opacity:state==="none"?0.35:state==="done"?0.6:1}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
-                        <span style={{...F_HEAD_STYLE,fontSize:16,color:state==="done"?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
-                        {state==="done"
+                        <span style={{...F_HEAD_STYLE,fontSize:16,color:isInactive?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
+                        {state==="none"
+                          ?<span style={{...F_HEAD_STYLE,fontSize:18,fontWeight:800,color:"#ccc",lineHeight:1}}>—</span>
+                          :state==="done"
                           ?<span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#bbb",lineHeight:1}}>✓</span>
                           :<div style={{display:"flex",alignItems:"baseline",gap:3}}>
                             <span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#e84142",lineHeight:1}}>{remainMin}</span>
@@ -3940,14 +3980,17 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 :<div style={{display:"flex",flexDirection:"column",gap:4}}>
                   {tileData.map(t=>{
                     const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor,minStockVal}=t;
+                    const isInactive=state==="done"||state==="none";
                     return(
                       <div key={key} onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                         style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,cursor:"pointer",
-                          background:state==="done"?"#f0f0f0":"#f8f8f8",opacity:state==="done"?0.6:1}}>
+                          background:isInactive?"#f0f0f0":"#f8f8f8",opacity:state==="none"?0.4:state==="done"?0.6:1}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
-                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:state==="done"?"#bbb":"#333",minWidth:40}}>{label}</span>
-                        <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#1a9a50":"#e84142"}}>{avail}</strong></div>
-                        {state==="done"
+                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:40}}>{label}</span>
+                        <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:isInactive?"#bbb":"#111"}}>{needed}</strong> · Lager: <strong style={{color:isInactive?"#bbb":avail>=needed?"#1a9a50":"#e84142"}}>{avail}</strong></div>
+                        {state==="none"
+                          ?<span style={{...F_HEAD_STYLE,fontSize:18,fontWeight:800,color:"#ccc",flexShrink:0}}>—</span>
+                          :state==="done"
                           ?<span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#bbb",flexShrink:0}}>✓</span>
                           :<div style={{display:"flex",alignItems:"baseline",gap:2,flexShrink:0}}>
                             <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#e84142"}}>{remainMin}</span>
@@ -3971,7 +4014,8 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                       <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800}}>{label}</span>
-                        <span style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:"#111"}}>{needed}</strong> · Lager: <strong style={{color:avail>=needed?"#1a9a50":"#e84142"}}>{avail}</strong></span>
+                        <span style={{fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:state==="none"?"#bbb":"#111"}}>{needed}</strong> · Lager: <strong style={{color:state==="none"?"#bbb":avail>=needed?"#1a9a50":"#e84142"}}>{avail}</strong></span>
+                        {state==="none"&&<span style={{fontSize:10,color:"#bbb",fontStyle:"italic"}}>Kein Bedarf</span>}
                         {minStockVal>0&&<span style={{fontSize:10,color:"#bbb"}}>· Soll: {minStockVal}</span>}
                         {t.oQty>0&&<span style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>· ✓ {t.oQty} bestellt</span>}
                         <div style={{marginLeft:"auto",display:"flex",gap:6}}>
@@ -4500,7 +4544,7 @@ function AppInner({currentUser,onLogout}){
   const log = (action) => logActivity(currentUser.name, action);
 
   // ── triggerSave (must be before setters that call it) ──────────
-  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories, nextVerluste, nextPromo)=>{
+  const triggerSave=useCallback((nextProducts, nextProds, nextDtf, nextBestellungen, nextCategories, nextVerluste, nextPromo, nextVariantCats)=>{
     if(!SHEETS_URL||isDemoRef.current)return;
     clearTimeout(saveTimeout.current);
     setSyncStatus("saving");
@@ -4512,7 +4556,8 @@ function AppInner({currentUser,onLogout}){
         nextBestellungen||bestellungenRef.current,
         nextCategories||categoriesRef.current,
         nextVerluste||verlusteRef.current,
-        nextPromo||promoRef.current
+        nextPromo||promoRef.current,
+        nextVariantCats||variantCatsRef.current
       )
         .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
         .catch(()=>setSyncStatus("error"));
@@ -4551,6 +4596,7 @@ function AppInner({currentUser,onLogout}){
       setVerluste(DEMO_DATA.verluste);verlusteRef.current=DEMO_DATA.verluste;
       setPromoGiftsRaw(DEMO_DATA.promoGifts);promoRef.current=DEMO_DATA.promoGifts;
       if(DEMO_DATA.categories)categoriesRef.current=DEMO_DATA.categories;__setCategories(DEMO_DATA.categories||DEFAULT_CATEGORIES);
+      if(DEMO_DATA.variantCats){variantCatsRef.current=DEMO_DATA.variantCats;__setVariantCats(DEMO_DATA.variantCats);}
       setSyncStatus("demo");
       return;
     }
@@ -4562,6 +4608,7 @@ function AppInner({currentUser,onLogout}){
       if(data?.products){__setProducts(data.products);productsRef.current=data.products;}
       if(data?.prods){__setProds(data.prods);prodsRef.current=data.prods;}
       if(data?.categories&&Array.isArray(data.categories)&&data.categories.length>0){categoriesRef.current=data.categories;__setCategories(data.categories);}
+      if(data?.variantCats&&Array.isArray(data.variantCats)){variantCatsRef.current=data.variantCats;__setVariantCats(data.variantCats);try{localStorage.setItem("gkbs_variant_cats",JSON.stringify(data.variantCats));}catch(e){}}
       // Merge remote logs with localStorage
       if(data?.logs && Array.isArray(data.logs)){
         try{
@@ -4776,6 +4823,10 @@ function AppInner({currentUser,onLogout}){
   const canUndo=historyRef.current.length>0;
 
   const [categories,__setCategories]=useState(DEFAULT_CATEGORIES);
+  const [variantCats,__setVariantCats]=useState(()=>{try{const s=localStorage.getItem("gkbs_variant_cats");return s?JSON.parse(s):DEFAULT_VARIANT_CATS;}catch(e){return DEFAULT_VARIANT_CATS;}});
+  const variantCatsRef=useRef(variantCats);
+  const setVariantCats=useCallback((vc)=>{variantCatsRef.current=vc;__setVariantCats(vc);try{localStorage.setItem("gkbs_variant_cats",JSON.stringify(vc));}catch(e){}triggerSave(null,null,null,null,null,null,null,vc);},[triggerSave]);
+  const isVariantCat=useCallback((cat)=>variantCatsRef.current.includes(cat),[]);
   const setCategories=useCallback((cats)=>{
     historyRef.current=[{products:productsRef.current,prods:prodsRef.current,categories:categoriesRef.current},...historyRef.current].slice(0,MAX_HISTORY);
     categoriesRef.current=cats;
@@ -4809,8 +4860,8 @@ function AppInner({currentUser,onLogout}){
   const textilVal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
   const dtfVal=dtfItems.reduce((a,d)=>{if(d.pricePerMeter==null)return a;const ppp=d.pricePerMeter/Math.max(1,d.designsPerMeter||1);return a+ppp*d.stock;},0);
   const totalVal=textilVal+dtfVal;
-  const lowCount=products.filter(p=>p.category==="Cap"?(p.capColors||[]).some(c=>c.stock>0&&c.stock<=LOW_STOCK):Object.values(p.stock||{}).some(v=>v>0&&v<=LOW_STOCK)).length;
-  const outCount=products.filter(p=>p.category==="Cap"?(p.capColors||[]).every(c=>c.stock===0):Object.values(p.stock||{}).every(v=>v===0)).length;
+  const lowCount=products.filter(p=>(p.capColors?.length>0)?(p.capColors||[]).some(c=>c.stock>0&&c.stock<=LOW_STOCK):Object.values(p.stock||{}).some(v=>v>0&&v<=LOW_STOCK)).length;
+  const outCount=products.filter(p=>(p.capColors?.length>0)?(p.capColors||[]).every(c=>c.stock===0):Object.values(p.stock||{}).every(v=>v===0)).length;
   const activeProdsArr=prods.filter(p=>p.status!=="Fertig");
   const bedarfCount=useMemo(()=>{
     const bm={};
@@ -5000,7 +5051,7 @@ function AppInner({currentUser,onLogout}){
     } catch(e) { console.warn("Shopify push failed",e); }
   };
 
-  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellungen","Bestellte Ware",IC_CART],["bestellbedarf","Bestellbedarf",IC_CHART],["shopify","Shopify",IC_SHOP],["finance","Finanzen",IC_DOLLAR]];
+  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["finance","Finanzen",IC_DOLLAR]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [showSettings,setShowSettings]=useState(false);
   const [appSettings,setAppSettings]=useState(()=>{try{const r=localStorage.getItem("gkbs_settings");return r?JSON.parse(r):{orderFilter:"oe"};}catch(e){return {orderFilter:"oe"};}});
@@ -5017,7 +5068,7 @@ function AppInner({currentUser,onLogout}){
 
   return(
     <div style={{minHeight:"100vh",background:"#f4f4f4",color:"#111",fontFamily:"'Space Grotesk', -apple-system, sans-serif"}}>
-      {showProdModal&&<ProductModal categories={categories} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onDelete={showProdModal!=="add"?()=>{const p=showProdModal;setProducts(ps=>ps.filter(x=>x.id!==p.id));const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];const total=SIZES.reduce((a,s)=>a+((p.stock||{})[s]||0),0);log(`Produkt gelöscht – ${p.name}${total>0?` | ${total} Stk im Lager`:""}`);setShowProdModal(false);}:undefined} onSave={p=>{
+      {showProdModal&&<ProductModal categories={categories} variantCats={variantCats} initial={showProdModal==="add"?null:showProdModal} onClose={()=>setShowProdModal(false)} onDelete={showProdModal!=="add"?()=>{const p=showProdModal;setProducts(ps=>ps.filter(x=>x.id!==p.id));const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];const total=SIZES.reduce((a,s)=>a+((p.stock||{})[s]||0),0);log(`Produkt gelöscht – ${p.name}${total>0?` | ${total} Stk im Lager`:""}`);setShowProdModal(false);}:undefined} onSave={p=>{
         try{
           if(showProdModal==="add"){
             setProducts(ps=>[...ps,p]);
@@ -5046,7 +5097,7 @@ function AppInner({currentUser,onLogout}){
   if(old?.priority!==p.priority) parts.push(`Priorität: ${old?.priority}→${p.priority}`);
   log(parts.length>0?`Auftrag bearbeitet – ${p.name} | ${parts.join(", ")}`:`Auftrag gespeichert – ${p.name}`);
 })();}setShowPAModal(false);}}/>}
-      {showCats&&<CategoryModal categories={categories} onClose={()=>setShowCats(false)} onSave={cats=>{setCategories(cats);setShowCats(false);}}/>}
+      {showCats&&<CategoryModal categories={categories} variantCats={variantCats} onClose={()=>setShowCats(false)} onSave={(cats,vCats)=>{setCategories(cats);setVariantCats(vCats);setShowCats(false);}}/>}
       {confirmDelete&&<DeleteConfirmModal name={confirmDelete.name} onConfirm={()=>{confirmDelete.onConfirm();setConfirmDelete(null);}} onCancel={()=>setConfirmDelete(null)}/>}
       {shopifyDebug.length>0&&(
         <div style={{position:"fixed",bottom:24,right:16,background:"#111",color:"#fff",borderRadius:12,padding:"12px 16px",zIndex:500,maxWidth:320,fontSize:12,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
@@ -5100,10 +5151,10 @@ function AppInner({currentUser,onLogout}){
             </button>
             <button onClick={()=>setShowSettings(true)} title="Einstellungen" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SETTINGS size={15} color="#555"/></button>
             {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>
-              <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
+              <button onClick={()=>setShowProdModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button></>}
             {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
-            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
-            {view==="bestellbedarf"&&<button onClick={()=>setShowManualBestell(true)} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Bestellen"}</button>}
+            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
+            {view==="bestellbedarf"&&<button onClick={()=>setShowManualBestell(true)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
             <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
               {currentUser.avatar}
             </button>
@@ -5113,31 +5164,35 @@ function AppInner({currentUser,onLogout}){
         {/* Tab bar – desktop only */}
         {!mobile&&<div style={{padding:"4px 24px 12px",marginTop:4}}>
           <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto",justifyContent:"center"}}>
-            {TABS.map(([v,lbl,Icon])=>(
+            {TABS.map(([v,lbl,Icon])=>{
+              const active=view===v;
+              return(
               <button key={v} onClick={()=>setView(v)}
-                style={{padding:"8px 18px",borderRadius:9,border:"none",background:view===v?"#fff":"transparent",color:view===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:view===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
-                <Icon size={15} color={view===v?"#111":"#bbb"}/>
+                style={{padding:"8px 18px",borderRadius:9,border:"none",background:active?"#e84142":"transparent",color:active?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:active?"0 1px 3px rgba(0,0,0,0.12)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap"}}>
+                <Icon size={15} color={active?"#fff":"#bbb"}/>
                 {lbl}
-                {v==="production"&&activeProdsArr.length>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
-                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
-                {v==="shopify"&&shopifyBadge>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
-                {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
+                {v==="production"&&activeProdsArr.length>0&&<span style={{background:active?"#fff":"#e84142",color:active?"#e84142":"#fff",borderRadius:20,padding:"1px 6px",fontSize:10,fontWeight:800}}>{activeProdsArr.length}</span>}
+                {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{background:active?"#fff":"#e84142",color:active?"#e84142":"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
+                {v==="shopify"&&shopifyBadge>0&&<span style={{background:active?"#fff":"#e84142",color:active?"#e84142":"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{shopifyBadge}</span>}
+                {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{background:active?"#fff":"#e84142",color:active?"#e84142":"#fff",borderRadius:20,padding:"1px 5px",fontSize:9,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
               </button>
-            ))}
+              );})}
           </div>
         </div>}
         {/* Mobile tab bar – top under header */}
         {mobile&&<div style={{display:"flex",padding:"8px 4px 6px",overflowX:"auto",justifyContent:"space-evenly"}}>
-          {TABS.map(([v,lbl,Icon])=>(
-            <button key={v} onClick={()=>setView(v)} style={{border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 6px",color:view===v?"#111":"#bbb",position:"relative",minWidth:0}}>
-              <Icon size={16} color={view===v?"#111":"#bbb"}/>
+          {TABS.map(([v,lbl,Icon])=>{
+            const active=view===v;
+            return(
+            <button key={v} onClick={()=>setView(v)} style={{border:"none",background:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 6px",color:active?"#e84142":"#bbb",position:"relative",minWidth:0}}>
+              <Icon size={16} color={active?"#e84142":"#bbb"}/>
               <span style={{fontSize:9,fontWeight:700,whiteSpace:"nowrap"}}>{lbl}</span>
               {v==="production"&&activeProdsArr.length>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{activeProdsArr.length}</span>}
               {v==="bestellungen"&&bestellungen.filter(b=>b.status==="offen").length>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{bestellungen.filter(b=>b.status==="offen").length}</span>}
               {v==="shopify"&&shopifyBadge>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{shopifyBadge}</span>}
               {v==="bestellbedarf"&&(bedarfCount+dtfBedarfCount)>0&&<span style={{position:"absolute",top:0,right:"18%",background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 5px",fontSize:8,fontWeight:800}}>{bedarfCount+dtfBedarfCount}</span>}
             </button>
-          ))}
+            );})}
         </div>}
       </div>
 
@@ -5249,10 +5304,10 @@ function AppInner({currentUser,onLogout}){
               onAdd={()=>setShowDtfModal("add")}/>}
             {inventoryTab==="textil"&&<>
             {/* Search + filters – scrollable */}
-            <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
+            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
               <input placeholder="Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
-                style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"9px 13px",fontSize:16,outline:"none",width:mobile?120:160,flexShrink:0}}/>
-              {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"8px 12px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
+                style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:9,color:"#111",padding:"6px 11px",fontSize:12,outline:"none",width:mobile?100:140,flexShrink:0,fontWeight:500}}/>
+              {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"6px 11px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
             </div>
             <div style={{display:"grid",gap:10,gridTemplateColumns:mobile?"1fr":"repeat(auto-fill, minmax(560px, 1fr))"}}>
               {filtered.length===0
