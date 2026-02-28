@@ -1255,7 +1255,7 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
       {!editing&&(
         <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:10}}>
           <IC_STELLA size={18} color="#bbb"/>
-          <div style={{fontSize:12,color:"#888"}}>Blanks über den <strong style={{color:"#555"}}>S/S Tab</strong> importieren</div>
+          <div style={{fontSize:12,color:"#888"}}>Stanley/Stella Blanks über den <strong style={{color:"#555"}}>S/S Tab</strong> hinzufügen</div>
         </div>
       )}
 
@@ -2555,9 +2555,13 @@ function StStImportModal({info, onClose, onConfirm}){
   const im = info;
   const hexVal = im.hexCode ? (im.hexCode.startsWith("#") ? im.hexCode : `#${im.hexCode}`) : "#888";
   const [stock, setStock] = useState(mkQty());
+  const [minStock, setMinStock] = useState(mkQty());
   const [fit, setFit] = useState(im.fit || "");
+  const [buyPrice, setBuyPrice] = useState(im.buyPrice ? String(im.buyPrice) : "");
   const adj = (sz, delta) => setStock(prev => ({...prev, [sz]: Math.max(0, (prev[sz]||0)+delta)}));
   const setVal = (sz, val) => { const n=parseInt(val)||0; setStock(prev=>({...prev,[sz]:Math.max(0,n)})); };
+  const adjMin = (sz, delta) => setMinStock(prev => ({...prev, [sz]: Math.max(0, (prev[sz]||0)+delta)}));
+  const setMinVal = (sz, val) => { const n=parseInt(val)||0; setMinStock(prev=>({...prev,[sz]:Math.max(0,n)})); };
   const totalQty = DEFAULT_SIZES.reduce((a,sz)=>a+(stock[sz]||0),0);
   const hasAnySizes = im.sizes && im.sizes.length > 0;
   return(
@@ -2582,6 +2586,16 @@ function StStImportModal({info, onClose, onConfirm}){
             color:fit===f?"#e84142":"#555",
             cursor:"pointer",fontWeight:800,fontSize:13}}>{f}</button>)}
       </div>
+      {/* EK-Preis */}
+      <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center"}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#555",width:70}}>EK-Preis</div>
+        <div style={{flex:1,position:"relative"}}>
+          <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#bbb",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span>
+          <input type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}
+            placeholder="z.B. 4.15" style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:28,fontSize:14,fontWeight:700,outline:"none",boxSizing:"border-box",color:buyPrice?"#1a9a50":"#ccc",background:buyPrice?"#f0fdf4":"#fafafa"}}/>
+        </div>
+        {im.buyPrice && <span style={{fontSize:10,color:"#bbb"}}>S/S: €{Number(im.buyPrice).toFixed(2)}</span>}
+      </div>
       {/* Stock per size */}
       <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Bestand pro Größe</div>
       <div style={{display:"flex",flexDirection:"column",gap:4}}>
@@ -2601,13 +2615,32 @@ function StStImportModal({info, onClose, onConfirm}){
           </div>;
         })}
       </div>
+      {/* Sollbestand (min stock) */}
+      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6,marginTop:12}}>Sollbestand (Minimum)</div>
+      <div style={{display:"flex",flexDirection:"column",gap:4}}>
+        {DEFAULT_SIZES.map(sz => {
+          const available = !hasAnySizes || im.sizes.includes(sz);
+          const qty = minStock[sz]||0;
+          return <div key={sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
+            <div style={{width:42,fontSize:13,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
+            <button onClick={()=>available&&adjMin(sz,-1)} disabled={!available||qty===0}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:qty>0?"#f08328":"#ccc",cursor:available&&qty>0?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+            <input type="number" value={qty||""} placeholder="0" onChange={e=>available&&setMinVal(sz,e.target.value)}
+              style={{width:56,height:32,borderRadius:8,border:"1px solid #e8e8e8",textAlign:"center",fontSize:14,fontWeight:800,color:qty>0?"#f08328":"#ccc",outline:"none",background:qty>0?"#fef6ed":"#fafafa"}}
+              disabled={!available}/>
+            <button onClick={()=>available&&adjMin(sz,1)} disabled={!available}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:available?"#f08328":"#ccc",cursor:available?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+            {qty>0 && <span style={{fontSize:11,color:"#f08328",fontWeight:700}}>{qty} Min</span>}
+          </div>;
+        })}
+      </div>
       {/* Actions */}
       <div style={{display:"flex",gap:8,marginTop:16}}>
         <button onClick={onClose} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
         <button onClick={()=>onConfirm({
           styleName:im.styleName, styleCode:im.styleCode, color:im.color, colorCode:im.colorCode,
           hexCode:hexVal, category:im.category, fit:fit, composition:im.composition,
-          stock:stock
+          stock:stock, minStock:minStock, buyPrice:parseFloat(buyPrice)||null
         })}
           style={{flex:1,padding:12,borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>
           Importieren{totalQty>0?` (${totalQty} Stk)`:""}
@@ -2716,6 +2749,35 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [importModal, setImportModal] = useState(null); // {styleName, styleCode, color, colorCode, hexCode, sizes, ...}
   const [colorHexMap, setColorHexMap] = useState({}); // ColorCode → "#hex"
   const [ststColorData, setStstColorData] = useState([]); // Full color objects [{code, name, hex, group}]
+  const [ststPrices, setStstPrices] = useState({}); // {StyleCode: price}
+
+  // Load S/S prices
+  const loadPrices = async () => {
+    if(!sheetsUrl) return;
+    try{const c=JSON.parse(localStorage.getItem("stst_prices"));if(c&&c.ts&&(Date.now()-c.ts)<24*60*60*1000&&c.data&&Object.keys(c.data).length>0){setStstPrices(c.data);return;}}catch(e){}
+    try {
+      const r = await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_prices"})});
+      const t = await r.text();
+      const d = JSON.parse(t);
+      if(d.error) { console.warn("[S/S Prices] Error:", d.error); return; }
+      let prices = d.prices;
+      if(prices && !Array.isArray(prices)) prices = prices.result || prices.data || [];
+      if(Array.isArray(prices) && prices.length > 0){
+        console.log("[S/S Prices] Fields:", Object.keys(prices[0]));
+        console.log("[S/S Prices] First:", JSON.stringify(prices[0]).substring(0,400));
+        const map = {};
+        prices.forEach(p => {
+          const style = p.StyleCode || p.Style || p.ProductCode || "";
+          let price = p.Price || p.UnitPrice || p.B2BPrice || p.SalesPrice || p.price || null;
+          if(price === null) for(const [k,v] of Object.entries(p)){ if(typeof v === "number" && v > 0 && v < 200) { price = v; break; } }
+          if(style && price != null) map[style] = typeof price === "string" ? parseFloat(price) : price;
+        });
+        console.log("[S/S Prices] Loaded", Object.keys(map).length, "prices");
+        setStstPrices(map);
+        try{localStorage.setItem("stst_prices",JSON.stringify({ts:Date.now(),data:map}));}catch(e){}
+      }
+    } catch(e) { console.warn("[S/S Prices] fetch error:", e); }
+  };
 
   // Load S/S color palette (ColorCode → hex)
   const loadColors = async () => {
@@ -2852,7 +2914,22 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     } catch(e) {}
   };
 
-  useEffect(() => { loadProducts(); loadStock(); loadColors(); }, [sheetsUrl]);
+  useEffect(() => { loadProducts(); loadStock(); loadColors(); loadPrices(); }, [sheetsUrl]);
+
+  // Eagerly load images for visible styles (first 20)
+  useEffect(() => {
+    if(!sheetsUrl || !filtered.length) return;
+    const toLoad = filtered.slice(0,20).filter(s => !imgCache[s.StyleCode]).map(s => s.StyleCode);
+    if(toLoad.length === 0) return;
+    // Load in batches of 3 to avoid flooding
+    let i = 0;
+    const loadNext = () => {
+      if(i >= toLoad.length) return;
+      const code = toLoad[i++];
+      loadImages(code).then(loadNext);
+    };
+    loadNext(); loadNext(); loadNext();
+  }, [filtered, sheetsUrl]);
 
   // Parse V2 response into displayable styles
   const styles = useMemo(() => {
@@ -2970,7 +3047,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
           <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:"#111"}}>Stanley/Stella</div>
           <div style={{fontSize:12,color:"#bbb"}}>{styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}</div>
         </div>
-        <button onClick={()=>{setStstProducts(null);setStstStock(null);setColorHexMap({});try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");}catch(e){}loadProducts(true);loadStock(true);loadColors();}}
+        <button onClick={()=>{setStstProducts(null);setStstStock(null);setColorHexMap({});setStstPrices({});try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");localStorage.removeItem("stst_prices");}catch(e){}loadProducts(true);loadStock(true);loadColors();loadPrices();}}
           style={{height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#f8f8f8",color:"#888",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:5}}>
           <IC_REFRESH size={12} color="#888"/> Neu laden
         </button>
@@ -3024,7 +3101,10 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       {/* Product List */}
       {!loading && !error && filtered.length === 0 && styles.length > 0 && <div style={{textAlign:"center",padding:40,color:"#bbb",fontSize:13}}>Keine Treffer für "{search}"</div>}
       {!loading && filtered.map(style => {
-        const colorGroups = groupByColor(style.Variants, style);
+        let colorGroups = groupByColor(style.Variants, style);
+        // If color filter active, show only that color
+        if(colorFilter !== "all") colorGroups = colorGroups.filter(cg => cg.colorCode === colorFilter);
+        if(colorGroups.length === 0) return null;
         const totalStock = getStyleStock(style);
         const isExpanded = !!expanded[style.StyleCode];
         const uniqueColors = colorGroups.length;
@@ -3120,7 +3200,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                         type:style.Type||"",
                         fit:style.Fit||"",
                         composition:style.CompositionList||"",
-                        sizes:sizes
+                        sizes:sizes,
+                        buyPrice:ststPrices[style.StyleCode]||""
                       });}}
                         style={{width:mobile?28:32,height:mobile?28:32,borderRadius:8,border:"1px solid",borderColor:alreadyImported?"#bbf7d0":"#e8e8e8",background:alreadyImported?"#f0fdf4":"#fff",color:alreadyImported?"#1a9a50":"#888",cursor:alreadyImported?"default":"pointer",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}
                         title={alreadyImported?"Bereits importiert":"Als Blank importieren"}>
@@ -5302,7 +5383,20 @@ function AppInner({currentUser,onLogout}){
   const [prioFilter,setPrioFilter]=useState("Alle");
   const dragItem=useRef(null),dragOver=useRef(null);
 
-  const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(!search||p.name.toLowerCase().includes(search.toLowerCase())));
+  const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(!search||p.name.toLowerCase().includes(search.toLowerCase())||((p.color||"").toLowerCase().includes(search.toLowerCase()))));
+  // Group filtered products by name, sorted alphabetically
+  const groupedProducts = useMemo(() => {
+    const groups = {};
+    filtered.forEach(p => {
+      const key = p.name || "Unbenannt";
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(p);
+    });
+    // Sort groups alphabetically, sort colors within group by color name
+    return Object.entries(groups)
+      .sort(([a],[b]) => a.localeCompare(b))
+      .map(([name, items]) => ({name, items: items.sort((a,b) => (a.color||"").localeCompare(b.color||""))}));
+  }, [filtered]);
   const totalQty=products.reduce((a,p)=>a+(totalStock(p)),0);
   const textilVal=products.reduce((a,p)=>{if(p.buyPrice==null)return a;const q=totalStock(p);return a+q*p.buyPrice;},0);
   const dtfVal=dtfItems.reduce((a,d)=>{if(d.pricePerMeter==null)return a;const ppp=d.pricePerMeter/Math.max(1,d.designsPerMeter||1);return a+ppp*d.stock;},0);
@@ -5652,8 +5746,8 @@ function AppInner({currentUser,onLogout}){
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} orderFilter={appSettings.orderFilter||"oe"} restockMins={restockMins} setRestockMins={setRestockMins} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
         {<div style={{display:view==="stanley"?"block":"none"}}><StanleyView sheetsUrl={sheetsUrl} products={products} onImportBlank={(info)=>{
           const newP={id:mkId(),name:info.styleName,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
-            buyPrice:"",stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
-            stock:info.stock||mkQty(),minStock:mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
+            buyPrice:info.buyPrice||"",stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
+            stock:info.stock||mkQty(),minStock:info.minStock||mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
           setProducts(ps=>[...ps,newP]);
           log(`Blank importiert – ${newP.name} ${info.color} (${info.styleCode}/${info.colorCode})`);
         }}/></div>}
@@ -5768,9 +5862,15 @@ function AppInner({currentUser,onLogout}){
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {filtered.length===0
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
-                :filtered.map(p=>(
-                  <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
-                    <ProductCard product={p} onUpdate={u=>{
+                :groupedProducts.map(group=>(
+                  <div key={group.name}>
+                    {(groupedProducts.length>1||group.items.length>1) && <div style={{fontSize:13,fontWeight:800,color:"#444",padding:"8px 2px 4px",display:"flex",alignItems:"center",gap:6}}>
+                      {group.name} <span style={{fontSize:11,color:"#bbb",fontWeight:600}}>{group.items.length} Farbe{group.items.length!==1?"n":""}</span>
+                    </div>}
+                    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {group.items.map(p=>(
+                      <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
+                        <ProductCard product={p} onUpdate={u=>{
   const old=products.find(x=>x.id===u.id);
   const changes=[];
   if(u.isCapOrder){
@@ -5786,8 +5886,12 @@ function AppInner({currentUser,onLogout}){
   const total=SIZES.reduce((a,s)=>a+((p.stock||{})[s]||0),0);
   log(`Produkt gelöscht – ${p.name}${total>0?` | ${total} Stk im Lager`:""}`);
 })();}})} onEdit={()=>setShowProdModal(p)}/>
+                      </div>
+                    ))}
+                    </div>
                   </div>
                 ))}
+
             </div>
             </>}
           </div>
