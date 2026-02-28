@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.9.3";
+const APP_VERSION = "v3.9.4";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -634,12 +634,40 @@ function VeredBadge({type}){
 
 
 // ─── Lightbox ─────────────────────────────────────────────────────
-function Lightbox({src,onClose}){
-  if(!src)return null;
+function Lightbox({src,onClose,photos,startIndex}){
+  const [idx,setIdx]=useState(startIndex||0);
+  const touchStart=useRef(null);
+  const swiped=useRef(false);
+  const srcs=photos&&photos.length>0?photos:(src?[src]:[]);
+  const isOpen=photos?startIndex!=null:!!src;
+  useEffect(()=>{if(startIndex!=null)setIdx(startIndex);},[startIndex]);
+  useEffect(()=>{
+    if(!isOpen)return;
+    const handler=(e)=>{
+      if(e.key==="Escape")onClose();
+      if(e.key==="ArrowLeft")setIdx(i=>i>0?i-1:srcs.length-1);
+      if(e.key==="ArrowRight")setIdx(i=>i<srcs.length-1?i+1:0);
+    };
+    window.addEventListener("keydown",handler);
+    return()=>window.removeEventListener("keydown",handler);
+  },[isOpen,srcs.length]);
+  if(!isOpen||srcs.length===0)return null;
+  const prev=()=>setIdx(i=>i>0?i-1:srcs.length-1);
+  const next=()=>setIdx(i=>i<srcs.length-1?i+1:0);
+  const onTouchStart=(e)=>{touchStart.current=e.touches[0].clientX;swiped.current=false;};
+  const onTouchEnd=(e)=>{if(touchStart.current==null)return;const diff=e.changedTouches[0].clientX-touchStart.current;touchStart.current=null;if(Math.abs(diff)>40){swiped.current=true;diff>0?prev():next();}};
+  const handleClose=(e)=>{if(swiped.current){swiped.current=false;return;}onClose();};
   return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:20}}>
-      <img src={src} alt="" style={{maxWidth:"100%",maxHeight:"100%",borderRadius:12,objectFit:"contain",boxShadow:"0 8px 60px rgba(0,0,0,0.5)"}}/>
-      <button onClick={onClose} style={{position:"absolute",top:16,right:16,width:36,height:36,borderRadius:"50%",border:"none",background:"rgba(255,255,255,0.15)",color:"#fff",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
+    <div onClick={handleClose} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:20,touchAction:"pan-y"}}>
+      <img src={srcs[idx]} alt="" onClick={e=>e.stopPropagation()} style={{maxWidth:"90%",maxHeight:"90%",borderRadius:12,objectFit:"contain",boxShadow:"0 8px 60px rgba(0,0,0,0.5)",userSelect:"none",WebkitUserDrag:"none"}}/>
+      <button onClick={(e)=>{e.stopPropagation();onClose();}} style={{position:"absolute",top:12,right:12,width:44,height:44,borderRadius:22,border:"none",background:"rgba(255,255,255,0.2)",color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)"}}>✕</button>
+      {srcs.length>1&&<>
+        <button onClick={e=>{e.stopPropagation();prev();}} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"none",background:"rgba(255,255,255,0.15)",color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
+        <button onClick={e=>{e.stopPropagation();next();}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",width:40,height:40,borderRadius:"50%",border:"none",background:"rgba(255,255,255,0.15)",color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
+        <div style={{position:"absolute",bottom:20,display:"flex",gap:6}}>
+          {srcs.map((_,i)=><div key={i} onClick={e=>{e.stopPropagation();setIdx(i);}} style={{width:8,height:8,borderRadius:"50%",background:i===idx?"#fff":"rgba(255,255,255,0.35)",cursor:"pointer"}}/>)}
+        </div>
+      </>}
     </div>
   );
 }
@@ -1045,9 +1073,9 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       {prod.photos?.length>0&&(
         <div style={{padding:mobile?"8px 16px":"8px 20px"}}>
           <div style={{display:"flex",gap:6,overflowX:"auto"}}>
-            {prod.photos.map((src,i)=><img key={i} src={src} alt="" onClick={()=>setLightbox(src)} style={{height:60,width:60,objectFit:"cover",borderRadius:8,border:"1px solid #ebebeb",flexShrink:0,cursor:"zoom-in"}}/>)}
+            {prod.photos.map((src,i)=><img key={i} src={src} alt="" onClick={()=>setLightbox(i)} style={{height:60,width:60,objectFit:"cover",borderRadius:8,border:"1px solid #ebebeb",flexShrink:0,cursor:"zoom-in"}}/>)}
           </div>
-          <Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>
+          <Lightbox photos={prod.photos} startIndex={lightbox} onClose={()=>setLightbox(null)}/>
         </div>
       )}
 
@@ -1421,7 +1449,21 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
   const isCap=(blank?.capColors?.length>0);
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
   const toggleV=(v)=>setVeredelung(vs=>vs.includes(v)?vs.filter(x=>x!==v):[...vs,v]);
-  const handlePhotos=(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;files.slice(0,rem).forEach(f=>{const r=new FileReader();r.onload=ev=>setPhotos(ps=>[...ps,ev.target.result]);r.readAsDataURL(f);});};
+  const compressPhoto=(file)=>new Promise((resolve)=>{
+    const img=new Image();const r=new FileReader();
+    r.onload=ev=>{
+      img.onload=()=>{
+        const MAX=800;let w=img.width,h=img.height;
+        if(w>MAX||h>MAX){const s=Math.min(MAX/w,MAX/h);w=Math.round(w*s);h=Math.round(h*s);}
+        const c=document.createElement("canvas");c.width=w;c.height=h;
+        const ctx=c.getContext("2d");ctx.drawImage(img,0,0,w,h);
+        resolve(c.toDataURL("image/jpeg",0.75));
+      };
+      img.src=ev.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+  const handlePhotos=async(e)=>{const files=Array.from(e.target.files);const rem=5-photos.length;for(const f of files.slice(0,rem)){const compressed=await compressPhoto(f);setPhotos(ps=>[...ps,compressed]);}};
   const doSaveProd = () => {
     if(!name.trim()||!blankId||veredelung.length===0) return;
     onSave({id:initial?.id||Date.now().toString(),name:name.trim(),blankId,notes,priority,status:initial?.status||"Geplant",veredelung,designUrl,colorHex:blank?.colorHex||"#000000",photos,dtfId:dtfId||null,isCapOrder:isCap,qty,done,capColors,shopifyProductLink:shopifyProductLink||null});
@@ -1517,10 +1559,10 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
         <div style={S.secLabel}>FOTOS (max. 5)</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
           {photos.map((src,i)=><div key={i} style={{position:"relative"}}>
-              <img src={src} alt="" onClick={()=>setModalLightbox(src)} style={{width:64,height:64,objectFit:"cover",borderRadius:10,border:"1px solid #ebebeb",cursor:"zoom-in"}}/>
+              <img src={src} alt="" onClick={()=>setModalLightbox(i)} style={{width:64,height:64,objectFit:"cover",borderRadius:10,border:"1px solid #ebebeb",cursor:"zoom-in"}}/>
               <button type="button" onClick={()=>setPhotos(ps=>ps.filter((_,j)=>j!==i))} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:"50%",border:"none",background:"#e84142",color:"#fff",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
             </div>)}
-          <Lightbox src={modalLightbox} onClose={()=>setModalLightbox(null)}/>
+          <Lightbox photos={photos} startIndex={modalLightbox} onClose={()=>setModalLightbox(null)}/>
           {photos.length<5&&<button type="button" onClick={()=>fileRef.current.click()} style={{width:64,height:64,borderRadius:10,border:"2px dashed #e8e8e8",background:"#fafafa",color:"#bbb",cursor:"pointer",fontSize:24,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
           <input ref={fileRef} type="file" accept="image/*" multiple style={{display:"none"}} onChange={handlePhotos}/>
         </div>
@@ -1894,9 +1936,9 @@ function BestellbedarfModal({prods,products,onClose}){
                       <div style={S.pillLbl(ok)}>PRODUKTION</div>
                       <div style={S.pillNum(ok)}>{toOrder}</div>
                     </div>
-                    {minStock>0&&<div style={{background:okWithMin?"#ddfce6":"#fef6ed",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#fcd5a8"}`}}>
-                      <div style={{fontSize:9,color:okWithMin?"#1a9a50":"#f08328",fontWeight:700}}>MAX</div>
-                      <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:okWithMin?"#1a9a50":"#f08328",lineHeight:1}}>{toOrderWithMin}</div>
+                    {minStock>0&&<div style={{background:okWithMin?"#ddfce6":"#f0fdf4",borderRadius:8,padding:"4px 10px",textAlign:"center",minWidth:52,border:`1px solid ${okWithMin?"#bbf7d0":"#bbf7d0"}`}}>
+                      <div style={{fontSize:9,color:okWithMin?"#1a9a50":"#1a9a50",fontWeight:700}}>MAX</div>
+                      <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:okWithMin?"#1a9a50":"#1a9a50",lineHeight:1}}>{toOrderWithMin}</div>
                     </div>}
                   </div>
                   {openSize===`${blankId}-${key}`&&(
@@ -3945,9 +3987,9 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":ok?"#1a9a50":"#e84142",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                       </button>
                       {minStock>0&&<button type="button" disabled={dtfOrdered} onClick={()=>onBestellenDtf&&onBestellenDtf(dtf,toOrderWithMin)}
-                        style={{background:dtfOrdered?"#f0f0f0":okWithMin?"#ddfce6":"#fef6ed",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#ddd":okWithMin?"#bbf7d0":"#fcd5a8"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
-                        <div style={{fontSize:9,color:dtfOrdered?"#bbb":okWithMin?"#1a9a50":"#f08328",fontWeight:700}}>{dtfOrdered?"":"MAX"}</div>
-                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":okWithMin?"#1a9a50":"#f08328",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderWithMinM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
+                        style={{background:dtfOrdered?"#f0f0f0":okWithMin?"#ddfce6":"#f0fdf4",borderRadius:8,padding:"4px 10px",textAlign:"center",width:60,border:`1px solid ${dtfOrdered?"#ddd":okWithMin?"#bbf7d0":"#bbf7d0"}`,cursor:dtfOrdered?"not-allowed":"pointer",flexShrink:0,opacity:dtfOrdered?0.5:1}}>
+                        <div style={{fontSize:9,color:dtfOrdered?"#bbb":okWithMin?"#1a9a50":"#1a9a50",fontWeight:700}}>{dtfOrdered?"":"MAX"}</div>
+                        <div style={{fontSize:dtfOrdered?10:18,fontWeight:900,color:dtfOrdered?"#bbb":okWithMin?"#1a9a50":"#1a9a50",lineHeight:1,...F_HEAD_STYLE}}>{dtfOrdered?"best.":toOrderWithMinM}{!dtfOrdered&&unit==="m"&&<span style={{fontSize:11}}> m</span>}</div>
                       </button>}
                     </div>
                   </div>
@@ -4016,12 +4058,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allDone||minSizes.length===0}
-                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef6ed",color:allDone?"#bbb":"#f08328",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fed7aa",letterSpacing:0.5}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef1f0",color:allDone?"#bbb":"#e84142",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
                       MIN
                     </button>
                     <button type="button" disabled={allDone||maxSizes.length===0}
-                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef1f0",color:allDone?"#bbb":"#e84142",fontSize:11,fontWeight:800,cursor:allDone||maxSizes.length===0?"not-allowed":"pointer",opacity:allDone||maxSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#f0fdf4",color:allDone?"#bbb":"#1a9a50",fontSize:11,fontWeight:800,cursor:allDone||maxSizes.length===0?"not-allowed":"pointer",opacity:allDone||maxSizes.length===0?0.5:1,border:"1px solid #bbf7d0",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
                       MAX
                     </button>
@@ -4046,10 +4088,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
                         {/* Row 1: MIN label MAX */}
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                          <span onClick={e=>{e.stopPropagation();setCq(remainMin);}} style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#f08328",lineHeight:1,cursor:"pointer"}}>{remainMin}</span>
+                          <span onClick={e=>{e.stopPropagation();setCq(remainMin);}} style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#e84142",lineHeight:1,cursor:"pointer"}}>{remainMin}</span>
                           <span style={{...F_HEAD_STYLE,fontSize:16,color:isInactive?"#bbb":"#555",fontWeight:800,lineHeight:1}}>{label}</span>
                           {minStockVal>0&&remainMax!==remainMin
-                            ?<span onClick={e=>{e.stopPropagation();setCq(remainMax);}} style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#e84142",lineHeight:1,cursor:"pointer"}}>{remainMax}</span>
+                            ?<span onClick={e=>{e.stopPropagation();setCq(remainMax);}} style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#1a9a50",lineHeight:1,cursor:"pointer"}}>{remainMax}</span>
                             :<span style={{width:16}}/>}
                         </div>
                         {/* Row 2: - qty + (always shown) */}
@@ -4062,7 +4104,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         </div>
                         {/* Row 3: SOLL + ON STOCK + CSV */}
                         <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:6}}>
-                          {minStockVal>0&&<span style={{fontSize:9,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
+                          {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":avail===0?"#e84142":"#888"}}>{avail}</strong></span>
                             {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
@@ -4099,14 +4141,19 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                           background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",opacity:state==="none"?0.5:state==="done"?0.65:1,border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent")}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:32}}>{label}</span>
-                        <div style={{fontSize:10,color:"#888",flexShrink:0}}>
-                          <StockBadge value={avail} size={18}/>
-                        </div>
+                        {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
+                          style={{padding:"1px 5px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
+                          CSV
+                        </button>}
                         <div style={{flex:1}}/>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:0,flexShrink:0,marginRight:8}}>
+                          {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
+                          <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":avail===0?"#e84142":"#888"}}>{avail}</strong></span>
+                        </div>
                         <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
                           <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
                             style={{width:28,height:28,borderRadius:7,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:16,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-                          <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:24,textAlign:"center"}}>{cq}</span>
+                          <span onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)} style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:24,textAlign:"center",cursor:"pointer"}}>{cq}</span>
                           <button type="button" onClick={()=>setCq(cq+1)}
                             style={{width:28,height:28,borderRadius:7,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:16,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                         </div>
