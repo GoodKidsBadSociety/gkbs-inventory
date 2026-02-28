@@ -66,7 +66,7 @@ async function sheetsLogActivity(user, action){
   }catch(e){}
 }
 
-async function sheetsSave(products, prods, dtfItems, bestellungen, categories, verluste, promoGifts, variantCats) {
+async function sheetsSave(products, prods, dtfItems, bestellungen, categories, verluste, promoGifts, variantCats, bedarfQty) {
   const url = SHEETS_URL;
   if (!url) return;
   try {
@@ -74,7 +74,7 @@ async function sheetsSave(products, prods, dtfItems, bestellungen, categories, v
       method: "POST",
       redirect: "follow",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories, verluste, promoGifts, variantCats }),
+      body: JSON.stringify({ action: "save", products, prods, dtfItems, bestellungen, categories, verluste, promoGifts, variantCats, bedarfQty: bedarfQty || {} }),
     });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 }
@@ -1452,19 +1452,6 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
         </div>}
         </div>
       </div>
-      <input style={inp} placeholder="Design-Link" value={designUrl} onChange={e=>setDesignUrl(e.target.value)}/>
-      <div>
-        <div style={S.secLabel}>FOTOS (max. 5)</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-          {photos.map((src,i)=><div key={i} style={{position:"relative"}}>
-              <img src={src} alt="" onClick={()=>setModalLightbox(src)} style={{width:64,height:64,objectFit:"cover",borderRadius:10,border:"1px solid #ebebeb",cursor:"zoom-in"}}/>
-              <button type="button" onClick={()=>setPhotos(ps=>ps.filter((_,j)=>j!==i))} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:"50%",border:"none",background:"#e84142",color:"#fff",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
-            </div>)}
-          <Lightbox src={modalLightbox} onClose={()=>setModalLightbox(null)}/>
-          {photos.length<5&&<button type="button" onClick={()=>fileRef.current.click()} style={{width:64,height:64,borderRadius:10,border:"2px dashed #e8e8e8",background:"#fafafa",color:"#bbb",cursor:"pointer",fontSize:24,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
-          <input ref={fileRef} type="file" accept="image/*" multiple style={{display:"none"}} onChange={handlePhotos}/>
-        </div>
-      </div>
       <div>
         <div style={S.secLabel}>BLANK VERKNÜPFEN</div>
         <select value={blankId} onChange={e=>{
@@ -1477,10 +1464,19 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
             <option key={p.id} value={p.id}>{p.name}{p.color?" · "+p.color:""} · {p.category}</option>
           ))}
         </select>
-        {blank&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"#f8f8f8",border:"1px solid #e8e8e8"}}>
+        {blank&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"#f8f8f8",border:"1px solid #e8e8e8",marginTop:6}}>
           <SmartDot item={blank} size={20}/>
           <div><div style={{fontSize:13,fontWeight:700}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color||""} · {blank.category}</div></div>
         </div>}
+      </div>
+      {/* Shopify Verknüpfung */}
+      <div>
+        <div style={S.secLabel}>SHOPIFY PRODUKT VERKNÜPFEN</div>
+        <ShopifyProdPicker
+          sheetsUrl={SHEETS_URL}
+          value={shopifyProductLink}
+          onChange={setShopifyProductLink}
+        />
       </div>
       {isCap?(
         <div>
@@ -1517,14 +1513,17 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
           </div>
         </div>
       )}
-      {/* Shopify Verknüpfung */}
       <div>
-        <div style={S.secLabel}>SHOPIFY PRODUKT VERKNÜPFEN</div>
-        <ShopifyProdPicker
-          sheetsUrl={SHEETS_URL}
-          value={shopifyProductLink}
-          onChange={setShopifyProductLink}
-        />
+        <div style={S.secLabel}>FOTOS (max. 5)</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+          {photos.map((src,i)=><div key={i} style={{position:"relative"}}>
+              <img src={src} alt="" onClick={()=>setModalLightbox(src)} style={{width:64,height:64,objectFit:"cover",borderRadius:10,border:"1px solid #ebebeb",cursor:"zoom-in"}}/>
+              <button type="button" onClick={()=>setPhotos(ps=>ps.filter((_,j)=>j!==i))} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:"50%",border:"none",background:"#e84142",color:"#fff",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>
+            </div>)}
+          <Lightbox src={modalLightbox} onClose={()=>setModalLightbox(null)}/>
+          {photos.length<5&&<button type="button" onClick={()=>fileRef.current.click()} style={{width:64,height:64,borderRadius:10,border:"2px dashed #e8e8e8",background:"#fafafa",color:"#bbb",cursor:"pointer",fontSize:24,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
+          <input ref={fileRef} type="file" accept="image/*" multiple style={{display:"none"}} onChange={handlePhotos}/>
+        </div>
       </div>
     </ModalWrap>
   );
@@ -3812,14 +3811,15 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAddProd,onA
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount,bedarfQty,setBedarfQty}){
   const mobile = useIsMobile();
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
   const [allModal,setAllModal]=useState(null);
   const [csvSelected,setCsvSelected]=useState({});
-  const [customQty,setCustomQty]=useState({});
+  const customQty=bedarfQty;
+  const setCustomQty=setBedarfQty;
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -3881,7 +3881,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     const items=breakdownMap[blankId]?.[key]||[];
     const orderQty=cq!=null?cq:t.remainMax;
     return(
-      <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"8px 10px",display:"flex",alignItems:"stretch",gap:6,flexBasis:"100%",width:"100%",marginTop:4,marginBottom:2}}>
+      <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"8px 10px",display:"flex",alignItems:"stretch",gap:6,marginTop:6}}>
         <div style={{flex:1,display:"flex",flexDirection:"column",gap:3}}>
           {items.length>0&&items.map((item,i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
@@ -3894,9 +3894,8 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           {t.oQty>0&&<div style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {t.oQty} bestellt</div>}
         </div>
         <button type="button" disabled={orderQty===0} onClick={()=>{if(orderQty>0){onBestellen(blank,key,isCapKey,capColor,orderQty);setCustomQty(q=>({...q,[cqKey]:0}));}}}
-          style={{background:orderQty===0?"#f0f0f0":"#1a9a50",borderRadius:10,padding:"6px 14px",border:"none",cursor:orderQty===0?"not-allowed":"pointer",opacity:orderQty===0?0.5:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,minWidth:56}}>
-          <div style={{fontSize:9,color:orderQty===0?"#bbb":"#fff",fontWeight:700}}>BESTELLEN</div>
-          <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:orderQty===0?"#bbb":"#fff",lineHeight:1}}>{orderQty}</div>
+          style={{background:orderQty===0?"#f0f0f0":"#1a9a50",borderRadius:10,padding:"0 16px",border:"none",cursor:orderQty===0?"not-allowed":"pointer",opacity:orderQty===0?0.5:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:11,fontWeight:800,color:orderQty===0?"#bbb":"#fff",letterSpacing:0.5}}>
+          ORDER
         </button>
       </div>
     );
@@ -4057,7 +4056,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flex:1}} onClick={e=>e.stopPropagation()}>
                           <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
                             style={{width:34,height:34,borderRadius:9,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:18,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-                          <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:cq>0?"#111":"#ccc",lineHeight:1,minWidth:28,textAlign:"center"}}>{cq}</span>
+                          <span onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:cq>0?"#111":"#ccc",lineHeight:1,minWidth:28,textAlign:"center",cursor:"pointer"}}>{cq}</span>
                           <button type="button" onClick={()=>setCq(cq+1)}
                             style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                         </div>
@@ -4597,6 +4596,7 @@ function AppInner({currentUser,onLogout}){
   const [prods,__setProds]=useState([]);
   const [bestellungen,__setBestellungen]=useState([]);
   const [dtfItems,__setDtfItems]=useState([]);
+  const [bedarfQty,setBedarfQty]=useState({});
   const [syncStatus,setSyncStatus]=useState(isDemo?"demo":"idle");
   const [shopifyDebug,setShopifyDebug]=useState([]);
   useEffect(()=>{if(shopifyDebug.length>0){const t=setTimeout(()=>setShopifyDebug([]),3500);return ()=>clearTimeout(t);}},[shopifyDebug]);
@@ -4612,6 +4612,7 @@ function AppInner({currentUser,onLogout}){
   const bestellungenRef=useRef([]);
   const verlusteRef=useRef([]);
   const promoRef=useRef([]);
+  const bedarfQtyRef=useRef({});
 
   const log = (action) => logActivity(currentUser.name, action);
 
@@ -4629,12 +4630,17 @@ function AppInner({currentUser,onLogout}){
         nextCategories||categoriesRef.current,
         nextVerluste||verlusteRef.current,
         nextPromo||promoRef.current,
-        nextVariantCats||variantCatsRef.current
+        nextVariantCats||variantCatsRef.current,
+        bedarfQtyRef.current
       )
         .then(()=>{setSyncStatus("ok");setTimeout(()=>setSyncStatus("idle"),2000);})
         .catch(()=>setSyncStatus("error"));
     },1500);
   },[]);
+
+  // ── Sync bedarfQty ref + save on change ──
+  const bedarfQtyInit=useRef(false);
+  useEffect(()=>{bedarfQtyRef.current=bedarfQty;if(bedarfQtyInit.current)triggerSave();bedarfQtyInit.current=true;},[bedarfQty]);
 
   // ── Setters ────────────────────────────────────────────────────
   const setDtfItems = useCallback((updater) => {
@@ -4740,6 +4746,8 @@ function AppInner({currentUser,onLogout}){
           if(raw){const p=JSON.parse(raw);setPromoGiftsRaw(p);promoRef.current=p;}
         }
       }catch(e){}
+      // Load bedarfQty
+      if(data?.bedarfQty && typeof data.bedarfQty==="object"){setBedarfQty(data.bedarfQty);}
       setSyncStatus(data?"ok":"error");
       setTimeout(()=>setSyncStatus("idle"),2000);
     });
@@ -5290,7 +5298,7 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{const item=bestellungen.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name||(item.isDtf?"DTF-Bestellung":"Bestellung"),onConfirm:()=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");setConfirmDelete(null);}});}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} bedarfCount={bedarfCount} dtfBedarfCount={dtfBedarfCount} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} bedarfCount={bedarfCount} dtfBedarfCount={dtfBedarfCount} bedarfQty={bedarfQty} setBedarfQty={setBedarfQty} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
   const dpm=dtf.designsPerMeter||1;
   const meter=dpm>1?Math.ceil(menge/dpm):null;
   setBestellModal({blank:{...dtf,category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
