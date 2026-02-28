@@ -3262,13 +3262,13 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
             {/* Expanded: Color groups with size matrix */}
             {isExpanded && (
-              <div style={{padding:"0 16px 16px",display:"flex",flexDirection:"column",gap:8}}>
+              <div style={{padding:mobile?"0 8px 12px":"0 16px 16px",display:"flex",flexDirection:"column",gap:8}}>
                 {/* Info bar */}
                 {style.ShortDescription && <div style={{fontSize:11,color:"#888",padding:"6px 0",borderTop:"1px solid #f0f0f0"}}>{style.ShortDescription}{style.Fit ? ` · ${style.Fit}` : ""}{style.CompositionList ? ` · ${style.CompositionList}` : ""}</div>}
 
                 {/* Size header */}
-                <div style={{display:"flex",gap:4,alignItems:"center",paddingLeft:mobile?80:120}}>
-                  {sizes.map(sz => <div key={sz} style={{width:mobile?38:48,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>{SZ(sz)}</div>)}
+                <div style={{display:"flex",gap:4,alignItems:"center",paddingLeft:mobile?60:120}}>
+                  {sizes.map(sz => <div key={sz} style={{flex:mobile?1:undefined,width:mobile?undefined:48,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>{SZ(sz)}</div>)}
                   <div style={{width:50,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>TOTAL</div>
                 </div>
 
@@ -3285,21 +3285,21 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                   return(
                     <div key={cg.colorCode} style={{display:"flex",gap:4,alignItems:"center"}}>
                       {/* Color label */}
-                      <div style={{width:mobile?76:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+                      <div style={{width:mobile?56:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
                         <div style={{width:16,height:16,borderRadius:5,background:cg.hexCode?(cg.hexCode.startsWith("#")?cg.hexCode:`#${cg.hexCode}`):"#ddd",border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
                         <div style={{overflow:"hidden",minWidth:0}}>
-                          <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
-                          <div style={{fontSize:9,color:"#bbb",fontWeight:600}}>{cg.colorCode}</div>
+                          <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:mobile?2:1,WebkitBoxOrient:"vertical",whiteSpace:mobile?"normal":"nowrap",lineHeight:1.2}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
+                          {!mobile&&<div style={{fontSize:9,color:"#bbb",fontWeight:600}}>{cg.colorCode}</div>}
                         </div>
                       </div>
                       {/* Size tiles */}
                       {sizes.map(sz => {
                         const v = cg.variants.find(v => v.SizeCode === sz);
-                        if(!v) return <div key={sz} style={{width:mobile?38:48,height:36,borderRadius:6,background:"#fafafa"}}></div>;
+                        if(!v) return <div key={sz} style={{flex:mobile?1:undefined,width:mobile?undefined:48,height:36,borderRadius:6,background:"#fafafa"}}></div>;
                         const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
                         const stk = getStock(sku);
                         return(
-                          <div key={sz} style={{width:mobile?38:48,height:36,borderRadius:8,background:stk===null?"#f8f8f8":stk===0?"#fef1f0":stk<20?"#fef6ed":"#ecfdf3",
+                          <div key={sz} style={{flex:mobile?1:undefined,width:mobile?undefined:48,height:36,borderRadius:8,background:stk===null?"#f8f8f8":stk===0?"#fef1f0":stk<20?"#fef6ed":"#ecfdf3",
                             display:"flex",alignItems:"center",justifyContent:"center",
                             border:"1px solid",borderColor:stk===null?"#eee":stk===0?"#f5c6c6":stk<20?"#fde0b8":"#bbf7d0"}}>
                             <span style={{fontSize:12,fontWeight:800,color:stk===null?"#ccc":stk===0?"#e84142":stk<20?"#f08328":"#1a9a50"}}>{stk===null?"…":stk}</span>
@@ -3332,18 +3332,6 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                   );
                 })}
 
-                {/* Quick info: linked GKBS products */}
-                {(()=>{
-                  const linked = products.filter(p => 
-                    (p.name||"").toLowerCase().includes((style.StyleName||"").toLowerCase()) ||
-                    (p.supplier||"").toLowerCase().includes("stanley") ||
-                    (p.supplier||"").toLowerCase().includes("s/s")
-                  );
-                  if(linked.length === 0) return null;
-                  return <div style={{fontSize:11,color:"#1a9a50",fontWeight:700,marginTop:4,padding:"4px 0",borderTop:"1px solid #f0f0f0"}}>
-                    ✓ GKBS: {linked.map(p=>p.name).join(", ")}
-                  </div>;
-                })()}
               </div>
             )}
           </div>
