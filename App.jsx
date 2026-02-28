@@ -2857,28 +2857,26 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
   // Fallback: extract prices from V2 products data (runs after products load)
   useEffect(() => {
-    if(Object.keys(ststPrices).length > 0 || !ststProducts) return;
-    const prods = Array.isArray(ststProducts) ? ststProducts : [];
-    if(prods.length === 0) return;
-    const map = {};
-    prods.forEach(s => {
-      const sc = s.StyleCode || "";
-      // Try various price fields on style level
-      let pr = s.Price || s.B2BPrice || s.UnitPrice || s.SalesPrice || s.price || null;
-      // Try on variant level
-      if(pr == null && s.Variants && s.Variants.length > 0) {
-        const v = s.Variants[0];
-        pr = v.Price || v.B2BPrice || v.UnitPrice || v.SalesPrice || v.price || null;
+    try {
+      if(Object.keys(ststPrices).length > 0 || !ststProducts) return;
+      const prods = Array.isArray(ststProducts) ? ststProducts : [];
+      if(prods.length === 0) return;
+      const map = {};
+      prods.forEach(s => {
+        const sc = s.StyleCode || "";
+        let pr = s.Price || s.B2BPrice || s.UnitPrice || s.SalesPrice || s.price || null;
+        if(pr == null && s.Variants && s.Variants.length > 0) {
+          const v = s.Variants[0];
+          pr = v.Price || v.B2BPrice || v.UnitPrice || v.SalesPrice || v.price || null;
+        }
+        if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
+      });
+      if(Object.keys(map).length > 0) {
+        console.log("[S/S Prices] Extracted from products:", Object.keys(map).length);
+        setStstPrices(map);
+        try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
       }
-      if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
-    });
-    if(Object.keys(map).length > 0) {
-      console.log("[S/S Prices] Extracted from products:", Object.keys(map).length, "Sample:", Object.entries(map).slice(0,3));
-      setStstPrices(map);
-      try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
-    } else {
-      console.log("[S/S Prices] No prices found in product data either. Check Console for [S/S Prices] logs.");
-    }
+    } catch(e) { console.warn("[S/S Prices] Fallback error:", e); }
   }, [ststProducts, ststPrices]);
 
   // Load S/S color palette (ColorCode → hex)
@@ -4359,30 +4357,28 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const customQty=bedarfQty;
   const setCustomQty=setBedarfQty;
 
-  // Read S/S stock from localStorage cache
-  const ststStock = useMemo(() => {
-    try { const c = JSON.parse(localStorage.getItem("stst_stock")); if(c && c.data) return c.data; } catch(e) {}
-    return null;
-  }, []);
+  // Read S/S stock from localStorage cache (safe, no hooks)
+  let ststStock = null;
+  try { const c = JSON.parse(localStorage.getItem("stst_stock")); if(c && c.data) ststStock = c.data; } catch(e) {}
   // Helper: look up S/S stock for a blank + our size key
-  const SS_SIZE_MAP = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
-  const SS_SIZE_ALT = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
   const getSsStock = (blank, sizeKey) => {
-    if(!ststStock || !blank.stProductId || !blank.stColorCode) return null;
-    const sc = blank.stProductId, cc = blank.stColorCode;
-    // Try multiple SKU patterns
-    const tries = [
-      sc + cc + (SS_SIZE_MAP[sizeKey]||sizeKey),
-      sc + cc + (SS_SIZE_ALT[sizeKey]||sizeKey),
-      sc + cc + sizeKey,
-    ];
-    for(const sku of tries) { if(ststStock[sku] !== undefined) return ststStock[sku]; }
-    // Brute-force: search for any key starting with sc+cc and containing the size
-    const prefix = sc + cc;
-    const sAlt = SS_SIZE_MAP[sizeKey]||sizeKey;
-    for(const [k,v] of Object.entries(ststStock)) {
-      if(k.startsWith(prefix) && (k.endsWith(sAlt) || k.endsWith(sizeKey))) return v;
-    }
+    try {
+      if(!ststStock || !blank || !blank.stProductId || !blank.stColorCode) return null;
+      const sc = blank.stProductId, cc = blank.stColorCode;
+      const SS_SIZE_MAP = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
+      const SS_SIZE_ALT = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
+      const tries = [
+        sc + cc + (SS_SIZE_MAP[sizeKey]||sizeKey),
+        sc + cc + (SS_SIZE_ALT[sizeKey]||sizeKey),
+        sc + cc + sizeKey,
+      ];
+      for(const sku of tries) { if(ststStock[sku] !== undefined) return ststStock[sku]; }
+      const prefix = sc + cc;
+      const sAlt = SS_SIZE_MAP[sizeKey]||sizeKey;
+      for(const [k,v] of Object.entries(ststStock)) {
+        if(k.startsWith(prefix) && (k.endsWith(sAlt) || k.endsWith(sizeKey))) return v;
+      }
+    } catch(e) {}
     return null;
   };
   const bedarfMap={};
@@ -4701,42 +4697,75 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 function SheetsSetupModal({onClose, sheetsUrl}){
   const [shopifyStatus,setShopifyStatus]=useState(null);
   const [ststStatus,setStstStatus]=useState(null);
-  useEffect(()=>{
+  const [reloading,setReloading]=useState({});
+  const checkStatus = () => {
     if(!sheetsUrl)return;
+    setShopifyStatus(null); setStstStatus(null);
     fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
       .catch(()=>setShopifyStatus(false));
     fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setStstStatus(d.error?(typeof d.error==="string"?d.error:d.error.message||"Fehler"):true);}catch(e){setStstStatus(false);}})
       .catch(()=>setStstStatus(false));
-  },[sheetsUrl]);
+  };
+  useEffect(()=>{ checkStatus(); },[sheetsUrl]);
+  const reloadSheets = async () => {
+    setReloading(r=>({...r,sheets:true}));
+    try { await fetch(`${sheetsUrl}?action=load`,{redirect:"follow"}); } catch(e) {}
+    setTimeout(()=>setReloading(r=>({...r,sheets:false})),1000);
+  };
+  const reloadShopify = async () => {
+    setReloading(r=>({...r,shopify:true}));
+    try { await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}); } catch(e) {}
+    setShopifyStatus(null);
+    fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
+      .catch(()=>setShopifyStatus(false));
+    setTimeout(()=>setReloading(r=>({...r,shopify:false})),1000);
+  };
+  const reloadStSt = async () => {
+    setReloading(r=>({...r,stst:true}));
+    try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");localStorage.removeItem("stst_prices");}catch(e){}
+    setStstStatus(null);
+    fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setStstStatus(d.error?(typeof d.error==="string"?d.error:d.error.message||"Fehler"):true);}catch(e){setStstStatus(false);}})
+      .catch(()=>setStstStatus(false));
+    setTimeout(()=>setReloading(r=>({...r,stst:false})),1500);
+  };
+  const rlBtn = (key, onClick) => <button onClick={onClick} disabled={reloading[key]}
+    style={{padding:"6px 10px",borderRadius:8,border:"1px solid #e8e8e8",background:reloading[key]?"#f0f0f0":"#fff",color:reloading[key]?"#bbb":"#555",cursor:reloading[key]?"not-allowed":"pointer",fontWeight:700,fontSize:11,display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+    <IC_REFRESH size={11} color={reloading[key]?"#bbb":"#555"}/> {reloading[key]?"...":"Reload"}
+  </button>;
   return(
-    <ModalWrap onClose={onClose} width={400}>
+    <ModalWrap onClose={onClose} width={420}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Verbindungen</div>
-      <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <IC_CLOUD size={24} color="#1a9a50"/>
-        <div>
-          <div style={{fontSize:14,fontWeight:800,color:"#1a9a50"}}>Google Sheets</div>
-          <div style={{fontSize:12,color:"#555",marginTop:2}}>Verbunden — automatisch gespeichert</div>
+      <div style={{background:"#f0fdf4",borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_CLOUD size={22} color="#1a9a50"/>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#1a9a50"}}>Google Sheets</div>
+          <div style={{fontSize:11,color:"#555",marginTop:1}}>Verbunden — automatisch gespeichert</div>
         </div>
+        {rlBtn("sheets", reloadSheets)}
       </div>
-      <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <IC_SHOP size={22} color={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}/>
-        <div>
-          <div style={{fontSize:14,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
-          <div style={{fontSize:12,color:"#555",marginTop:2}}>
-            {shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
+      <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_SHOP size={20} color={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}/>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
+          <div style={{fontSize:11,color:"#555",marginTop:1}}>
+            {shopifyStatus===null?"Prüfe...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
           </div>
         </div>
+        {rlBtn("shopify", reloadShopify)}
       </div>
-      <div style={{background:ststStatus===true?"#f0fdf4":ststStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <IC_STELLA size={22} color={ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}/>
-        <div>
-          <div style={{fontSize:14,fontWeight:800,color:ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}}>Stanley/Stella API</div>
-          <div style={{fontSize:12,color:"#555",marginTop:2}}>
-            {ststStatus===null?"Prüfe Verbindung...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
+      <div style={{background:ststStatus===true?"#f0fdf4":ststStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_STELLA size={20} color={ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}/>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:800,color:ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}}>Stanley/Stella API</div>
+          <div style={{fontSize:11,color:"#555",marginTop:1}}>
+            {ststStatus===null?"Prüfe...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
           </div>
         </div>
+        {rlBtn("stst", reloadStSt)}
       </div>
       <button type="button" onClick={onClose} style={{width:"100%",padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>OK</button>
     </ModalWrap>
@@ -6039,9 +6068,28 @@ function AppInner({currentUser,onLogout}){
   );
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, info) { console.error("[GKBS Error]", error, info); }
+  render() {
+    if(this.state.hasError) return(
+      <div style={{padding:40,textAlign:"center",fontFamily:"-apple-system, sans-serif"}}>
+        <div style={{fontSize:40,marginBottom:12}}>⚠️</div>
+        <div style={{fontSize:18,fontWeight:800,color:"#e84142"}}>App-Fehler</div>
+        <div style={{fontSize:13,color:"#888",marginTop:8,maxWidth:400,margin:"8px auto"}}>{this.state.error?.message||"Unbekannter Fehler"}</div>
+        <button onClick={()=>{try{localStorage.clear();}catch(e){}window.location.reload();}}
+          style={{marginTop:16,padding:"10px 20px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}>Cache löschen & Neu laden</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 export default function App(){
   const [user,setUser] = useState(()=>localStorage.getItem("gkbs_user"));
   const validUser = USERS.find(u=>u.name===user);
-  if(!validUser) return <LoginScreen onUnlock={(name)=>setUser(name)}/>;
-  return <AppInner currentUser={validUser} onLogout={()=>{localStorage.removeItem("gkbs_user");setUser(null);}}/>;
+  return <ErrorBoundary>
+    {!validUser ? <LoginScreen onUnlock={(name)=>setUser(name)}/> : <AppInner currentUser={validUser} onLogout={()=>{localStorage.removeItem("gkbs_user");setUser(null);}}/>}
+  </ErrorBoundary>;
 }
