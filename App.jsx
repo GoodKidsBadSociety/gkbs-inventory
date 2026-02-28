@@ -2622,6 +2622,11 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
 // ─── Restock View ─────────────────────────────────────────────────
 const RESTOCK_MIN = {XXS:2,XS:2,S:3,M:4,L:5,XL:4,XXL:2,XXXL:1};
 const RESTOCK_DEFAULT = 5;
+const getRestockMin=(mins,productId,variantTitle,size)=>{
+  const custom=mins?.[String(productId)]?.[variantTitle];
+  if(custom!=null)return custom;
+  return size?RESTOCK_MIN[size]??RESTOCK_DEFAULT:RESTOCK_DEFAULT;
+};
 
 function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const mobile = useIsMobile();
@@ -2630,7 +2635,9 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const [reloading,setReloading]=useState(false);
   const [search,setSearch]=useState("");
   const [restockModal,setRestockModal]=useState(null);
+  const [minEdit,setMinEdit]=useState(null); // {product, variants}
   const [hiddenIds,setHiddenIds]=useState([]);
+  const [restockMins,setRestockMins]=useState({});
   const [showHidden,setShowHidden]=useState(false);
 
   // Load from cache, or fetch directly from Shopify API
@@ -2647,7 +2654,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
     // Load hidden IDs from Sheets if available
     if(!sheetsUrl)return;
     fetch(`${sheetsUrl}?action=restock_hidden`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hidden)setHiddenIds(d.hidden);}catch(e){}})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hidden)setHiddenIds(d.hidden);if(d.mins)setRestockMins(d.mins);}catch(e){}})
       .catch(()=>{});
   },[sheetsUrl]);
 
@@ -2674,7 +2681,12 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const saveHidden = async (ids) => {
     setHiddenIds(ids);
     if(!sheetsUrl)return;
-    try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"restock_save_hidden",hidden:ids})});}catch(e){console.log("saveHidden not available yet");}
+    try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"restock_save_hidden",hidden:ids,mins:restockMins})});}catch(e){console.log("saveHidden not available yet");}
+  };
+  const saveMins = async (mins) => {
+    setRestockMins(mins);
+    if(!sheetsUrl)return;
+    try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"restock_save_hidden",hidden:hiddenIds,mins})});}catch(e){}
   };
   const hideProduct = (productId) => saveHidden([...hiddenIds, String(productId)]);
   const unhideProduct = (productId) => saveHidden(hiddenIds.filter(id=>id!==String(productId)));
@@ -2693,7 +2705,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
       const variants = sp.variants||[];
       const lowVariants = variants.filter(v=>{
         const size = parseSize(v.title);
-        const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
+        const min = getRestockMin(restockMins,sp.id,v.title,size);
         return (v.inventory_quantity||0) < min;
       });
       if(lowVariants.length>0){
@@ -2701,7 +2713,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
       }
     });
     return items;
-  },[shopProds]);
+  },[shopProds,restockMins]);
 
   const filtered = search
     ? restockItems.filter(r=>!hiddenIds.includes(String(r.product.id))&&r.product.title.toLowerCase().includes(search.toLowerCase()))
@@ -2769,6 +2781,9 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                 <div style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#f08328",lineHeight:1}}>{lowVars.length}</div>
                 <div style={{fontSize:10,color:"#bbb",fontWeight:700,letterSpacing:0.5,marginTop:2}}>LOW</div>
               </div>
+              <button onClick={()=>setMinEdit({product:sp,variants:allVars})} title="Min-Bestand einstellen" style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#888",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              </button>
               {showHidden?
                 <button onClick={()=>unhideProduct(sp.id)} title="Wieder anzeigen" style={{width:32,height:32,borderRadius:8,border:"1px solid #dcfce7",background:"#f0fdf4",color:"#1a9a50",cursor:"pointer",fontSize:14,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>↩</button>
               :
@@ -2800,7 +2815,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                       {colorGroups.map(([color, cvars])=>{
                         const v=cvars[0];
                         const qty=v.inventory_quantity||0;
-                        const min=RESTOCK_DEFAULT;
+                        const min=getRestockMin(restockMins,sp.id,v.title,null);
                         const isOut=qty===0;
                         const label=color==="_default_"?"Default":color;
                         if(mobile) return(
@@ -2845,7 +2860,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                       {dtf&&<span style={{color:"#bbb"}}> · DTF: {dtf.name}</span>}
                     </div>:<div style={{flex:1,fontSize:11,color:"#ccc",fontStyle:"italic"}}>Kein Blank verknüpft</div>}
                     {hasMultipleColors&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:900,color:groupInv===0?"#e84142":groupInv<5?"#f08328":"#888"}}>{groupInv}</span>}
-                    {blank&&<button onClick={()=>setRestockModal({product:sp,variants:cvars,blank,dtf,lowVars:cvars.filter(v=>{const sz=parseSize(v.title);const min=sz?RESTOCK_MIN[sz]:RESTOCK_DEFAULT;return(v.inventory_quantity||0)<min;})})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
+                    {blank&&<button onClick={()=>setRestockModal({product:sp,variants:cvars,blank,dtf,lowVars:cvars.filter(v=>{const sz=parseSize(v.title);const min=getRestockMin(restockMins,sp.id,v.title,sz);return(v.inventory_quantity||0)<min;})})} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:11,flexShrink:0,display:"flex",alignItems:"center",gap:4}}>
                       <IC_PROD size={11} color="#fff"/> Auftrag
                     </button>}
                   </div>
@@ -2854,7 +2869,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                     {cvars.map(v=>{
                       const size = parseSize(v.title);
                       const sizeLabel = size || v.title.split("/").pop().trim();
-                      const min = size ? RESTOCK_MIN[size] : RESTOCK_DEFAULT;
+                      const min = getRestockMin(restockMins,sp.id,v.title,size);
                       const qty = v.inventory_quantity||0;
                       const isOut = qty===0;
                       if(mobile) return(
@@ -2905,6 +2920,51 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
           setRestockModal(null);
         }}
       />}
+      {minEdit&&(()=>{
+        const sp=minEdit.product;const vars=minEdit.variants;
+        const pMins=restockMins[String(sp.id)]||{};
+        const update=(varTitle,val)=>{
+          const newPMins={...pMins,[varTitle]:Math.max(0,parseInt(val)||0)};
+          saveMins({...restockMins,[String(sp.id)]:newPMins});
+        };
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:20}} onClick={()=>setMinEdit(null)}>
+            <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,padding:24,width:"100%",maxWidth:480,maxHeight:"80vh",overflow:"auto"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <div>
+                  <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>{sp.title}</div>
+                  <div style={{fontSize:12,color:"#bbb",marginTop:2}}>Mindestbestand pro Variante</div>
+                </div>
+                <button onClick={()=>setMinEdit(null)} style={{width:32,height:32,borderRadius:8,border:"none",background:"#f8f8f8",color:"#888",cursor:"pointer",fontSize:16,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {vars.map(v=>{
+                  const size=parseSize(v.title);
+                  const label=size?SZ(size):v.title;
+                  const defaultMin=size?RESTOCK_MIN[size]??RESTOCK_DEFAULT:RESTOCK_DEFAULT;
+                  const customVal=pMins[v.title];
+                  const currentMin=customVal!=null?customVal:defaultMin;
+                  const isCustom=customVal!=null;
+                  return(
+                    <div key={v.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:10,background:isCustom?"#fef6ed":"#f8f8f8"}}>
+                      <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#333",width:80}}>{label}</span>
+                      <span style={{fontSize:11,color:"#bbb",flex:1}}>Bestand: <strong style={{color:v.inventory_quantity<currentMin?"#e84142":"#888"}}>{v.inventory_quantity||0}</strong></span>
+                      <div style={{display:"flex",alignItems:"center",gap:4}}>
+                        <span style={{fontSize:10,color:"#888",fontWeight:700}}>MIN:</span>
+                        <button onClick={()=>update(v.title,currentMin-1)} style={{width:24,height:24,borderRadius:6,border:"none",background:"#fef1f0",color:"#e84142",fontSize:14,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                        <span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:isCustom?"#f08328":"#555",minWidth:24,textAlign:"center"}}>{currentMin}</span>
+                        <button onClick={()=>update(v.title,currentMin+1)} style={{width:24,height:24,borderRadius:6,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:14,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                      </div>
+                      {isCustom&&<button onClick={()=>{const newPMins={...pMins};delete newPMins[v.title];saveMins({...restockMins,[String(sp.id)]:newPMins});}} title="Reset" style={{fontSize:10,color:"#bbb",background:"none",border:"none",cursor:"pointer",padding:0}}>↺</button>}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{fontSize:10,color:"#bbb",marginTop:12,textAlign:"center"}}>Standard: XXS/XS=2, S=3, M=4, L=5, XL=4, XXL=2, 3XL=1</div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
