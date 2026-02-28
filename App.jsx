@@ -30,6 +30,7 @@ function shopCacheSet(key,data){_shopCache[key]={data,ts:Date.now()};}
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
 const SZ=(s)=>s==="XXXL"?"3XL":s;
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
+const FIT_OPTIONS = ["","Straight","Loose","Oversized"];
 // Categories that use color variants instead of sizes (XXS-XXXL)
 const DEFAULT_VARIANT_CATS = ["Cap","Bag","Other"];
 const LOW_STOCK = 3;
@@ -941,6 +942,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#bbb"}}>{product.color}</span>}
             {product.category&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category}</span>}
+            {product.fit&&<span style={{fontSize:10,background:"#e8f4fd",color:"#2563eb",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.fit}</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
@@ -1051,6 +1053,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
               {blank&&<span style={{fontSize:13,color:"#999",fontWeight:500}}>{blank.name} {blank.color}</span>}
               {!blank&&<span style={{fontSize:13,color:"#bbb"}}>Kein Blank</span>}
               {blank?.category&&<span style={{fontSize:11,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.category}</span>}
+              {blank?.fit&&<span style={{fontSize:11,background:"#e8f4fd",color:"#2563eb",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.fit}</span>}
             </div>
           </div>
           <div style={{display:"flex",gap:6,flexShrink:0}}>
@@ -1519,7 +1522,7 @@ function ProductionModal({products,dtfItems=[],initial,onClose,onSave}){
         </select>
         {blank&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"#f8f8f8",border:"1px solid #e8e8e8",marginTop:6}}>
           <SmartDot item={blank} size={20}/>
-          <div><div style={{fontSize:13,fontWeight:700}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color||""} · {blank.category}</div></div>
+          <div><div style={{fontSize:13,fontWeight:700}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color||""} · {blank.category}{blank.fit?` · ${blank.fit}`:""}</div></div>
         </div>}
       </div>
       {/* Shopify Verknüpfung */}
@@ -1586,6 +1589,7 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
   const editing=!!initial;
   const [name,setName]=useState(initial?.name||"");
   const [category,setCategory]=useState(initial?.category||categories[0]||"");
+  const [fit,setFit]=useState(initial?.fit||"");
   const [color,setColor]=useState(initial?.color||"");
   const [colorHex,setColorHex]=useState(initial?.colorHex||"#000000");
   const [buyPrice,setBuyPrice]=useState(initial?.buyPrice!=null?String(initial.buyPrice):"");
@@ -1620,7 +1624,7 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
   };
 
   const doSave = () => {
-    onSave({id:initial?.id||Date.now().toString(),name:(name||"Neues Produkt").trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock:isCap?{}:stock,minStock:isCap?{}:minStock,capColors:isCap?capColors:null});
+    onSave({id:initial?.id||Date.now().toString(),name:(name||"Neues Produkt").trim(),category,fit,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock:isCap?{}:stock,minStock:isCap?{}:minStock,capColors:isCap?capColors:null});
   };
 
   return(
@@ -1696,6 +1700,10 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
       <input style={inp} placeholder="Produktname" value={name} onChange={e=>setName(e.target.value)}/>
       <div style={{display:"flex",gap:10}}>
         <select style={{...inp,flex:1}} value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
+        <select style={{...inp,flex:1}} value={fit} onChange={e=>setFit(e.target.value)}>
+          <option value="">Kein Fit</option>
+          {FIT_OPTIONS.filter(Boolean).map(f=><option key={f}>{f}</option>)}
+        </select>
         <div style={{flex:1,position:"relative"}}><span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:"#bbb",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span><input style={{...inp,paddingLeft:28}} placeholder="EK-Preis" type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}/></div>
       </div>
       {!isCap&&(
@@ -1902,7 +1910,7 @@ function BestellbedarfModal({prods,products,onClose}){
           <div key={blankId} style={{background:"#f8f8f8",borderRadius:14,padding:16}}>
             <div style={S.cardHdr}>
               <SmartDot item={blank} size={22}/>
-              <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color} · {blank.category}</div></div>
+              <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color} · {blank.category}{blank.fit?` · ${blank.fit}`:""}</div></div>
               
               <button type="button" disabled={allOrdered}
                 style={{marginLeft:"auto",padding:"6px 14px",borderRadius:9,border:"none",background:allOrdered?"#e0e0e0":"#111",color:allOrdered?"#bbb":"#fff",fontSize:12,fontWeight:800,cursor:allOrdered?"not-allowed":"pointer",flexShrink:0,letterSpacing:0.5,opacity:allOrdered?0.6:1}}
@@ -4061,7 +4069,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               <div key={blankId} style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
-                  <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color} · {blank.category}</div></div>
+                  <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color} · {blank.category}{blank.fit?` · ${blank.fit}`:""}</div></div>
                   {hasStCode&&<button type="button" onClick={toggleProduct}
                     style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
                     CSV
@@ -5453,7 +5461,7 @@ function AppInner({currentUser,onLogout}){
                 style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:9,color:"#111",padding:"6px 11px",fontSize:12,outline:"none",width:mobile?100:140,flexShrink:0,fontWeight:500}}/>
               {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"6px 11px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:11,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
             </div>
-            <div style={{display:"grid",gap:10,gridTemplateColumns:mobile?"1fr":"repeat(auto-fill, minmax(560px, 1fr))"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {filtered.length===0
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
                 :filtered.map(p=>(
