@@ -753,7 +753,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1}}>
       <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{SZ(size)}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
@@ -963,7 +963,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
             const isOut=c.stock===0;
             const isLow=!isOut&&c.stock<=LOW_STOCK;
             return(
-              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,height:110,opacity:isOut?0.6:1}}>
+              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:mobile?60:70,opacity:isOut?0.6:1}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:isOut?"#bbb":"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <CapStockNum value={c.stock} color={isOut?"#bbb":sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
@@ -1121,7 +1121,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             const atLimit=c.done>=max;
             const complete=c.qty>0&&c.done>=c.qty;
             return(
-              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:capBg(complete,atLimit&&!complete),borderRadius:12,padding:"10px 8px",flex:1,minWidth:mobile?60:70,border:capBd(complete,atLimit&&!complete),position:"relative"}}>
+              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:capBg(complete,atLimit&&!complete),borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:mobile?60:70,border:capBd(complete,atLimit&&!complete),position:"relative"}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <div style={{lineHeight:1,textAlign:"center"}}>
@@ -1155,7 +1155,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           {DEFAULT_SIZES.map(size=>{
             const soll=(prod.qty||{})[size]||0,done=(prod.done||{})[size]||0,avail=(blank?.stock??{})[size]??0;
             if(soll===0&&done===0)return(
-              <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#fafafa",borderRadius:12,padding:"8px 4px",opacity:0.3}}>
+              <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#fafafa",borderRadius:14,padding:"10px 8px 8px",opacity:0.3}}>
                 <span style={{...F_HEAD_STYLE,fontSize:16,color:"#bbb",fontWeight:800}}>{SZ(size)}</span>
                 <span style={{fontSize:32,fontWeight:900,color:"#ddd",lineHeight:1}}>—</span>
               </div>
@@ -1218,7 +1218,7 @@ function ArchivedCard({prod,blank,onDelete}){
           {isCap?(
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {(prod.capColors||[]).map(cc=>(
-                <div key={cc.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:10,padding:"8px 10px",minWidth:60,flex:1}}>
+                <div key={cc.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",minWidth:60,flex:1}}>
                   <div style={{width:16,height:16,borderRadius:"50%",background:cc.hex,border:"2px solid #444"}}/>
                   <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center"}}>{cc.name}</span>
                   <span style={{fontSize:22,fontWeight:900,color:"#111",lineHeight:1}}>{cc.qty}</span>
@@ -2457,14 +2457,14 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
               <div style={{background:"#fafafa",padding:"8px 16px 14px",borderTop:"1px solid #f0f0f0"}}>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {isCap?(p.capColors||[]).map(c=>{const sv=p.buyPrice!=null?c.stock*p.buyPrice:null;return(
-                    <div key={c.id} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:10,padding:"8px 10px",textAlign:"center",minWidth:70,flex:1}}>
+                    <div key={c.id} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:14,padding:"10px 8px 8px",textAlign:"center",minWidth:70,flex:1}}>
                       <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"center",marginBottom:3}}><div style={{width:12,height:12,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/><div style={{fontSize:10,color:"#bbb",fontWeight:800}}>{c.name}</div></div>
                       <div style={{fontSize:20,fontWeight:900,color:c.stock===0?"#e84142":c.stock<=LOW_STOCK?"#f08328":"#111"}}>{c.stock}</div>
                       {sv!=null&&<div style={{fontSize:10,color:"#bbb",marginTop:2}}>€{sv.toFixed(2)}</div>}
                     </div>
                   )})
                   :DEFAULT_SIZES.map(size=>{const s=(p.stock||{})[size]??0,sv=p.buyPrice!=null?s*p.buyPrice:null;return(
-                    <div key={size} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:10,padding:"8px 10px",textAlign:"center",minWidth:60,flex:1}}>
+                    <div key={size} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:14,padding:"10px 8px 8px",textAlign:"center",minWidth:60,flex:1}}>
                       <div style={{fontSize:10,color:"#bbb",fontWeight:800,marginBottom:3}}>{SZ(size)}</div>
                       <div style={{fontSize:20,fontWeight:900,color:s===0?"#e84142":s<=LOW_STOCK?"#f08328":"#111"}}>{s}</div>
                       {sv!=null&&<div style={{fontSize:10,color:"#bbb",marginTop:2}}>€{sv.toFixed(2)}</div>}
@@ -2592,10 +2592,10 @@ function RestockOrderModal({product, variants, blank, dtf, restockMin, restockDe
               const minVal = restockMin[label.toUpperCase()]!==undefined ? restockMin[label.toUpperCase()] : restockDefault;
               const target = sollVal > 0 ? sollVal : minVal;
               return(
-                <div key={label} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                <div key={label} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,
                   background:val>0?"#fef6ed":"#f8f8f8",border:`1px solid ${val>0?"#fcd5a8":"#e8e8e8"}`,
-                  borderRadius:12,padding:"10px 6px",flex:1,minWidth:mobile?60:70}}>
-                  <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:val>0?"#8c4318":"#666"}}>{label}</span>
+                  borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:mobile?60:70}}>
+                  <span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800,color:val>0?"#8c4318":"#666"}}>{label}</span>
                   <div style={{fontSize:10,color:"#bbb"}}>{current}/{target}</div>
                   <div style={{display:"flex",alignItems:"center",gap:4}}>
                     <button onClick={()=>setSize(label,val-1)} style={{width:26,height:26,borderRadius:7,border:"none",background:"#fef1f0",color:"#e84142",fontSize:16,cursor:"pointer",fontWeight:800}}>−</button>
@@ -2812,11 +2812,11 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                         );
                         return(
                           <div key={color} style={{
-                            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:2,
+                            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,
                             background:isOut?"#f0f0f0":"#f8f8f8",
-                            borderRadius:12,padding:"8px 8px 6px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
+                            borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1
                           }}>
-                            <span style={{...F_HEAD_STYLE,fontSize:14,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{label}</span>
+                            <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{label}</span>
                             <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f08328":"#1a9a50",lineHeight:1}}>{qty}</span>
                             {min>0&&<span style={{fontSize:9,color:qty<min?"#e84142":"#bbb",fontWeight:700}}>MIN: {min}</span>}
                           </div>
@@ -2866,9 +2866,9 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                       );
                       return(
                         <div key={v.id} style={{
-                          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:2,
+                          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,
                           background:isOut?"#f0f0f0":"#f8f8f8",
-                          borderRadius:12,padding:"8px 8px 6px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1
+                          borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1
                         }}>
                           <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
                           <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f08328":"#1a9a50",lineHeight:1}}>{qty}</span>
@@ -3822,9 +3822,9 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAddProd,onA
         {prod&&!isCap&&<div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
           {DEFAULT_SIZES.map(s=>{
             const v=qty[s]||0;
-            return <div key={s} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:12,padding:"10px 6px"}}>
-              <span style={{fontSize:12,fontWeight:800,color:v>0?"#111":"#888"}}>{s}</span>
-              <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:v>0?"#111":"#bbb",lineHeight:1}}>{v}</span>
+            return <div key={s} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:14,padding:"10px 8px 8px"}}>
+              <span style={{fontSize:16,fontWeight:800,color:v>0?"#111":"#888"}}>{s}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:v>0?"#111":"#bbb",lineHeight:1}}>{v}</span>
               <div style={{display:"flex",gap:4}}>
                 <button type="button" onClick={()=>setQty(q=>({...q,[s]:Math.max(0,(q[s]||0)-1)}))} style={btn(30,true,v===0)}>−</button>
                 <button type="button" onClick={()=>setQty(q=>({...q,[s]:(q[s]||0)+1}))} style={btn(30)}>+</button>
@@ -3835,10 +3835,10 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAddProd,onA
         {prod&&isCap&&<div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
           {(prod.capColors||[]).map(c=>{
             const v=qty["cap_"+c.id]||0;
-            return <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:12,padding:"10px 6px"}}>
+            return <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#f8f8f8",borderRadius:14,padding:"10px 8px 8px"}}>
               <div style={{width:18,height:18,borderRadius:"50%",background:c.hex,border:"1.5px solid #444"}}/>
               <span style={{fontSize:10,fontWeight:700,color:v>0?"#111":"#888",textAlign:"center",lineHeight:1.2}}>{c.name}</span>
-              <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:v>0?"#111":"#bbb",lineHeight:1}}>{v}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:v>0?"#111":"#bbb",lineHeight:1}}>{v}</span>
               <div style={{display:"flex",gap:4}}>
                 <button type="button" onClick={()=>setQty(q=>({...q,["cap_"+c.id]:Math.max(0,(q["cap_"+c.id]||0)-1)}))} style={btn(30,true,v===0)}>−</button>
                 <button type="button" onClick={()=>setQty(q=>({...q,["cap_"+c.id]:(q["cap_"+c.id]||0)+1}))} style={btn(30)}>+</button>
@@ -4101,7 +4101,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"stretch",
                         background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
-                        borderRadius:14,padding:"10px 10px 8px",flex:1,minWidth:0,minHeight:130,
+                        borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,
                         opacity:state==="none"?0.5:state==="done"?0.65:1,
                         border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
