@@ -220,6 +220,25 @@ const IC_GRID4=({size=16,color="currentColor"})=><svg width={size} height={size}
 const IC_TREND_DOWN=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
 const IC_ROLL=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>;
 const IC_SHIRT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2l5 4-3 2v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8L4 6l5-4"/><path d="M9 2a4 4 0 0 0 6 0"/></svg>;
+// S/S product type icons
+const IC_HOODIE=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2l5 4-3 2v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8L4 6l5-4"/><path d="M9 2a4 4 0 0 0 6 0"/><path d="M8 2C7.5 4 7 6 7 8"/><path d="M16 2c.5 2 1 4 1 6"/></svg>;
+const IC_SWEATER=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2l5 4-3 2v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8L4 6l5-4"/><path d="M9 2a4 4 0 0 0 6 0"/><path d="M4 14h16"/></svg>;
+const IC_PANTS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2h12v6l-2 14h-3L12 12l-1 10H8L6 8V2z"/><path d="M6 2h12"/></svg>;
+const IC_JACKET=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2l5 4-3 2v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8L4 6l5-4"/><path d="M9 2a4 4 0 0 0 6 0"/><path d="M12 2v20"/><line x1="7" y1="12" x2="10" y2="12"/></svg>;
+const IC_CAP=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 14c0-4 4-8 9-8s9 4 9 8"/><path d="M1 14h22"/><path d="M3 14c0 2 2 4 9 4s9-2 9-4"/></svg>;
+const IC_BAG_ICON=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 8v12a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8l-3-6z"/><path d="M3 8h18"/><path d="M16 12a4 4 0 0 1-8 0"/></svg>;
+const IC_LONGSLEEVE=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2l6 5-4 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10L3 7l6-5"/><path d="M9 2a4 4 0 0 0 6 0"/><path d="M3 7l1 8h3"/><path d="M21 7l-1 8h-3"/></svg>;
+function ststTypeIcon(style,size,color){
+  const t=((style.Type||"")+" "+(style.Category||"")).toLowerCase();
+  if(t.includes("hood"))return <IC_HOODIE size={size} color={color}/>;
+  if(t.includes("sweat")||t.includes("crew"))return <IC_SWEATER size={size} color={color}/>;
+  if(t.includes("jacket")||t.includes("vest")||t.includes("gilet"))return <IC_JACKET size={size} color={color}/>;
+  if(t.includes("pant")||t.includes("hose")||t.includes("jogger")||t.includes("short")||t.includes("unterteil"))return <IC_PANTS size={size} color={color}/>;
+  if(t.includes("cap")||t.includes("beanie")||t.includes("hat")||t.includes("haube")||t.includes("mütze"))return <IC_CAP size={size} color={color}/>;
+  if(t.includes("bag")||t.includes("tasche")||t.includes("tote"))return <IC_BAG_ICON size={size} color={color}/>;
+  if(t.includes("longsleeve")||t.includes("long sleeve"))return <IC_LONGSLEEVE size={size} color={color}/>;
+  return <IC_SHIRT size={size} color={color}/>;
+}
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
 const DEMO_PRODUCTS = [
@@ -3161,7 +3180,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {/* Header — matches Shopify Sync style */}
-      <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",alignItems:"center",gap:12}}>
+      <div style={{background:"#fff",borderRadius:14,padding:"14px 18px",border:"1px solid #ebebeb",display:"flex",flexDirection:"column",gap:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div style={{width:36,height:36,borderRadius:10,background:"#2d2d2d",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_STELLA size={18} color="#fff"/></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800}}>Stanley/Stella Sync</div>
@@ -3174,6 +3194,17 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
           style={{padding:"8px 12px",borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:5}}>
           <IC_REFRESH size={14} color="#555"/> Reload
         </button>
+        </div>
+        {/* Loading bar inside header */}
+        {(loading||stockLoading)&&<div style={{marginTop:10}}>
+          <div style={{height:3,borderRadius:2,background:"#e8e8e8",overflow:"hidden"}}>
+            <div style={{height:"100%",background:"#1a9a50",borderRadius:2,animation:"ststLoad 1.5s ease-in-out infinite",width:"40%"}}/>
+          </div>
+          <style>{`@keyframes ststLoad{0%{margin-left:0}50%{margin-left:60%}100%{margin-left:0}}`}</style>
+          <div style={{textAlign:"center",color:"#bbb",fontSize:11,marginTop:4}}>
+            {loading?"Katalog laden...":"Stock laden..."} Das kann beim ersten Mal ~10s dauern
+          </div>
+        </div>}
       </div>
 
       {/* Search + Filters */}
@@ -3203,16 +3234,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
         </div>
       </div>
 
-      {/* Loading / Error */}
-      {(loading||stockLoading) && <div style={{display:"flex",flexDirection:"column",gap:8,padding:"20px 0"}}>
-        <div style={{height:3,borderRadius:2,background:"#e8e8e8",overflow:"hidden"}}>
-          <div style={{height:"100%",background:"#1a9a50",borderRadius:2,animation:"ststLoad 1.5s ease-in-out infinite",width:"40%"}}/>
-        </div>
-        <style>{`@keyframes ststLoad{0%{margin-left:0}50%{margin-left:60%}100%{margin-left:0}}`}</style>
-        <div style={{textAlign:"center",color:"#bbb",fontSize:12}}>
-          {loading?"Katalog laden...":"Stock laden..."}{" "}Das kann beim ersten Mal ~10s dauern
-        </div>
-      </div>}
+      {/* Error */}
       {error && <div style={{textAlign:"center",padding:40,color:"#e84142"}}>
         <div style={{fontSize:14,fontWeight:700}}>Fehler</div>
         <div style={{fontSize:12,marginTop:4}}>{typeof error === "string" ? error : (error.error||"")}</div>
@@ -3239,7 +3261,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
               <div style={{width:48,height:48,borderRadius:10,background:"#f5f5f5",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
                 {imgCache[style.StyleCode]?.length > 0
                   ? <img src={imgCache[style.StyleCode].find(i=>i.PhotoShootCode==="Main"||i.PhotoStyle==="Front")?.URL || imgCache[style.StyleCode][0]?.URL} style={{width:48,height:48,objectFit:"cover"}} alt=""/>
-                  : <IC_TSHIRT size={22} color="#ccc"/>}
+                  : ststTypeIcon(style,22,"#ccc")}
               </div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -3267,9 +3289,10 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                 {style.ShortDescription && <div style={{fontSize:11,color:"#888",padding:"6px 0",borderTop:"1px solid #f0f0f0"}}>{style.ShortDescription}{style.Fit ? ` · ${style.Fit}` : ""}{style.CompositionList ? ` · ${style.CompositionList}` : ""}</div>}
 
                 {/* Size header */}
-                <div style={{display:"flex",gap:4,alignItems:"center",paddingLeft:mobile?60:120}}>
-                  {sizes.map(sz => <div key={sz} style={{flex:mobile?1:undefined,width:mobile?undefined:48,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>{SZ(sz)}</div>)}
-                  <div style={{width:50,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>TOTAL</div>
+                <div style={{display:"flex",gap:4,alignItems:"center",paddingLeft:mobile?62:120}}>
+                  {sizes.map(sz => <div key={sz} style={{flex:1,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>{SZ(sz)}</div>)}
+                  <div style={{width:mobile?44:50,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb",flexShrink:0}}>TOTAL</div>
+                  <div style={{width:mobile?28:32,flexShrink:0}}/>
                 </div>
 
                 {/* Color rows */}
@@ -3285,7 +3308,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                   return(
                     <div key={cg.colorCode} style={{display:"flex",gap:4,alignItems:"center"}}>
                       {/* Color label */}
-                      <div style={{width:mobile?56:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+                      <div style={{width:mobile?58:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
                         <div style={{width:16,height:16,borderRadius:5,background:cg.hexCode?(cg.hexCode.startsWith("#")?cg.hexCode:`#${cg.hexCode}`):"#ddd",border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
                         <div style={{overflow:"hidden",minWidth:0}}>
                           <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:mobile?2:1,WebkitBoxOrient:"vertical",whiteSpace:mobile?"normal":"nowrap",lineHeight:1.2}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
@@ -3295,11 +3318,11 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                       {/* Size tiles */}
                       {sizes.map(sz => {
                         const v = cg.variants.find(v => v.SizeCode === sz);
-                        if(!v) return <div key={sz} style={{flex:mobile?1:undefined,width:mobile?undefined:48,height:36,borderRadius:6,background:"#fafafa"}}></div>;
+                        if(!v) return <div key={sz} style={{flex:1,height:36,borderRadius:6,background:"#fafafa"}}></div>;
                         const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
                         const stk = getStock(sku);
                         return(
-                          <div key={sz} style={{flex:mobile?1:undefined,width:mobile?undefined:48,height:36,borderRadius:8,background:stk===null?"#f8f8f8":stk===0?"#fef1f0":stk<20?"#fef6ed":"#ecfdf3",
+                          <div key={sz} style={{flex:1,height:36,borderRadius:8,background:stk===null?"#f8f8f8":stk===0?"#fef1f0":stk<20?"#fef6ed":"#ecfdf3",
                             display:"flex",alignItems:"center",justifyContent:"center",
                             border:"1px solid",borderColor:stk===null?"#eee":stk===0?"#f5c6c6":stk<20?"#fde0b8":"#bbf7d0"}}>
                             <span style={{fontSize:12,fontWeight:800,color:stk===null?"#ccc":stk===0?"#e84142":stk<20?"#f08328":"#1a9a50"}}>{stk===null?"…":stk}</span>
@@ -3307,7 +3330,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                         );
                       })}
                       {/* Total */}
-                      <div style={{width:50,textAlign:"center"}}>
+                      <div style={{width:mobile?44:50,textAlign:"center",flexShrink:0}}>
                         <span style={{fontSize:12,fontWeight:900,color:colorTotal===0?"#e84142":"#555"}}>{ststStock?colorTotal:"…"}</span>
                       </div>
                       {/* Import button */}
