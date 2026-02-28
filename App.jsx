@@ -3819,6 +3819,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const [openSize,setOpenSize]=useState(null);
   const [allModal,setAllModal]=useState(null);
   const [csvSelected,setCsvSelected]=useState({});
+  const [customQty,setCustomQty]=useState({});
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -3875,34 +3876,28 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
     return {dtf,needed,avail,minStock,dpm,toOrder,toOrderWithMin,toOrderM,toOrderWithMinM,unit};
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
-  const renderDetail=(t,blankId,blank)=>{
+  const renderDetail=(t,blankId,blank,cq,cqKey)=>{
     const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state}=t;
     const items=breakdownMap[blankId]?.[key]||[];
+    const orderQty=cq!=null?cq:remainMin;
     return(
-      <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,flexBasis:"100%",width:"100%",marginTop:4,marginBottom:2}}>
-        {items.length>0&&<div style={{display:"flex",flexDirection:"column",gap:4}}>
-          <div style={{fontSize:9,color:"#bbb",fontWeight:700,letterSpacing:0.6}}>AUFTRÄGE</div>
-          {items.map((item,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
+      <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"8px 10px",display:"flex",alignItems:"stretch",gap:6,flexBasis:"100%",width:"100%",marginTop:4,marginBottom:2}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",gap:3}}>
+          {items.length>0&&items.map((item,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",background:"#fff",borderRadius:8,border:"1px solid #ebebeb"}}>
               <ColorDot hex={item.colorHex} size={12}/>
               <span style={{flex:1,fontSize:11,fontWeight:600,color:"#333"}}>{item.name}</span>
               <span style={{fontSize:12,fontWeight:900,color:"#111"}}>{item.qty}</span>
             </div>
           ))}
-        </div>}
-        {t.oQty>0&&<div style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {t.oQty} bereits bestellt</div>}
-        <div style={{display:"flex",gap:6}}>
-          <button type="button" disabled={remainMin===0} onClick={()=>{if(remainMin>0)onBestellen(blank,key,isCapKey,capColor,remainMin);}}
-            style={{background:remainMin===0?"#f0f0f0":"#fef1f0",borderRadius:8,padding:"6px 12px",textAlign:"center",flex:1,border:`1px solid ${remainMin===0?"#ddd":"#fcc8c6"}`,cursor:remainMin===0?"not-allowed":"pointer",opacity:remainMin===0?0.5:1}}>
-            <div style={{fontSize:9,color:remainMin===0?"#bbb":"#e84142",fontWeight:700}}>{remainMin===0?"✓":"MIN"}</div>
-            <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:remainMin===0?"#bbb":"#e84142",lineHeight:1}}>{remainMin===0?"–":remainMin}</div>
-          </button>
-          {minStockVal>0&&<button type="button" disabled={remainMax===0} onClick={()=>{if(remainMax>0)onBestellen(blank,key,isCapKey,capColor,remainMax);}}
-            style={{background:remainMax===0?"#f0f0f0":"#fef6ed",borderRadius:8,padding:"6px 12px",textAlign:"center",flex:1,border:`1px solid ${remainMax===0?"#ddd":"#fcd5a8"}`,cursor:remainMax===0?"not-allowed":"pointer",opacity:remainMax===0?0.5:1}}>
-            <div style={{fontSize:9,color:remainMax===0?"#bbb":"#f08328",fontWeight:700}}>{remainMax===0?"✓":"MAX"}</div>
-            <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:remainMax===0?"#bbb":"#f08328",lineHeight:1}}>{remainMax===0?"–":remainMax}</div>
-          </button>}
+          {items.length===0&&<div style={{fontSize:11,color:"#ccc",padding:"4px 0"}}>Keine Aufträge</div>}
+          {t.oQty>0&&<div style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {t.oQty} bestellt</div>}
         </div>
+        <button type="button" disabled={orderQty===0} onClick={()=>{if(orderQty>0){onBestellen(blank,key,isCapKey,capColor,orderQty);setCustomQty(q=>({...q,[cqKey]:0}));}}}
+          style={{background:orderQty===0?"#f0f0f0":"#1a9a50",borderRadius:10,padding:"6px 14px",border:"none",cursor:orderQty===0?"not-allowed":"pointer",opacity:orderQty===0?0.5:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,minWidth:56}}>
+          <div style={{fontSize:9,color:orderQty===0?"#bbb":"#fff",fontWeight:700}}>BESTELLEN</div>
+          <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:orderQty===0?"#bbb":"#fff",lineHeight:1}}>{orderQty}</div>
+        </button>
       </div>
     );
   };
@@ -4039,29 +4034,46 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
                     const isInactive=state==="done"||state==="none";
                     const isOpen=openSize===`${blankId}-${key}`;
+                    const cqKey=blankId+"-"+key;
+                    const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMin;
+                    const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
                     return(<React.Fragment key={key}>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"stretch",
                         background:isOpen?"#fff":isInactive?"#f0f0f0":"#f8f8f8",
-                        borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,height:92,position:"relative",cursor:"pointer",opacity:state==="none"?0.35:state==="done"?0.6:1,border:isOpen?"2px solid #e84142":"1px solid transparent"}}
+                        borderRadius:14,padding:"10px 10px 8px",flex:1,minWidth:0,minHeight:130,position:"relative",
+                        opacity:state==="none"?0.35:state==="done"?0.6:1,
+                        border:isOpen?"2px solid #e84142":"1px solid transparent",cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
-                        <span style={{...F_HEAD_STYLE,fontSize:16,color:isInactive?"#bbb":"#666",fontWeight:800,lineHeight:1,position:"absolute",top:8}}>{label}</span>
+                        {/* Row 1: MIN label MAX */}
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                          <span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#e84142",lineHeight:1}}>{remainMin}</span>
+                          <span style={{...F_HEAD_STYLE,fontSize:16,color:isInactive?"#bbb":"#555",fontWeight:800,lineHeight:1}}>{label}</span>
+                          {minStockVal>0&&remainMax!==remainMin
+                            ?<span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#f08328",lineHeight:1}}>{remainMax}</span>
+                            :<span style={{width:16}}/>}
+                        </div>
+                        {/* Row 2: - qty + */}
                         {state==="none"
-                          ?<span style={{...F_HEAD_STYLE,fontSize:18,fontWeight:800,color:"#ccc",lineHeight:1}}>—</span>
+                          ?<div style={{display:"flex",alignItems:"center",justifyContent:"center",flex:1}}><span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:800,color:"#ccc"}}>—</span></div>
                           :state==="done"
-                          ?<span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#bbb",lineHeight:1}}>✓</span>
-                          :<div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                            <span style={{...F_HEAD_STYLE,fontSize:24,fontWeight:900,color:"#e84142",lineHeight:1}}>{remainMin}</span>
-                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800,color:"#f08328",lineHeight:1}}>/{remainMax}</span>}
+                          ?<div style={{display:"flex",alignItems:"center",justifyContent:"center",flex:1}}><span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#bbb"}}>✓</span></div>
+                          :<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flex:1}} onClick={e=>e.stopPropagation()}>
+                            <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
+                              style={{width:34,height:34,borderRadius:9,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:18,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                            <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:cq>0?"#111":"#ccc",lineHeight:1,minWidth:28,textAlign:"center"}}>{cq}</span>
+                            <button type="button" onClick={()=>setCq(cq+1)}
+                              style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                           </div>}
-                        <span style={{position:"absolute",top:3,right:4}}><StockBadge value={avail} size={18}/></span>
-                        {hasStCode&&<div style={{position:"absolute",bottom:4,right:4}}>
-                          <button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
-                            style={{padding:"1px 4px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
+                        {/* Row 3: ON STOCK + CSV */}
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
+                          <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":avail===0?"#e84142":"#888"}}>{avail}</strong></span>
+                          {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
+                            style={{padding:"1px 5px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
                             CSV
-                          </button>
-                        </div>}
+                          </button>}
+                        </div>
                       </div>
-                      {isOpen&&renderDetail(t,blankId,blank)}
+                      {isOpen&&renderDetail(t,blankId,blank,cq,cqKey)}
                     </React.Fragment>);
                   })}
                 </div>
@@ -4070,27 +4082,32 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor,minStockVal}=t;
                     const isInactive=state==="done"||state==="none";
                     const isOpen=openSize===`${blankId}-${key}`;
+                    const cqKey=blankId+"-"+key;
+                    const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMin;
+                    const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
                     return(<React.Fragment key={key}>
                       <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
-                        style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,cursor:"pointer",
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,cursor:"pointer",
                           background:isOpen?"#fff":isInactive?"#f0f0f0":"#f8f8f8",opacity:state==="none"?0.4:state==="done"?0.6:1,border:isOpen?"2px solid #e84142":"1px solid transparent"}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
-                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:40}}>{label}</span>
-                        <div style={{flex:1,fontSize:11,color:"#888"}}>Bedarf: <strong style={{color:isInactive?"#bbb":"#111"}}>{needed}</strong> · Lager: <strong style={{color:isInactive?"#bbb":avail>=needed?"#1a9a50":"#e84142"}}>{avail}</strong></div>
+                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:32}}>{label}</span>
+                        <div style={{fontSize:10,color:"#888",flexShrink:0}}>
+                          <StockBadge value={avail} size={18}/>
+                        </div>
+                        <div style={{flex:1}}/>
                         {state==="none"
                           ?<span style={{...F_HEAD_STYLE,fontSize:18,fontWeight:800,color:"#ccc",flexShrink:0}}>—</span>
                           :state==="done"
                           ?<span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#bbb",flexShrink:0}}>✓</span>
-                          :<div style={{display:"flex",alignItems:"baseline",gap:2,flexShrink:0}}>
-                            <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#e84142"}}>{remainMin}</span>
-                            {minStockVal>0&&remainMax!==remainMin&&<span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#f08328"}}>/{remainMax}</span>}
+                          :<div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
+                            <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
+                              style={{width:28,height:28,borderRadius:7,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:16,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                            <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:24,textAlign:"center"}}>{cq}</span>
+                            <button type="button" onClick={()=>setCq(cq+1)}
+                              style={{width:28,height:28,borderRadius:7,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:16,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                           </div>}
-                        {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
-                          style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#bbb",fontSize:9,fontWeight:800,cursor:"pointer",flexShrink:0}}>
-                          CSV
-                        </button>}
                       </div>
-                      {isOpen&&renderDetail(t,blankId,blank)}
+                      {isOpen&&renderDetail(t,blankId,blank,cq,cqKey)}
                     </React.Fragment>);
                   })}
                 </div>}
