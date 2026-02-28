@@ -753,7 +753,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1}}>
       <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{SZ(size)}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
@@ -766,6 +766,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
         <button onClick={onDec} style={btn(30,true)}>−</button>
         <button onClick={onInc} style={btn(30)}>+</button>
       </div>
+      {minVal>0&&<span style={{fontSize:9,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:belowMin?"#e84142":"#888"}}>{minVal}</strong></span>}
     </div>
   );
 }
@@ -942,7 +943,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#bbb"}}>{product.color}</span>}
             {product.category&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category}</span>}
-            {product.fit&&<span style={{fontSize:10,background:"#e8f4fd",color:"#2563eb",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.fit}</span>}
+            {product.fit&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.fit}</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
@@ -1053,7 +1054,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
               {blank&&<span style={{fontSize:13,color:"#999",fontWeight:500}}>{blank.name} {blank.color}</span>}
               {!blank&&<span style={{fontSize:13,color:"#bbb"}}>Kein Blank</span>}
               {blank?.category&&<span style={{fontSize:11,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.category}</span>}
-              {blank?.fit&&<span style={{fontSize:11,background:"#e8f4fd",color:"#2563eb",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.fit}</span>}
+              {blank?.fit&&<span style={{fontSize:11,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.fit}</span>}
             </div>
           </div>
           <div style={{display:"flex",gap:6,flexShrink:0}}>
@@ -4070,12 +4071,11 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 <div style={S.cardHdr}>
                   <SmartDot item={blank} size={22}/>
                   <div><div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800,color:"#111"}}>{blank.name}</div><div style={{fontSize:11,color:"#bbb"}}>{blank.color} · {blank.category}{blank.fit?` · ${blank.fit}`:""}</div></div>
-                  {hasStCode&&<button type="button" onClick={toggleProduct}
-                    style={{padding:"3px 7px",borderRadius:6,border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:10,fontWeight:800,cursor:"pointer",flexShrink:0,letterSpacing:0.3}}>
-                    CSV
-                  </button>}
-                  
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
+                    {hasStCode&&<button type="button" onClick={toggleProduct}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allCsvSelected?"#111":someCsvSelected?"#f0f0f0":"transparent",color:allCsvSelected?"#fff":someCsvSelected?"#444":"#bbb",fontSize:11,fontWeight:800,cursor:"pointer",border:`1px solid ${allCsvSelected?"#111":someCsvSelected?"#888":"#ddd"}`,letterSpacing:0.5}}>
+                      CSV
+                    </button>}
                     <button type="button" disabled={allDone||minSizes.length===0}
                       style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef1f0",color:allDone?"#bbb":"#e84142",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
