@@ -2916,21 +2916,6 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
   useEffect(() => { loadProducts(); loadStock(); loadColors(); loadPrices(); }, [sheetsUrl]);
 
-  // Eagerly load images for visible styles (first 20)
-  useEffect(() => {
-    if(!sheetsUrl || !filtered.length) return;
-    const toLoad = filtered.slice(0,20).filter(s => !imgCache[s.StyleCode]).map(s => s.StyleCode);
-    if(toLoad.length === 0) return;
-    // Load in batches of 3 to avoid flooding
-    let i = 0;
-    const loadNext = () => {
-      if(i >= toLoad.length) return;
-      const code = toLoad[i++];
-      loadImages(code).then(loadNext);
-    };
-    loadNext(); loadNext(); loadNext();
-  }, [filtered, sheetsUrl]);
-
   // Parse V2 response into displayable styles
   const styles = useMemo(() => {
     if(!ststProducts) return [];
@@ -5383,7 +5368,7 @@ function AppInner({currentUser,onLogout}){
   const [prioFilter,setPrioFilter]=useState("Alle");
   const dragItem=useRef(null),dragOver=useRef(null);
 
-  const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(!search||p.name.toLowerCase().includes(search.toLowerCase())||((p.color||"").toLowerCase().includes(search.toLowerCase()))));
+  const filtered=products.filter(p=>(catFilter==="All"||p.category===catFilter)&&(!search||(p.name||"").toLowerCase().includes(search.toLowerCase())||((p.color||"").toLowerCase().includes(search.toLowerCase()))));
   // Group filtered products by name, sorted alphabetically
   const groupedProducts = useMemo(() => {
     const groups = {};
@@ -5862,12 +5847,12 @@ function AppInner({currentUser,onLogout}){
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {filtered.length===0
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
-                :groupedProducts.map(group=>(
-                  <div key={group.name}>
-                    {(groupedProducts.length>1||group.items.length>1) && <div style={{fontSize:13,fontWeight:800,color:"#444",padding:"8px 2px 4px",display:"flex",alignItems:"center",gap:6}}>
-                      {group.name} <span style={{fontSize:11,color:"#bbb",fontWeight:600}}>{group.items.length} Farbe{group.items.length!==1?"n":""}</span>
+                :groupedProducts.map(group=>{
+                  const showHeader = groupedProducts.length>1;
+                  return <div key={group.name} style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {showHeader && <div style={{fontSize:13,fontWeight:800,color:"#444",padding:"8px 2px 4px",display:"flex",alignItems:"center",gap:6}}>
+                      {group.name} {group.items.length>1 && <span style={{fontSize:11,color:"#bbb",fontWeight:600}}>{group.items.length} Farben</span>}
                     </div>}
-                    <div style={{display:"flex",flexDirection:"column",gap:6}}>
                     {group.items.map(p=>(
                       <div key={p.id} draggable={!mobile} onDragStart={e=>onProductDragStart(e,p.id)} onDragEnter={()=>onProductDragEnter(null,p.id)} onDragEnd={onProductDragEnd} onDragOver={e=>e.preventDefault()} style={{opacity:dragItem.current===p.id?0.45:1,transition:"opacity 0.15s"}}>
                         <ProductCard product={p} onUpdate={u=>{
@@ -5888,10 +5873,8 @@ function AppInner({currentUser,onLogout}){
 })();}})} onEdit={()=>setShowProdModal(p)}/>
                       </div>
                     ))}
-                    </div>
-                  </div>
-                ))}
-
+                  </div>;
+                })}
             </div>
             </>}
           </div>
