@@ -561,16 +561,18 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
 // ─── Product Card ─────────────────────────────────────────────────
 function ProductCard({product,onUpdate,onDelete,onEdit}){
   const mobile=useIsMobile();
+  const [expanded,setExpanded]=useState(false);
   const isCap=(product.capColors?.length>0);
   const total=totalStock(product);
   const vals=isCap?(product.capColors||[]).map(c=>c.stock):Object.values(product.stock||{});
   const allOut=vals.every(v=>v===0),someOut=!allOut&&vals.some(v=>v===0),hasLow=!allOut&&!someOut&&vals.some(v=>v>0&&v<=LOW_STOCK);
   const adj=(size,d)=>onUpdate({...product,stock:{...(product.stock||{}),[size]:Math.max(0,((product.stock||{})[size]||0)+d)}});
   const adjCap=(id,d)=>onUpdate({...product,capColors:(product.capColors||[]).map(c=>c.id===id?{...c,stock:Math.max(0,c.stock+d)}:c)});
+  const showSizes = !mobile || expanded;
   return(
-    <div style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:12}}>
+    <div style={{background:"#fff",borderRadius:16,padding:mobile?16:20,border:"1px solid #ebebeb",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",display:"flex",flexDirection:"column",gap:showSizes?12:0}}>
       {/* Header */}
-      <div style={S.row10}>
+      <div onClick={mobile?()=>setExpanded(o=>!o):undefined} style={{...S.row10,cursor:mobile?"pointer":undefined,userSelect:mobile?"none":undefined}}>
         {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0}}>⠿</div>}
         <SmartDot item={product} size={mobile?24:28}/>
         <div style={{flex:1,minWidth:0}}>
@@ -581,7 +583,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
             {product.fit&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.fit}</span>}
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}} onClick={e=>e.stopPropagation()}>
           <div style={{textAlign:"right"}}>
             <div style={{...F_HEAD_STYLE,fontSize:mobile?26:30,fontWeight:900,color:"#111",lineHeight:1}}>{total}</div>
             <div style={{fontSize:10,color:"#bbb",fontWeight:700}}>TOTAL</div>
@@ -591,7 +593,8 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           </div>
         </div>
       </div>
-      {/* Stock grid */}
+      {/* Stock grid (collapsible on mobile) */}
+      {showSizes&&<>
       {isCap?(
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {(product.capColors||[]).map(c=>{
@@ -621,6 +624,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           {DEFAULT_SIZES.map(size=><StockCell key={size} size={size} value={(product.stock??{})[size]??0} minVal={(product.minStock??{})[size]??0} onInc={()=>adj(size,1)} onDec={()=>adj(size,-1)} onSet={(v)=>onUpdate({...product,stock:{...(product.stock||{}),[size]:v}})}/>)}
         </div>
       )}
+      </>}
       {/* Mobile reorder link */}
 
     </div>
@@ -5989,7 +5993,7 @@ function AppInner({currentUser,onLogout}){
               {filtered.length===0
                 ?<div style={{color:"#ccc",fontSize:14,padding:60,textAlign:"center"}}>Keine Produkte gefunden</div>
                 :groupedProducts.map(group=>{
-                  const isOpen = expandedGroups[group.name] !== false; // default open
+                  const isOpen = expandedGroups[group.name] === true; // default closed
                   const groupStock = group.items.reduce((a,p)=>{const SIZES=["XXS","XS","S","M","L","XL","XXL","XXXL"];return a+SIZES.reduce((b,s)=>b+((p.stock||{})[s]||0),0);},0);
                   return <div key={group.name}>
                     {groupedProducts.length>1 && <div onClick={()=>setExpandedGroups(prev=>({...prev,[group.name]:!isOpen}))}
