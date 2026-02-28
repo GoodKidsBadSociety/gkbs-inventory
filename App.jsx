@@ -4358,12 +4358,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const setCustomQty=setBedarfQty;
 
   // Read S/S stock from localStorage cache (safe, no hooks)
-  let ststStock = null;
-  try { const c = JSON.parse(localStorage.getItem("stst_stock")); if(c && c.data) ststStock = c.data; } catch(e) {}
+  var ssCache = null;
+  try { var _c = JSON.parse(localStorage.getItem("stst_stock")); if(_c && _c.data) ssCache = _c.data; } catch(e) {}
   // Helper: look up S/S stock for a blank + our size key
   const getSsStock = (blank, sizeKey) => {
     try {
-      if(!ststStock || !blank || !blank.stProductId || !blank.stColorCode) return null;
+      if(!ssCache || !blank || !blank.stProductId || !blank.stColorCode) return null;
       const sc = blank.stProductId, cc = blank.stColorCode;
       const SS_SIZE_MAP = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
       const SS_SIZE_ALT = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
@@ -4372,10 +4372,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
         sc + cc + (SS_SIZE_ALT[sizeKey]||sizeKey),
         sc + cc + sizeKey,
       ];
-      for(const sku of tries) { if(ststStock[sku] !== undefined) return ststStock[sku]; }
+      for(const sku of tries) { if(ssCache[sku] !== undefined) return ssCache[sku]; }
       const prefix = sc + cc;
       const sAlt = SS_SIZE_MAP[sizeKey]||sizeKey;
-      for(const [k,v] of Object.entries(ststStock)) {
+      for(const [k,v] of Object.entries(ssCache)) {
         if(k.startsWith(prefix) && (k.endsWith(sAlt) || k.endsWith(sizeKey))) return v;
       }
     } catch(e) {}
