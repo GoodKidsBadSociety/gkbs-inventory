@@ -753,7 +753,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",height:130,opacity:isOut?0.6:1}}>
       <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{SZ(size)}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
@@ -907,7 +907,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"transparent"}`}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",height:130,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"transparent"}`}}>
       <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{SZ(size)}</span>
       <div style={{textAlign:"center",lineHeight:1,margin:"4px 0"}}>
         <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
@@ -963,7 +963,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
             const isOut=c.stock===0;
             const isLow=!isOut&&c.stock<=LOW_STOCK;
             return(
-              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:mobile?60:70,opacity:isOut?0.6:1}}>
+              <div key={c.id} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:mobile?60:70,opacity:isOut?0.6:1,height:mobile?undefined:130}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:isOut?"#bbb":"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <CapStockNum value={c.stock} color={isOut?"#bbb":sCol(c.stock)} fontSize={mobile?24:28} onSet={v=>onUpdate({...product,capColors:(product.capColors||[]).map(x=>x.id===c.id?{...x,stock:Math.max(0,v)}:x)})}/>
@@ -1155,7 +1155,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
           {DEFAULT_SIZES.map(size=>{
             const soll=(prod.qty||{})[size]||0,done=(prod.done||{})[size]||0,avail=(blank?.stock??{})[size]??0;
             if(soll===0&&done===0)return(
-              <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#fafafa",borderRadius:14,padding:"10px 8px 8px",opacity:0.3}}>
+              <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"#fafafa",borderRadius:14,padding:"10px 8px 8px",opacity:0.3,height:130}}>
                 <span style={{...F_HEAD_STYLE,fontSize:16,color:"#bbb",fontWeight:800}}>{SZ(size)}</span>
                 <span style={{fontSize:32,fontWeight:900,color:"#ddd",lineHeight:1}}>—</span>
               </div>
@@ -2814,7 +2814,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                           <div key={color} style={{
                             display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,
                             background:isOut?"#f0f0f0":"#f8f8f8",
-                            borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1
+                            borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",height:130,opacity:isOut?0.6:1
                           }}>
                             <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{label}</span>
                             <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f08328":"#1a9a50",lineHeight:1}}>{qty}</span>
@@ -2868,7 +2868,7 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
                         <div key={v.id} style={{
                           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,
                           background:isOut?"#f0f0f0":"#f8f8f8",
-                          borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",opacity:isOut?0.6:1
+                          borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",height:130,opacity:isOut?0.6:1
                         }}>
                           <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{sizeLabel}</span>
                           <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":qty<min?"#f08328":"#1a9a50",lineHeight:1}}>{qty}</span>
@@ -4101,7 +4101,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"stretch",
                         background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
-                        borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,
+                        borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,height:isOpen?undefined:130,
                         opacity:state==="none"?0.5:state==="done"?0.65:1,
                         border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
@@ -4586,30 +4586,21 @@ function LoginScreen({onUnlock}){
 
   return(
     <div ref={bgRef} style={{
-      minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk', -apple-system, sans-serif",padding:20,position:"relative",overflow:"hidden",
-      "--posX":"0","--posY":"0",
-      backgroundImage:[
-        "linear-gradient(115deg, rgb(40 0 0), rgb(0 0 0))",
-        "radial-gradient(90% 100% at calc(50% + calc(var(--posX) * 1px)) calc(0% + calc(var(--posY) * 1px)), rgb(120 20 20), rgb(15 0 0))",
-        "radial-gradient(100% 100% at calc(80% - calc(var(--posX) * 1px)) calc(0% - calc(var(--posY) * 1px)), rgb(180 30 30), rgb(20 0 0))",
-        "radial-gradient(150% 210% at calc(100% + calc(var(--posX) * 1px)) calc(0% + calc(var(--posY) * 1px)), rgb(100 10 10), rgb(0 0 0))",
-        "radial-gradient(100% 100% at calc(100% - calc(var(--posX) * 1px)) calc(30% - calc(var(--posY) * 1px)), rgb(232 65 66), rgb(40 0 0))",
-        "linear-gradient(60deg, rgb(150 20 20), rgb(30 0 0))"
-      ].join(","),
-      backgroundBlendMode:"overlay, overlay, difference, difference, difference, normal"
+      height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk', -apple-system, sans-serif",padding:20,position:"fixed",top:0,left:0,right:0,bottom:0,overflow:"hidden",
+      background:"#e84142",boxSizing:"border-box"
     }}>
-      <div style={{background:"#fff",borderRadius:20,padding:"40px 32px",width:"100%",maxWidth:360,boxShadow:"0 20px 60px rgba(0,0,0,0.4)",position:"relative",zIndex:1}}>
-        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4,color:"#e84142"}}>GKBS</div>
-        <div style={{fontSize:13,color:"#bbb",fontWeight:600,marginBottom:28}}>Inventory Management</div>
+      <div style={{background:"transparent",padding:"40px 32px",width:"100%",maxWidth:360,position:"relative",zIndex:1}}>
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:-0.5,marginBottom:4,color:"#fff"}}>GKBS</div>
+        <div style={{fontSize:13,color:"rgba(255,255,255,0.6)",fontWeight:600,marginBottom:28}}>Inventory Management</div>
 
         {/* Profile selection */}
-        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8,marginBottom:10}}>PROFIL AUSWÄHLEN</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",fontWeight:700,letterSpacing:0.8,marginBottom:10}}>PROFIL AUSWÄHLEN</div>
         <div style={{display:"flex",gap:10,marginBottom:24}}>
           {realUsers.map(u=>(
             <button key={u.name} onClick={()=>{setSelected(u.name);setPw("");setError(false);}}
-              style={{flex:1,padding:"12px 6px",borderRadius:12,border:`2px solid ${selected===u.name?u.color:"#e8e8e8"}`,background:selected===u.name?u.color+"15":"#fff",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"all 0.15s"}}>
-              <div style={{width:36,height:36,borderRadius:"50%",background:u.color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900}}>{u.avatar}</div>
-              <span style={{fontSize:11,fontWeight:700,color:selected===u.name?u.color:"#555"}}>{u.name}</span>
+              style={{flex:1,padding:"12px 6px",borderRadius:12,border:`2px solid ${selected===u.name?"#fff":"rgba(255,255,255,0.25)"}`,background:selected===u.name?"rgba(255,255,255,0.15)":"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"all 0.15s"}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:"#fff",color:"#e84142",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900}}>{u.avatar}</div>
+              <span style={{fontSize:11,fontWeight:700,color:selected===u.name?"#fff":"rgba(255,255,255,0.7)"}}>{u.name}</span>
             </button>
           ))}
         </div>
@@ -4624,28 +4615,28 @@ function LoginScreen({onUnlock}){
                 value={pw}
                 onChange={e=>{setPw(e.target.value);setError(false);}}
                 onKeyDown={e=>e.key==="Enter"&&check()}
-                style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#e84142":"#e8e8e8"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"#fef1f0":"#fff",transition:"border-color 0.2s"}}
+                style={{width:"100%",padding:"14px 46px 14px 16px",borderRadius:12,border:`2px solid ${error?"#fff":"rgba(255,255,255,0.3)"}`,fontSize:16,outline:"none",boxSizing:"border-box",background:error?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.1)",color:"#fff",transition:"border-color 0.2s","::placeholder":{color:"rgba(255,255,255,0.4)"}}}
               />
-              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#bbb",padding:0,lineHeight:1,display:"flex"}}>
+              <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.6)",padding:0,lineHeight:1,display:"flex"}}>
                 {show
                   ?<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                   :<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 }
               </button>
             </div>
-            {error&&<div style={{color:"#e84142",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
-            <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#111",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
+            {error&&<div style={{color:"#fff",fontSize:13,fontWeight:600,marginBottom:8}}>Falsches Passwort</div>}
+            <button onClick={check} style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#fff",color:"#e84142",fontSize:15,fontWeight:800,cursor:"pointer"}}>
               Einloggen
             </button>
           </>
         )}
 
         {/* Demo button */}
-        <div style={{borderTop:"1px solid #f0f0f0",marginTop:20,paddingTop:16}}>
-          <button onClick={loginDemo} style={{width:"100%",padding:"12px",borderRadius:12,border:"1.5px dashed #f08328",background:"#fff8f0",color:"#f08328",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f08328" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v2H9zM10 8v5"/><path d="M14 8v3"/><rect x="4" y="5" width="16" height="16" rx="2"/></svg>
+        <div style={{borderTop:"1px solid rgba(255,255,255,0.2)",marginTop:20,paddingTop:16}}>
+          <button onClick={loginDemo} style={{width:"100%",padding:"12px",borderRadius:12,border:"1.5px dashed rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v2H9zM10 8v5"/><path d="M14 8v3"/><rect x="4" y="5" width="16" height="16" rx="2"/></svg>
             Demo-Modus starten
-            <span style={{fontSize:10,color:"#cba46a",fontWeight:500}}>· ohne Login</span>
+            <span style={{fontSize:10,color:"rgba(255,255,255,0.5)",fontWeight:500}}>· ohne Login</span>
           </button>
         </div>
       </div>
