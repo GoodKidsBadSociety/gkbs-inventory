@@ -1,5 +1,5 @@
 // GKBS INVENTORY v1.81
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 // Prevent iOS auto-zoom on input focus
 if (typeof document !== "undefined") {
@@ -566,12 +566,14 @@ const IC_LAYOUT=({size=16,color="currentColor"})=><svg width={size} height={size
 const IC_SETTINGS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
 const IC_PAINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3"/></svg>;
 
-// Stock badge: house outline with number inside
+// Stock badge: solid house shape with white number inside
 function StockBadge({value,size=22}){
   const c=sCol(value);
   return <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",position:"relative",width:size,height:size}}>
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>
-    <span style={{position:"absolute",top:size*0.45,fontSize:size*0.38,fontWeight:900,color:c,lineHeight:1,fontFamily:"'DIN Alternate','DIN Next',system-ui,sans-serif"}}>{value}</span>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={c} stroke="none">
+      <path d="M12 2L2 10V22H22V10L12 2Z"/>
+    </svg>
+    <span style={{position:"absolute",top:size*0.42,fontSize:size*0.44,fontWeight:900,color:"#fff",lineHeight:1,fontFamily:"'DIN Alternate','DIN Next',system-ui,sans-serif"}}>{value}</span>
   </div>;
 }
 const IC_CLIPBOARD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>;
@@ -2570,10 +2572,17 @@ function RestockView({sheetsUrl, products, dtfItems, shopifyLinks, onAddProd}){
   const [hiddenIds,setHiddenIds]=useState([]);
   const [showHidden,setShowHidden]=useState(false);
 
-  // Load from cache only (Shopify tab fills the cache)
+  // Load from cache, or fetch directly from Shopify API
   useEffect(()=>{
     const cached=shopCacheGet("shopify_products");
-    if(cached){setShopProds(cached);setLoading(false);}
+    if(cached){setShopProds(cached);setLoading(false);return;}
+    // No cache – fetch directly
+    if(sheetsUrl){
+      setLoading(true);
+      fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"})
+        .then(r=>r.text()).then(t=>{const d=JSON.parse(t);if(d.products){setShopProds(d.products);shopCacheSet("shopify_products",d.products);}setLoading(false);})
+        .catch(()=>setLoading(false));
+    }
     // Load hidden IDs from Sheets if available
     if(!sheetsUrl)return;
     fetch(`${sheetsUrl}?action=restock_hidden`,{redirect:"follow"})
@@ -3140,13 +3149,23 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                         const v=cvars[0];
                         const qty=v.inventory_quantity||0;
                         const colorLink = shopifyLinks.find(l=>l.shopifyProductId==String(sp.id)&&l.colorGroup===color&&l.linkLevel==="color");
+                        const adjShopInvC=async(delta)=>{
+                          if(!sheetsUrl)return;
+                          const nq=Math.max(0,qty+delta);
+                          setShopifyProds(ps=>ps.map(p=>p.id===sp.id?{...p,variants:(p.variants||[]).map(vv=>vv.id===v.id?{...vv,inventory_quantity:nq}:vv)}:p));
+                          const updated=(shopCacheGet("shopify_products")||[]).map(p=>String(p.id)===String(sp.id)?{...p,variants:(p.variants||[]).map(vv=>vv.id===v.id?{...vv,inventory_quantity:nq}:vv)}:p);
+                          shopCacheSet("shopify_products",updated);
+                          try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_set_inventory",inventory_item_id:v.inventory_item_id,quantity:nq})});}catch(e){}
+                        };
                         return(
                           <div key={color} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:ci%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
                             <IC_PAINT size={11} color="#888"/>
                             <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333"}}>{color==="_default_"?"Default":color}</div>
                             <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
-                            <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
-                              <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#e84142":qty<=3?"#f08328":"#1a9a50"}}>{qty}</span>
+                            <div style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}}>
+                              <button onClick={e=>{e.stopPropagation();adjShopInvC(-1);}} disabled={qty===0} style={{width:22,height:22,borderRadius:6,border:"none",background:qty===0?"#f0f0f0":"#fef1f0",color:qty===0?"#ccc":"#e84142",fontSize:14,cursor:qty===0?"not-allowed":"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                              <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,minWidth:28,textAlign:"center",color:qty===0?"#e84142":qty<=3?"#f08328":"#1a9a50"}}>{qty}</span>
+                              <button onClick={e=>{e.stopPropagation();adjShopInvC(1);}} style={{width:22,height:22,borderRadius:6,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:14,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                             </div>
                             <button onClick={e=>{e.stopPropagation();setLinkModal({...sp,_shopifyProd:true,_colorGroup:color,_colorVariants:cvars});}}
                               style={{width:28,height:28,borderRadius:7,border:"1px solid",borderColor:colorLink?"#8db8f0":"#e8e8e8",background:colorLink?"#edf4fe":"#f8f8f8",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,flexShrink:0}}>
@@ -3182,12 +3201,22 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                             const sizePart = getSize(v);
                             const colorPart = hasMultipleColors ? color : "";
                             const label = hasMultipleColors ? `${colorPart} / ${sizePart}` : (v.title||"Default");
+                            const adjShopInv=async(delta)=>{
+                              if(!sheetsUrl)return;
+                              const nq=Math.max(0,qty+delta);
+                              setShopifyProds(ps=>ps.map(p=>p.id===sp.id?{...p,variants:(p.variants||[]).map(vv=>vv.id===v.id?{...vv,inventory_quantity:nq}:vv)}:p));
+                              const updated=(shopCacheGet("shopify_products")||[]).map(p=>String(p.id)===String(sp.id)?{...p,variants:(p.variants||[]).map(vv=>vv.id===v.id?{...vv,inventory_quantity:nq}:vv)}:p);
+                              shopCacheSet("shopify_products",updated);
+                              try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_set_inventory",inventory_item_id:v.inventory_item_id,quantity:nq})});}catch(e){}
+                            };
                             return(
                               <div key={v.id} style={{display:"flex",alignItems:"center",padding:"7px 16px",background:vi%2===0?"#fff":"#fafafa",fontSize:13,gap:8}}>
                                 <div style={{flex:1,minWidth:0,fontWeight:600,color:"#333",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</div>
                                 <div style={{fontSize:12,color:"#888",flexShrink:0}}>€{Number(v.price||0).toFixed(0)}</div>
-                                <div style={{minWidth:40,textAlign:"right",flexShrink:0}}>
-                                  <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,color:qty===0?"#e84142":qty<=3?"#f08328":"#1a9a50"}}>{qty}</span>
+                                <div style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}}>
+                                  <button onClick={e=>{e.stopPropagation();adjShopInv(-1);}} disabled={qty===0} style={{width:22,height:22,borderRadius:6,border:"none",background:qty===0?"#f0f0f0":"#fef1f0",color:qty===0?"#ccc":"#e84142",fontSize:14,cursor:qty===0?"not-allowed":"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                                  <span style={{...F_HEAD_STYLE,fontSize:15,fontWeight:900,minWidth:28,textAlign:"center",color:qty===0?"#e84142":qty<=3?"#f08328":"#1a9a50"}}>{qty}</span>
+                                  <button onClick={e=>{e.stopPropagation();adjShopInv(1);}} style={{width:22,height:22,borderRadius:6,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:14,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                                 </div>
                               </div>
                             );
@@ -5183,7 +5212,7 @@ function AppInner({currentUser,onLogout}){
             <button onClick={()=>setShowSettings(true)} title="Einstellungen" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SETTINGS size={15} color="#555"/></button>
             {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>
               <button onClick={()=>setShowProdModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button></>}
-            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
+            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
             {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
             {view==="bestellbedarf"&&<button onClick={()=>setShowManualBestell(true)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
             <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
