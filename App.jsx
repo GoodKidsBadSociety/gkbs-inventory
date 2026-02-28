@@ -28,6 +28,7 @@ const _shopCache={};
 function shopCacheGet(key){const e=_shopCache[key];if(!e)return null;if(Date.now()-e.ts>300000){delete _shopCache[key];return null;}return e.data;}
 function shopCacheSet(key,data){_shopCache[key]={data,ts:Date.now()};}
 const DEFAULT_SIZES = ["XXS","XS","S","M","L","XL","XXL","XXXL"];
+const SZ=(s)=>s==="XXXL"?"3XL":s;
 const DEFAULT_CATEGORIES = ["T-Shirt","Hoodie","Crewneck","Longsleeve","Shorts","Jacket","Cap","Bag","Other"];
 // Categories that use color variants instead of sizes (XXS-XXXL)
 const DEFAULT_VARIANT_CATS = ["Cap","Bag","Other"];
@@ -730,7 +731,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   if(mobile){
     return(
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:10,padding:"8px 12px",position:"relative",opacity:isOut?0.6:1}}>
-        <span style={{...F_HEAD_STYLE,fontSize:22,color:isOut?"#bbb":"#555",fontWeight:800,width:44}}>{size}</span>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:isOut?"#bbb":"#555",fontWeight:800,width:56,flexShrink:0}}>{SZ(size)}</span>
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
           {editing?(
             <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
@@ -752,7 +753,7 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
   }
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,opacity:isOut?0.6:1}}>
-      <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{size}</span>
+      <span style={{...F_HEAD_STYLE,fontSize:16,color:isOut?"#bbb":"#666",fontWeight:800,lineHeight:1}}>{SZ(size)}</span>
       {editing?(
         <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
           data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
@@ -889,7 +890,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   if(mobile){
     return(
       <div style={{display:"flex",alignItems:"center",gap:10,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:14,padding:"12px 16px",border:`1.5px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"#f0f0f0"}`}}>
-        <span style={{...F_HEAD_STYLE,fontSize:22,color:atLimit?"#e84142":"#333",fontWeight:900,minWidth:44,flexShrink:0}}>{size}</span>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:atLimit?"#e84142":"#333",fontWeight:900,width:56,flexShrink:0}}>{SZ(size)}</span>
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <div style={{display:"flex",alignItems:"baseline"}}>
             <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
@@ -905,7 +906,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   }
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"transparent"}`}}>
-      <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{size}</span>
+      <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{SZ(size)}</span>
       <span style={{position:"absolute",top:3,right:4}}><StockBadge value={avail} size={18}/></span>
       <div style={{textAlign:"center",lineHeight:1}}>
         <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
@@ -1146,7 +1147,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
             const soll=(prod.qty||{})[size]||0,done=(prod.done||{})[size]||0,avail=(blank?.stock??{})[size]??0;
             if(soll===0&&done===0)return(
               <div key={size} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#fafafa",borderRadius:12,padding:"8px 4px",opacity:0.3}}>
-                <span style={{...F_HEAD_STYLE,fontSize:16,color:"#bbb",fontWeight:800}}>{size}</span>
+                <span style={{...F_HEAD_STYLE,fontSize:16,color:"#bbb",fontWeight:800}}>{SZ(size)}</span>
                 <span style={{fontSize:32,fontWeight:900,color:"#ddd",lineHeight:1}}>—</span>
               </div>
             );
@@ -1223,7 +1224,7 @@ function ArchivedCard({prod,blank,onDelete}){
                 const done=(prod.done||{})[size]||0;
                 return(
                   <div key={size} style={{display:"flex",alignItems:"center",gap:10,background:"#f8f8f8",borderRadius:8,padding:"7px 12px"}}>
-                    <span style={{fontSize:12,fontWeight:800,color:"#555",width:36}}>{size}</span>
+                    <span style={{fontSize:12,fontWeight:800,color:"#555",width:36}}>{SZ(size)}</span>
                     <span style={{fontSize:18,fontWeight:900,color:"#111",flex:1}}>{qty} <span style={{fontSize:10,color:"#bbb",fontWeight:400}}>Stk</span></span>
                     {done>0&&<span style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {done} erledigt</span>}
                   </div>
@@ -1300,7 +1301,7 @@ function QtyRow({size,avail,over,value,onDec,onInc,onSet}){
   const commit=()=>{const n=parseInt(draft);if(!isNaN(n)&&n>=0)onSet(n);setEditing(false);};
   return(
     <div style={{display:"flex",alignItems:"center",gap:10,background:over?"#fef1f0":"#f8f8f8",borderRadius:10,padding:"8px 12px",border:`1px solid ${over?"#fcc8c6":"transparent"}`}}>
-      <span style={S.sizeTag}>{size}</span>
+      <span style={S.sizeTag}>{SZ(size)}</span>
       <span style={{fontSize:11,color:"#bbb",flex:1}}>Lager: {avail}</span>
       <button type="button" onClick={onDec} style={{width:32,height:32,borderRadius:8,border:"none",background:"#fef1f0",color:"#e84142",fontSize:18,cursor:"pointer",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
       {editing
@@ -1835,7 +1836,7 @@ function ConfirmProduceModal({prod,blank,onConfirm,onCancel}){
             </div>
           :hasShopify&&missingSizes.length>0
             ?<div style={{background:"#fef6ed",border:"1px solid #fed7aa",borderRadius:10,padding:"10px 14px"}}>
-                <div style={{fontSize:12,color:"#f08328",fontWeight:700}}>⚠ Shopify: Varianten nicht gefunden für {missingSizes.join(", ")}</div>
+                <div style={{fontSize:12,color:"#f08328",fontWeight:700}}>⚠ Shopify: Varianten nicht gefunden für {missingSizes.map(SZ).join(", ")}</div>
                 <div style={{fontSize:11,color:"#f08328",marginTop:2}}>Bestand wird nicht vollständig aktualisiert.</div>
               </div>
             :<div style={{background:"#fef1f0",border:"1px solid #fecaca",borderRadius:10,padding:"10px 14px",display:"flex",alignItems:"center",gap:8}}>
@@ -1921,7 +1922,7 @@ function BestellbedarfModal({prods,products,onClose}){
                 const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
                 const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
                 const minStock=isCapKey?0:((blank.minStock||{})[key]||0);
-                const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+                const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):SZ(key);
                 const toOrder=Math.max(0,needed-avail);
                 const toOrderWithMin=Math.max(0,needed+minStock-avail);
                 const ok=toOrder===0;
@@ -2450,7 +2451,7 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
                   )})
                   :DEFAULT_SIZES.map(size=>{const s=(p.stock||{})[size]??0,sv=p.buyPrice!=null?s*p.buyPrice:null;return(
                     <div key={size} style={{background:"#fff",border:"1px solid #ebebeb",borderRadius:10,padding:"8px 10px",textAlign:"center",minWidth:60,flex:1}}>
-                      <div style={{fontSize:10,color:"#bbb",fontWeight:800,marginBottom:3}}>{size}</div>
+                      <div style={{fontSize:10,color:"#bbb",fontWeight:800,marginBottom:3}}>{SZ(size)}</div>
                       <div style={{fontSize:20,fontWeight:900,color:s===0?"#e84142":s<=LOW_STOCK?"#f08328":"#111"}}>{s}</div>
                       {sv!=null&&<div style={{fontSize:10,color:"#bbb",marginTop:2}}>€{sv.toFixed(2)}</div>}
                     </div>
@@ -3060,7 +3061,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
             <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f0f0f0"}}>
               <div style={{...F_HEAD_STYLE,fontSize:16,fontWeight:800}}>Blank auswählen</div>
               <div style={{fontSize:12,color:"#bbb",marginTop:2}}>
-                {blankPickerData.line.title} · Größe: <b style={{color:"#111"}}>{blankPickerData.size}</b> · {blankPickerData.line.quantity}×
+                {blankPickerData.line.title} · Größe: <b style={{color:"#111"}}>{SZ(blankPickerData.size)}</b> · {blankPickerData.line.quantity}×
               </div>
             </div>
             <div style={{maxHeight:340,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:6}}>
@@ -3076,7 +3077,7 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
                       <div style={{fontSize:11,color:"#bbb"}}>{p.color||""} · {p.category}</div>
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
-                      <div style={{fontSize:10,color:"#bbb"}}>Gr. {blankPickerData.size}</div>
+                      <div style={{fontSize:10,color:"#bbb"}}>Gr. {SZ(blankPickerData.size)}</div>
                       <div style={{fontSize:18,fontWeight:900,color:sizeStock===0?"#e84142":sizeStock<3?"#f08328":"#1a9a50"}}>{sizeStock}</div>
                     </div>
                   </button>
@@ -4037,7 +4038,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               const capColor=isCapKey?(blank.capColors||[]).find(cc=>"cap_"+cc.id+"_"+cc.name===key):null;
               const avail=isCapKey?(capColor?.stock||0):((blank.stock||{})[key]||0);
               const minStockVal=isCapKey?0:((blank.minStock||{})[key]||0);
-              const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):key;
+              const label=isCapKey?(capColor?.name||key.split("_").slice(2).join("_")):SZ(key);
               const toOrder=Math.max(0,needed-avail);
               const toOrderMax=Math.max(0,needed+minStockVal-avail);
               const oQty=orderedQty(key);
