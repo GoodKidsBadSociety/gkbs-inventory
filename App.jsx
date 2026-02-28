@@ -84,374 +84,8 @@ async function sheetsSave(products, prods, dtfItems, bestellungen, categories, v
 
 
 
-// ─── Stanley/Stella Presets ───────────────────────────────────────
-const STANLEY_STELLA_PRESETS = [
-  // ── T-Shirts ──────────────────────────────────────────────────
-  {
-    id:"STTU169", category:"T-Shirt", name:"Creator 2.0", fit:"Unisex · Medium Fit · 180g",
-    colors:[
-      {code:"C001",name:"White",hex:"#f8f8f8",price:3.83},
-      {code:"C018",name:"Off White",hex:"#f0ede4",price:3.83},
-      {code:"C504",name:"Vintage White",hex:"#ede8dc",price:3.83},
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:3.83},
-      {code:"C002",name:"Black",hex:"#111111",price:4.15},
-      {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:4.15},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:4.15},
-      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:4.15},
-      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:4.15},
-      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:4.15},
-      {code:"C036",name:"Glazed Green",hex:"#4a7a5a",price:4.15},
-      {code:"C063",name:"Lavender",hex:"#b0a0cc",price:4.15},
-      {code:"C005",name:"Cotton Pink",hex:"#f2c4c4",price:4.15},
-      {code:"C150",name:"Earthy Red",hex:"#8b3a2a",price:4.15},
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:4.15},
-      {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:4.15},
-      {code:"C156",name:"Blue Grey",hex:"#6a7a8a",price:4.15},
-      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:4.15},
-      {code:"C149",name:"Blue Soul",hex:"#2a5a8a",price:4.15},
-      {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:4.15},
-      {code:"C129",name:"Bubble Pink",hex:"#f0a0b8",price:4.15},
-      {code:"C151",name:"Deep Plum",hex:"#4a1a3a",price:4.15},
-      {code:"C136",name:"Deep Teal",hex:"#1a4a4a",price:4.15},
-      {code:"C153",name:"Faded Olive",hex:"#8a8a5a",price:4.15},
-      {code:"C143",name:"Fiesta",hex:"#e84a2a",price:4.15},
-      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:4.15},
-      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:4.15},
-      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:4.15},
-      {code:"C155",name:"Honey Paper",hex:"#f0d890",price:4.15},
-      {code:"C715",name:"India Ink Grey",hex:"#3a3a4a",price:4.15},
-      {code:"C112",name:"Latte",hex:"#c8a878",price:4.15},
-      {code:"C355",name:"Lilac Dream",hex:"#c0a8d8",price:4.15},
-      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:4.15},
-      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:4.15},
-      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:4.15},
-      {code:"C135",name:"Mocha",hex:"#7a5040",price:4.15},
-      {code:"C142",name:"Nispero",hex:"#d8a060",price:4.15},
-      {code:"C048",name:"Ochre",hex:"#c8900a",price:4.15},
-      {code:"C357",name:"Pool Blue",hex:"#60b8d0",price:4.15},
-      {code:"C115",name:"Purple Love",hex:"#6a3a8a",price:4.15},
-      {code:"C004",name:"Red",hex:"#cc2020",price:4.15},
-      {code:"C116",name:"Red Brown",hex:"#7a3020",price:4.15},
-      {code:"C204",name:"Spectra Yellow",hex:"#f8d000",price:4.15},
-      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:4.15},
-      {code:"C358",name:"Stone",hex:"#b0a898",price:4.15},
-      {code:"C137",name:"Verdant Green",hex:"#3a7a3a",price:4.15},
-      {code:"C356",name:"Viva Yellow",hex:"#f8c820",price:4.15},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:4.15},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:4.15},
-      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:4.15},
-      {code:"C652",name:"Dark Heather Blue",hex:"#3a4a6a",price:4.15},
-      {code:"C651",name:"Dark Heather Grey",hex:"#5a5a60",price:4.15},
-    ]
-  },
-  {
-    id:"STTU788", category:"T-Shirt", name:"Freestyler", fit:"Unisex · Relaxed Fit · 240g",
-    colors:[
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:7.88},
-      {code:"C001",name:"White",hex:"#f8f8f8",price:7.88},
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:8.35},
-      {code:"C002",name:"Black",hex:"#111111",price:8.35},
-      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:8.35},
-      {code:"C361",name:"Cream",hex:"#f0e8c0",price:8.35},
-      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:8.35},
-      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:8.35},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:8.35},
-      {code:"C036",name:"Glazed Green",hex:"#4a7a5a",price:8.35},
-      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:8.35},
-      {code:"C085",name:"Kaffa Coffee",hex:"#5a3a2a",price:8.35},
-      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:8.35},
-      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:8.35},
-      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:8.35},
-      {code:"C135",name:"Mocha",hex:"#7a5040",price:8.35},
-      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:8.35},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:8.35},
-      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:8.35},
-      {code:"C651",name:"Dark Heather Grey",hex:"#5a5a60",price:8.35},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:8.35},
-      {code:"C731",name:"Heather Haze",hex:"#c0b8c8",price:8.35},
-    ]
-  },
-  {
-    id:"STTU073", category:"T-Shirt", name:"Freestyler Vintage", fit:"Unisex · Relaxed Fit · 240g",
-    colors:[
-      {code:"C162",name:"G. Dyed Anthracite",hex:"#6a6a6a",price:9.40},
-      {code:"C140",name:"G. Dyed Black Rock",hex:"#2a2a2a",price:9.40},
-      {code:"C158",name:"G. Dyed Blue Grey",hex:"#6a7a8a",price:9.40},
-      {code:"C732",name:"G. Dyed Blue Stone",hex:"#7ab0c8",price:9.40},
-      {code:"C109",name:"G. Dyed Khaki",hex:"#9a8a5a",price:9.40},
-      {code:"C733",name:"G. Dyed Latte",hex:"#c8a878",price:9.40},
-      {code:"C157",name:"G. Dyed Misty Grey",hex:"#b0b0b8",price:9.40},
-      {code:"C161",name:"G. Dyed Purple Love",hex:"#7a5a9a",price:9.40},
-    ]
-  },
-  {
-    id:"STTU171", category:"T-Shirt", name:"Sparker 2.0", fit:"Unisex · Relaxed Fit · 215g",
-    colors:[
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:5.83},
-      {code:"C018",name:"Off White",hex:"#f0ede4",price:5.83},
-      {code:"C001",name:"White",hex:"#f8f8f8",price:5.83},
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:6.62},
-      {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:6.62},
-      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:6.62},
-      {code:"C002",name:"Black",hex:"#111111",price:6.62},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:6.62},
-      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:6.62},
-      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:6.62},
-      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:6.62},
-      {code:"C112",name:"Latte",hex:"#c8a878",price:6.62},
-      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:6.62},
-      {code:"C135",name:"Mocha",hex:"#7a5040",price:6.62},
-      {code:"C142",name:"Nispero",hex:"#d8a060",price:6.62},
-      {code:"C129",name:"Bubble Pink",hex:"#f0a0b8",price:6.62},
-      {code:"C143",name:"Fiesta",hex:"#e84a2a",price:6.62},
-      {code:"C357",name:"Pool Blue",hex:"#60b8d0",price:6.62},
-      {code:"C115",name:"Purple Love",hex:"#6a3a8a",price:6.62},
-      {code:"C086",name:"Red Earth",hex:"#8b3020",price:6.62},
-      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:6.62},
-      {code:"C358",name:"Stone",hex:"#b0a898",price:6.62},
-      {code:"C134",name:"Violet",hex:"#5a4a8a",price:6.62},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:6.62},
-    ]
-  },
-  // ── Hoodies ───────────────────────────────────────────────────
-  {
-    id:"STSU177", category:"Hoodie", name:"Cruiser 2.0", fit:"Unisex · Medium Fit · 350g",
-    colors:[
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:16.75},
-      {code:"C018",name:"Off White",hex:"#f0ede4",price:16.75},
-      {code:"C001",name:"White",hex:"#f8f8f8",price:16.75},
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:16.75},
-      {code:"C253",name:"Anthracite",hex:"#4a4a4a",price:16.75},
-      {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:16.75},
-      {code:"C002",name:"Black",hex:"#111111",price:16.75},
-      {code:"C156",name:"Blue Grey",hex:"#6a7a8a",price:16.75},
-      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:16.75},
-      {code:"C149",name:"Blue Soul",hex:"#2a5a8a",price:16.75},
-      {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:16.75},
-      {code:"C129",name:"Bubble Pink",hex:"#f0a0b8",price:16.75},
-      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:16.75},
-      {code:"C005",name:"Cotton Pink",hex:"#f2c4c4",price:16.75},
-      {code:"C151",name:"Deep Plum",hex:"#4a1a3a",price:16.75},
-      {code:"C136",name:"Deep Teal",hex:"#1a4a4a",price:16.75},
-      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:16.75},
-      {code:"C150",name:"Earthy Red",hex:"#8b3a2a",price:16.75},
-      {code:"C153",name:"Faded Olive",hex:"#8a8a5a",price:16.75},
-      {code:"C143",name:"Fiesta",hex:"#e84a2a",price:16.75},
-      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:16.75},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:16.75},
-      {code:"C036",name:"Glazed Green",hex:"#4a7a5a",price:16.75},
-      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:16.75},
-      {code:"C730",name:"Heritage Brown",hex:"#7a5a3a",price:16.75},
-      {code:"C155",name:"Honey Paper",hex:"#f0d890",price:16.75},
-      {code:"C715",name:"India Ink Grey",hex:"#3a3a4a",price:16.75},
-      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:16.75},
-      {code:"C112",name:"Latte",hex:"#c8a878",price:16.75},
-      {code:"C063",name:"Lavender",hex:"#b0a0cc",price:16.75},
-      {code:"C355",name:"Lilac Dream",hex:"#c0a8d8",price:16.75},
-      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:16.75},
-      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:16.75},
-      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:16.75},
-      {code:"C135",name:"Mocha",hex:"#7a5040",price:16.75},
-      {code:"C142",name:"Nispero",hex:"#d8a060",price:16.75},
-      {code:"C048",name:"Ochre",hex:"#c8900a",price:16.75},
-      {code:"C357",name:"Pool Blue",hex:"#60b8d0",price:16.75},
-      {code:"C115",name:"Purple Love",hex:"#6a3a8a",price:16.75},
-      {code:"C004",name:"Red",hex:"#cc2020",price:16.75},
-      {code:"C116",name:"Red Brown",hex:"#7a3020",price:16.75},
-      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:16.75},
-      {code:"C358",name:"Stone",hex:"#b0a898",price:16.75},
-      {code:"C356",name:"Viva Yellow",hex:"#f8c820",price:16.75},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:16.75},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:16.75},
-      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:16.75},
-      {code:"C651",name:"Dark Heather Grey",hex:"#5a5a60",price:16.75},
-      {code:"C731",name:"Heather Haze",hex:"#c0b8c8",price:16.75},
-      {code:"C650",name:"Mid Heather Grey",hex:"#909098",price:16.75},
-    ]
-  },
-  {
-    id:"STSU797", category:"Hoodie", name:"Cooper Dry", fit:"Unisex · Oversized · 400g",
-    colors:[
-      {code:"C001",name:"White",hex:"#f8f8f8",price:24.89},
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:24.89},
-      {code:"C002",name:"Black",hex:"#111111",price:24.89},
-      {code:"C053",name:"Bright Blue",hex:"#1a6adc",price:24.89},
-      {code:"C078",name:"Butter",hex:"#f8e890",price:24.89},
-      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:24.89},
-      {code:"C101",name:"Fraiche Peche",hex:"#f8c0a0",price:24.89},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:24.89},
-      {code:"C085",name:"Kaffa Coffee",hex:"#5a3a2a",price:24.89},
-      {code:"C086",name:"Red Earth",hex:"#8b3020",price:24.89},
-      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:24.89},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:24.89},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:24.89},
-    ]
-  },
-  {
-    id:"STSU209", category:"Hoodie", name:"Slammer 2.0", fit:"Unisex · Oversized · 350g",
-    colors:[
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:19.85},
-      {code:"C001",name:"White",hex:"#f8f8f8",price:19.85},
-      {code:"C002",name:"Black",hex:"#111111",price:19.85},
-      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:19.85},
-      {code:"C361",name:"Cream",hex:"#f0e8c0",price:19.85},
-      {code:"C359",name:"Dusk",hex:"#8a7a9a",price:19.85},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:19.85},
-      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:19.85},
-      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:19.85},
-      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:19.85},
-      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:19.85},
-      {code:"C135",name:"Mocha",hex:"#7a5040",price:19.85},
-      {code:"C360",name:"Pink Joy",hex:"#f0a0b0",price:19.85},
-      {code:"C358",name:"Stone",hex:"#b0a898",price:19.85},
-      {code:"C134",name:"Violet",hex:"#5a4a8a",price:19.85},
-      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:19.85},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:19.85},
-    ]
-  },
-  {
-    id:"STSU211", category:"Hoodie", name:"Slammer 2.0 Vintage", fit:"Unisex · Oversized · 380g",
-    colors:[
-      {code:"C162",name:"G. Dyed Anthracite",hex:"#6a6a6a",price:23.84},
-      {code:"C140",name:"G. Dyed Black Rock",hex:"#2a2a2a",price:23.84},
-      {code:"C732",name:"G. Dyed Blue Stone",hex:"#7ab0c8",price:23.84},
-      {code:"C733",name:"G. Dyed Latte",hex:"#c8a878",price:23.84},
-      {code:"C157",name:"G. Dyed Misty Grey",hex:"#b0b0b8",price:23.84},
-    ]
-  },
-  // ── Crewnecks ─────────────────────────────────────────────────
-  {
-    id:"STSU208", category:"Crewneck", name:"Radder 2.0", fit:"Unisex · Oversized · 350g",
-    colors:[
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:15.65},
-      {code:"C001",name:"White",hex:"#f8f8f8",price:15.65},
-      {code:"C002",name:"Black",hex:"#111111",price:15.65},
-      {code:"C728",name:"Blue Ice",hex:"#a8d4e8",price:15.65},
-      {code:"C361",name:"Cream",hex:"#f0e8c0",price:15.65},
-      {code:"C359",name:"Dusk",hex:"#8a7a9a",price:15.65},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:15.65},
-      {code:"C223",name:"Khaki",hex:"#8a7a5a",price:15.65},
-      {code:"C729",name:"Mindful Blue",hex:"#3a6a9a",price:15.65},
-      {code:"C138",name:"Misty Grey",hex:"#b0b0b8",price:15.65},
-      {code:"C735",name:"Misty Jade",hex:"#8ac8b8",price:15.65},
-      {code:"C135",name:"Mocha",hex:"#7a5040",price:15.65},
-      {code:"C360",name:"Pink Joy",hex:"#f0a0b0",price:15.65},
-      {code:"C358",name:"Stone",hex:"#b0a898",price:15.65},
-      {code:"C134",name:"Violet",hex:"#5a4a8a",price:15.65},
-      {code:"C146",name:"Cool Heather Grey",hex:"#a8b0b8",price:15.65},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:15.65},
-    ]
-  },
-  {
-    id:"STSU210", category:"Crewneck", name:"Radder 2.0 Vintage", fit:"Unisex · Oversized · 380g",
-    colors:[
-      {code:"C162",name:"G. Dyed Anthracite",hex:"#6a6a6a",price:18.48},
-      {code:"C140",name:"G. Dyed Black Rock",hex:"#2a2a2a",price:18.48},
-      {code:"C732",name:"G. Dyed Blue Stone",hex:"#7ab0c8",price:18.48},
-      {code:"C733",name:"G. Dyed Latte",hex:"#c8a878",price:18.48},
-      {code:"C157",name:"G. Dyed Misty Grey",hex:"#b0b0b8",price:18.48},
-    ]
-  },
-  {
-    id:"STSU798", category:"Crewneck", name:"Ledger Dry", fit:"Unisex · Oversized · 400g",
-    colors:[
-      {code:"C001",name:"White",hex:"#f8f8f8",price:19.48},
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:19.48},
-      {code:"C002",name:"Black",hex:"#111111",price:19.48},
-      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:19.48},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:19.48},
-      {code:"C085",name:"Kaffa Coffee",hex:"#5a3a2a",price:19.48},
-      {code:"C086",name:"Red Earth",hex:"#8b3020",price:19.48},
-      {code:"C702",name:"Stargazer",hex:"#1a3a5a",price:19.48},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:19.48},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:19.48},
-    ]
-  },
-  {
-    id:"STSU795", category:"Crewneck", name:"Miller Dry", fit:"Unisex · Oversized · 400g",
-    colors:[
-      {code:"C089",name:"Aloe",hex:"#8db49a",price:21.63},
-      {code:"C002",name:"Black",hex:"#111111",price:21.63},
-      {code:"C028",name:"Desert Dust",hex:"#c8b89a",price:21.63},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:21.63},
-      {code:"C086",name:"Red Earth",hex:"#8b3020",price:21.63},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:21.63},
-    ]
-  },
-  // ── Bags ───────────────────────────────────────────────────────
-  {
-    id:"STAU760", category:"Bag", name:"Tote Bag", fit:"Unisex · One Size · 300g",
-    colors:[
-      {code:"C007",name:"Natural",hex:"#f0e8cc",price:2.94},
-      {code:"C001",name:"White",hex:"#f8f8f8",price:2.94},
-      {code:"C002",name:"Black",hex:"#111111",price:2.94},
-      {code:"C591",name:"Midnight Blue",hex:"#1a1a4a",price:2.94},
-      {code:"C250",name:"Heather Grey",hex:"#b8b8c0",price:2.94},
-    ]
-  },
-  {
-    id:"STAU117", category:"Bag", name:"Shopping Bag 2.0", fit:"Unisex · One Size · 400g",
-    colors:[
-      {code:"C054",name:"Natural Raw",hex:"#f0e8cc",price:4.62},
-      {code:"C145",name:"Aqua Blue",hex:"#5abcd8",price:4.62},
-      {code:"C002",name:"Black",hex:"#111111",price:4.62},
-      {code:"C244",name:"Burgundy",hex:"#6e1a2a",price:4.62},
-      {code:"C136",name:"Deep Teal",hex:"#1a4a4a",price:4.62},
-      {code:"C359",name:"Dusk",hex:"#8a7a9a",price:4.62},
-      {code:"C727",name:"French Navy",hex:"#1a2a4a",price:4.62},
-      {code:"C144",name:"Green Bay",hex:"#2a5a3a",price:4.62},
-      {code:"C112",name:"Latte",hex:"#c8a878",price:4.62},
-      {code:"C088",name:"Worker Blue",hex:"#2a3a7a",price:4.62},
-    ]
-  },
-  // ─── Beechfield Caps ─────────────────────────────────────────────
-  {
-    id:"BC653", category:"Cap", name:"Dad Cap", fit:"One Size · 80g · 100% Chino cotton",
-    productId:"", // Beechfield - no ST code, skip CSV
-    colors:[
-      {code:"",name:"Beige",hex:"#e8dcc8",price:2.91},
-      {code:"",name:"Black",hex:"#111111",price:2.91},
-      {code:"",name:"Bottle Green",hex:"#1a4a2a",price:2.91},
-      {code:"",name:"Classic Red",hex:"#cc2222",price:2.91},
-      {code:"",name:"Desert Sand",hex:"#c8a878",price:2.91},
-      {code:"",name:"Lavender",hex:"#b8a0cc",price:2.91},
-      {code:"",name:"Navy",hex:"#1a2a4a",price:2.91},
-      {code:"",name:"Olive Green",hex:"#5a6a2a",price:2.91},
-      {code:"",name:"Pastel Blue",hex:"#aaccee",price:2.91},
-      {code:"",name:"Pastel Lemon",hex:"#eeeea0",price:2.91},
-      {code:"",name:"Pastel Mint",hex:"#a0e8c0",price:2.91},
-      {code:"",name:"Pastel Pink",hex:"#f0c0cc",price:2.91},
-      {code:"",name:"Peach",hex:"#f0a888",price:2.91},
-      {code:"",name:"True Pink",hex:"#e8589a",price:2.91},
-      {code:"",name:"White",hex:"#f8f8f8",price:2.91},
-    ]
-  },
-  {
-    id:"BC655", category:"Cap", name:"Vintage Dad Cap", fit:"One Size · 93g · 100% Brushed washed cotton",
-    productId:"", // Beechfield - no ST code, skip CSV
-    colors:[
-      {code:"",name:"Vintage Black",hex:"#2a2a2a",price:3.40},
-      {code:"",name:"Vintage Bottle Green",hex:"#2a5a3a",price:3.40},
-      {code:"",name:"Vintage Brown",hex:"#5a3a1a",price:3.40},
-      {code:"",name:"Vintage Cornflower",hex:"#6a8acc",price:3.40},
-      {code:"",name:"Vintage Denim",hex:"#5a7a9a",price:3.40},
-      {code:"",name:"Vintage Dusky Pink",hex:"#e0a0a8",price:3.40},
-      {code:"",name:"Vintage Grey",hex:"#8a8a8a",price:3.40},
-      {code:"",name:"Vintage Jungle Camo",hex:"#4a5a3a",price:3.40},
-      {code:"",name:"Vintage Light Blue",hex:"#aac8e0",price:3.40},
-      {code:"",name:"Vintage Light Denim",hex:"#8aaac0",price:3.40},
-      {code:"",name:"Vintage Mustard",hex:"#c8a020",price:3.40},
-      {code:"",name:"Vintage Olive",hex:"#6a7a3a",price:3.40},
-      {code:"",name:"Vintage Orange",hex:"#e07030",price:3.40},
-      {code:"",name:"Vintage Peach",hex:"#e8a888",price:3.40},
-      {code:"",name:"Vintage Red",hex:"#aa3030",price:3.40},
-      {code:"",name:"Vintage Sage Green",hex:"#8aaa8a",price:3.40},
-      {code:"",name:"Vintage Sand",hex:"#d8c8a0",price:3.40},
-      {code:"",name:"Vintage Stone",hex:"#a09880",price:3.40},
-      {code:"",name:"Vintage True Pink",hex:"#e06090",price:3.40},
-    ]
-  },
-];
+// Presets removed — blanks are now imported via S/S Tab
+
 
 // ─── Stanley/Stella CSV Export ────────────────────────────────────
 function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvSelected) {
@@ -1602,28 +1236,8 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
   const [capColors,setCapColors]=useState(initial?.capColors||[{id:mkId(),name:"Black",hex:"#111111",stock:0}]);
   // Variant categories use color variants; all others use sizes (XXS-XXXL)
   const isCap=(variantCats||DEFAULT_VARIANT_CATS).includes(category);
-  const [showPresets, setShowPresets] = useState(false);
-  const [presetProduct, setPresetProduct] = useState(null);
-  const [presetCat, setPresetCat] = useState("T-Shirt");
   const [confirmDeleteInModal, setConfirmDeleteInModal] = useState(false);
   const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:16,width:"100%",outline:"none",boxSizing:"border-box"};
-
-  const applyPreset = (preset, colorObj) => {
-    const newCat = preset.category || presetCat;
-    setCategory(newCat);
-    setName(preset.name);
-    setColor(colorObj.name);
-    setColorHex(colorObj.hex);
-    setStProductId(preset.productId||preset.id||"");
-    setStColorCode(colorObj.code||"");
-    if(colorObj.price!=null) setBuyPrice(String(colorObj.price));
-    // Bag & Cap: load ALL colors from preset as capColors
-    if((variantCats||DEFAULT_VARIANT_CATS).includes(newCat)){
-      setCapColors(preset.colors.map(c=>({id:mkId(),name:c.name,hex:c.hex,stColorCode:c.code||"",stock:0,minStock:0})));
-    }
-    setShowPresets(false);
-    setPresetProduct(null);
-  };
 
   const doSave = () => {
     onSave({id:initial?.id||Date.now().toString(),name:(name||"Neues Produkt").trim(),category,fit,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock:isCap?{}:stock,minStock:isCap?{}:minStock,capColors:isCap?capColors:null});
@@ -1637,65 +1251,11 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
     </div>}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800,color:"#111"}}>{editing?"Produkt bearbeiten":"Neues Produkt"}</div>
 
-      {/* Stanley/Stella Preset Picker */}
+      {/* S/S Hint */}
       {!editing&&(
-        <div style={{display:"flex",flexDirection:"column",gap:6}}>
-          {/* Category buttons – show all cats that have S/S presets */}
-          {!presetProduct&&(()=>{
-            const presetCats=[...new Set(STANLEY_STELLA_PRESETS.map(p=>p.category))];
-            return <div style={{display:"flex",gap:0,borderBottom:"2px solid #f0f0f0",overflowX:"auto"}}>
-              {presetCats.map(cat=>(
-                <button key={cat} type="button"
-                  onClick={()=>{setPresetCat(cat);setShowPresets(true);}}
-                  style={{flex:1,padding:"8px 4px",border:"none",background:"transparent",
-                    borderBottom:showPresets&&presetCat===cat?"2px solid #111":"2px solid transparent",
-                    marginBottom:-2,
-                    color:showPresets&&presetCat===cat?"#111":"#bbb",
-                    fontWeight:showPresets&&presetCat===cat?800:600,fontSize:12,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",minWidth:0}}>
-                  {cat}
-                </button>
-              ))}
-            </div>;
-          })()}
-          {/* Product list */}
-          {showPresets&&!presetProduct&&(
-            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
-              {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>{
-                const isVarCat=(variantCats||DEFAULT_VARIANT_CATS).includes(presetCat);
-                return(
-                <button key={p.id} type="button"
-                  onClick={()=>{ if(isVarCat){applyPreset(p,p.colors[0]);}else{setPresetProduct(p);} }}
-                  style={{width:"100%",padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
-                    <div style={{fontSize:11,color:"#bbb"}}>{p.id} · {p.fit} · {p.colors.length} Farben</div>
-                  </div>
-                  {isVarCat
-                    ? <span style={{fontSize:11,background:"#ddfce6",color:"#1a9a50",borderRadius:6,padding:"2px 8px",fontWeight:700}}>Alle laden</span>
-                    : <span style={{color:"#bbb"}}>›</span>}
-                </button>
-                );})}
-            </div>
-          )}
-          {/* Color picker - only for size-based categories */}
-          {showPresets&&presetProduct&&!(variantCats||DEFAULT_VARIANT_CATS).includes(presetCat)&&(
-            <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
-                <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
-                <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{presetProduct.name}</div>
-              </div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:12,maxHeight:220,overflowY:"auto"}}>
-                {presetProduct.colors.map(c=>(
-                  <button key={c.code} type="button" onClick={()=>applyPreset(presetProduct,c)}
-                    title={c.name+" ("+c.code+")"}
-                    style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 10px",borderRadius:10,border:"1px solid #ebebeb",background:"#fff",cursor:"pointer",minWidth:72,flex:"0 0 auto"}}>
-                    <div style={{width:28,height:28,borderRadius:"50%",background:c.hex,border:"2px solid #e0e0e0",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.15)"}}/>
-                    <div style={{fontSize:9,fontWeight:700,color:"#555",textAlign:"center",lineHeight:1.2}}>{c.name}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+        <div style={{background:"#f8f8f8",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:10}}>
+          <IC_STELLA size={18} color="#bbb"/>
+          <div style={{fontSize:12,color:"#888"}}>Blanks über den <strong style={{color:"#555"}}>S/S Tab</strong> importieren</div>
         </div>
       )}
 
@@ -2989,37 +2549,19 @@ function ScrollTopButton(){
 
 
 // ─── Stanley/Stella View ──────────────────────────────────────────
-// ─── Blank Size Selector (for S/S import) ─────────────────────────
-function BlankSizeSelector({sizes, onSelect}){
-  const [selected, setSelected] = useState([]);
-  const toggle = (sz) => { const nxt = selected.includes(sz) ? selected.filter(s=>s!==sz) : [...selected, sz]; setSelected(nxt); onSelect(nxt); };
-  const allSizes = DEFAULT_SIZES;
-  return(
-    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-      {allSizes.map(sz => {
-        const available = sizes.includes(sz);
-        const active = selected.includes(sz);
-        return <button key={sz} onClick={()=>available&&toggle(sz)}
-          style={{width:52,height:40,borderRadius:10,border:"2px solid",
-            borderColor:active?"#1a9a50":"#e8e8e8",
-            background:active?"#f0fdf4":available?"#fff":"#f5f5f5",
-            color:active?"#1a9a50":available?"#555":"#ccc",
-            cursor:available?"pointer":"not-allowed",
-            fontWeight:800,fontSize:13,opacity:available?1:0.4}}>{SZ(sz)}</button>;
-      })}
-    </div>
-  );
-}
-
 // ─── S/S Import Modal ─────────────────────────────────────────────
 const FITS = ["Straight","Loose","Oversized"];
 function StStImportModal({info, onClose, onConfirm}){
   const im = info;
   const hexVal = im.hexCode ? (im.hexCode.startsWith("#") ? im.hexCode : `#${im.hexCode}`) : "#888";
-  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [stock, setStock] = useState(mkQty());
   const [fit, setFit] = useState(im.fit || "");
+  const adj = (sz, delta) => setStock(prev => ({...prev, [sz]: Math.max(0, (prev[sz]||0)+delta)}));
+  const setVal = (sz, val) => { const n=parseInt(val)||0; setStock(prev=>({...prev,[sz]:Math.max(0,n)})); };
+  const totalQty = DEFAULT_SIZES.reduce((a,sz)=>a+(stock[sz]||0),0);
+  const hasAnySizes = im.sizes && im.sizes.length > 0;
   return(
-    <ModalWrap onClose={onClose} width={420}>
+    <ModalWrap onClose={onClose} width={440}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Blank importieren</div>
       {/* Style info */}
       <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0"}}>
@@ -3040,22 +2582,71 @@ function StStImportModal({info, onClose, onConfirm}){
             color:fit===f?"#e84142":"#555",
             cursor:"pointer",fontWeight:800,fontSize:13}}>{f}</button>)}
       </div>
-      {/* Size toggles */}
-      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Größen auswählen</div>
-      <BlankSizeSelector sizes={im.sizes} onSelect={setSelectedSizes}/>
+      {/* Stock per size */}
+      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Bestand pro Größe</div>
+      <div style={{display:"flex",flexDirection:"column",gap:4}}>
+        {DEFAULT_SIZES.map(sz => {
+          const available = !hasAnySizes || im.sizes.includes(sz);
+          const qty = stock[sz]||0;
+          return <div key={sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
+            <div style={{width:42,fontSize:13,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
+            <button onClick={()=>available&&adj(sz,-1)} disabled={!available||qty===0}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:qty>0?"#e84142":"#ccc",cursor:available&&qty>0?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+            <input type="number" value={qty||""} placeholder="0" onChange={e=>available&&setVal(sz,e.target.value)}
+              style={{width:56,height:32,borderRadius:8,border:"1px solid #e8e8e8",textAlign:"center",fontSize:14,fontWeight:800,color:qty>0?"#1a9a50":"#ccc",outline:"none",background:qty>0?"#f0fdf4":"#fafafa"}}
+              disabled={!available}/>
+            <button onClick={()=>available&&adj(sz,1)} disabled={!available}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:available?"#1a9a50":"#ccc",cursor:available?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+            {qty>0 && <span style={{fontSize:11,color:"#1a9a50",fontWeight:700}}>{qty} Stk</span>}
+          </div>;
+        })}
+      </div>
       {/* Actions */}
       <div style={{display:"flex",gap:8,marginTop:16}}>
         <button onClick={onClose} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
         <button onClick={()=>onConfirm({
           styleName:im.styleName, styleCode:im.styleCode, color:im.color, colorCode:im.colorCode,
           hexCode:hexVal, category:im.category, fit:fit, composition:im.composition,
-          sizes:selectedSizes, stock:mkQty()
-        })} disabled={selectedSizes.length===0}
-          style={{flex:1,padding:12,borderRadius:10,border:"none",background:selectedSizes.length>0?"#1a9a50":"#ccc",color:"#fff",cursor:selectedSizes.length>0?"pointer":"not-allowed",fontWeight:800,fontSize:14}}>
-          Importieren ({selectedSizes.length})
+          stock:stock
+        })}
+          style={{flex:1,padding:12,borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>
+          Importieren{totalQty>0?` (${totalQty} Stk)`:""}
         </button>
       </div>
     </ModalWrap>
+  );
+}
+
+// ─── S/S Filter Chips ─────────────────────────────────────────────
+function StStFilterChips({label, value, options, onChange}){
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const active = value !== "all";
+  useEffect(()=>{
+    if(!open) return;
+    const handler = (e) => { if(ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return ()=> document.removeEventListener("mousedown", handler);
+  },[open]);
+  return(
+    <div style={{position:"relative"}} ref={ref}>
+      <button onClick={()=>setOpen(!open)}
+        style={{height:30,borderRadius:8,border:"1px solid",borderColor:active?"#1a9a50":"#e8e8e8",
+          background:active?"#f0fdf4":"#fff",color:active?"#1a9a50":"#666",
+          cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 10px",display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}>
+        {label}{active?`: ${value}`:""} <span style={{fontSize:8,marginLeft:2}}>{open?"▲":"▼"}</span>
+      </button>
+      {open && <div style={{position:"absolute",top:34,left:0,zIndex:100,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",minWidth:160,maxHeight:260,overflowY:"auto",padding:4}}>
+        <button onClick={()=>{onChange("all");setOpen(false);}}
+          style={{width:"100%",padding:"8px 12px",border:"none",background:value==="all"?"#f0fdf4":"transparent",color:value==="all"?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:value==="all"?800:600,borderRadius:8}}>
+          All
+        </button>
+        {options.map(o=><button key={o} onClick={()=>{onChange(o);setOpen(false);}}
+          style={{width:"100%",padding:"8px 12px",border:"none",background:value===o?"#f0fdf4":"transparent",color:value===o?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:value===o?800:600,borderRadius:8,whiteSpace:"nowrap"}}>
+          {o}
+        </button>)}
+      </div>}
+    </div>
   );
 }
 
@@ -3071,9 +2662,42 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [expanded, setExpanded] = useState({});
   const memCache = useRef({prods:null, stock:null});
   const [catFilter, setCatFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [fitFilter, setFitFilter] = useState("all");
+  const [colorGroupFilter, setColorGroupFilter] = useState("all");
   const [detail, setDetail] = useState(null); // style detail modal
   const [imgCache, setImgCache] = useState({}); // {styleCode: [{url,...}]}
   const [importModal, setImportModal] = useState(null); // {styleName, styleCode, color, colorCode, hexCode, sizes, ...}
+  const [colorHexMap, setColorHexMap] = useState({}); // ColorCode → "#hex"
+
+  // Load S/S color palette (ColorCode → hex)
+  const loadColors = async () => {
+    if(!sheetsUrl) return;
+    // Cache 7 days — colors rarely change
+    try{const c=JSON.parse(localStorage.getItem("stst_colors"));if(c&&c.ts&&(Date.now()-c.ts)<7*24*60*60*1000){setColorHexMap(c.data);return;}}catch(e){}
+    try {
+      const r = await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_colors"})});
+      const t = await r.text();
+      const d = JSON.parse(t);
+      if(d.error) { console.warn("[S/S Colors] Error:", d.error); return; }
+      const cols = d.colors;
+      if(Array.isArray(cols)){
+        const map = {};
+        cols.forEach(c => {
+          const code = c.ColorCode || c.Code || c.code;
+          // Try many possible hex fields
+          const hex = c.HexColorCode || c.Hex_Color_Code || c.HexCode || c.hex || c.RGB || c.rgb || c.Hex || "";
+          if(code && hex) map[code] = hex.startsWith("#") ? hex : `#${hex}`;
+        });
+        console.log("[S/S Colors] Loaded", Object.keys(map).length, "colors. Sample:", Object.entries(map).slice(0,5));
+        // Also log first color object keys for debugging
+        if(cols[0]) console.log("[S/S Colors] Fields:", Object.keys(cols[0]).join(", "));
+        setColorHexMap(map);
+        try{localStorage.setItem("stst_colors",JSON.stringify({ts:Date.now(),data:map}));}catch(e){}
+      }
+    } catch(e) { console.warn("[S/S Colors] fetch error:", e); }
+  };
 
   // Load products
   const loadProducts = async (force) => {
@@ -3141,7 +2765,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     } catch(e) {}
   };
 
-  useEffect(() => { loadProducts(); loadStock(); }, [sheetsUrl]);
+  useEffect(() => { loadProducts(); loadStock(); loadColors(); }, [sheetsUrl]);
 
   // Parse V2 response into displayable styles
   const styles = useMemo(() => {
@@ -3150,13 +2774,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     if(Array.isArray(ststProducts)) {
       // Check if it's V1 (flat list) or V2 (grouped)
       if(ststProducts.length > 0 && ststProducts[0].Variants) {
-        // V2 format — debug: log first style's keys and first variant's keys
-        if(ststProducts[0].Variants[0]){
-          const v0=ststProducts[0].Variants[0];
-          const colorKeys=Object.keys(v0).filter(k=>/hex|color/i.test(k));
-          console.log("[S/S V2] First variant color fields:", colorKeys.map(k=>k+"="+JSON.stringify(v0[k])));
-          console.log("[S/S V2] All variant keys:", Object.keys(v0).join(", "));
-        }
+        // V2 format
         return ststProducts;
       }
       // V1 flat list - group by StyleCode
@@ -3182,16 +2800,33 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   }, [ststProducts]);
 
   // Categories for filter
-  const categories = useMemo(() => {
-    const cats = new Set();
-    styles.forEach(s => { if(s.Category) cats.add(s.Category); });
-    return Array.from(cats).sort();
+  // Extract filter dimensions
+  const filterOpts = useMemo(() => {
+    const cats = new Set(), genders = new Set(), types = new Set(), fits = new Set(), colorGroups = new Set();
+    styles.forEach(s => {
+      if(s.Category) cats.add(s.Category);
+      if(s.Gender) genders.add(s.Gender);
+      if(s.Type) types.add(s.Type);
+      if(s.Fit) fits.add(s.Fit);
+      (s.Variants||[]).forEach(v => { if(v.ColorGroup) colorGroups.add(v.ColorGroup); });
+    });
+    return {
+      categories: Array.from(cats).sort(),
+      genders: Array.from(genders).sort(),
+      types: Array.from(types).sort(),
+      fits: Array.from(fits).sort(),
+      colorGroups: Array.from(colorGroups).sort()
+    };
   }, [styles]);
 
   // Filtered + searched styles
   const filtered = useMemo(() => {
     let f = styles;
     if(catFilter !== "all") f = f.filter(s => s.Category === catFilter);
+    if(genderFilter !== "all") f = f.filter(s => s.Gender === genderFilter);
+    if(typeFilter !== "all") f = f.filter(s => s.Type === typeFilter);
+    if(fitFilter !== "all") f = f.filter(s => s.Fit === fitFilter);
+    if(colorGroupFilter !== "all") f = f.filter(s => (s.Variants||[]).some(v => v.ColorGroup === colorGroupFilter));
     if(search.trim()) {
       const q = search.toLowerCase().trim();
       f = f.filter(s =>
@@ -3203,7 +2838,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       );
     }
     return f;
-  }, [styles, catFilter, search]);
+  }, [styles, catFilter, genderFilter, typeFilter, fitFilter, colorGroupFilter, search]);
+  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorGroupFilter].filter(f => f !== "all").length;
 
   // Helper: get stock for a SKU
   const getStock = (sku) => ststStock ? (ststStock[sku] || 0) : null;
@@ -3217,36 +2853,18 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     }, 0);
   };
 
-  // Group variants by color
-  const groupByColor = (variants, style) => {
+  // Group variants by color — uses colorHexMap from Color API
+  const groupByColor = (variants) => {
     const map = {};
     (variants||[]).forEach(v => {
       const key = v.ColorCode || v.Color || "_";
-      // Search ALL keys for hex value (S/S API field names vary)
-      let rawHex = "";
-      if(!rawHex) for(const k of Object.keys(v)){
-        if(/hex/i.test(k) && typeof v[k]==="string" && /^#?[0-9a-fA-F]{3,6}$/.test((v[k]||"").replace("#",""))){
-          rawHex = v[k]; break;
-        }
-      }
-      // Also check Color_Hex, HexColorCode etc explicitly
-      if(!rawHex) rawHex = v.HexColorCode || v.Hex_Color_Code || v.ColorHexCode || v.HexCode || v.hex_color_code || v.hexColorCode || v.hexcode || v.Color_Hex || "";
-      // Normalize: strip # if present (we add it in rendering)
-      rawHex = (rawHex||"").replace(/^#/,"");
-      if(!map[key]) map[key] = { color: v.Color||v.ColorCode, colorCode: v.ColorCode, hexCode: rawHex, variants: [] };
-      if(rawHex && !map[key].hexCode) map[key].hexCode = rawHex;
+      // Resolve hex: colorHexMap (from Color API) is the primary source
+      const hex = colorHexMap[key] || "";
+      if(!map[key]) map[key] = { color: v.Color||v.ColorCode, colorCode: v.ColorCode, hexCode: hex, variants: [] };
+      if(hex && !map[key].hexCode) map[key].hexCode = hex;
       map[key].variants.push(v);
     });
-    // Debug: log ALL keys of first variant to find hex
-    const vals = Object.values(map);
-    if(vals.length>0 && vals[0].variants.length>0){
-      const v0=vals[0].variants[0];
-      if(!vals[0].hexCode){
-        console.log("[S/S] NO HEX FOUND. All variant keys:", Object.keys(v0).join(", "));
-        console.log("[S/S] Full first variant:", JSON.stringify(v0).substring(0,800));
-      }
-    }
-    return vals;
+    return Object.values(map);
   };
 
   if(!sheetsUrl) return <div style={{textAlign:"center",padding:60,color:"#bbb"}}>Nicht verfügbar im Demo-Modus</div>;
@@ -3259,24 +2877,38 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
           <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:"#111"}}>Stanley/Stella</div>
           <div style={{fontSize:12,color:"#bbb"}}>{styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}</div>
         </div>
-        <button onClick={()=>{setStstProducts(null);setStstStock(null);try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");}catch(e){}loadProducts(true);loadStock(true);}}
+        <button onClick={()=>{setStstProducts(null);setStstStock(null);setColorHexMap({});try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");}catch(e){}loadProducts(true);loadStock(true);loadColors();}}
           style={{height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#f8f8f8",color:"#888",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:5}}>
           <IC_REFRESH size={12} color="#888"/> Neu laden
         </button>
       </div>
 
-      {/* Search + Filter */}
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        <div style={{flex:1,minWidth:180,position:"relative"}}>
-          <IC_SEARCH size={14} color="#bbb"/>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
-            style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+      {/* Search + Filters */}
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <div style={{flex:1,minWidth:180,position:"relative"}}>
+            <IC_SEARCH size={14} color="#bbb"/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
+              style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter("all");setGenderFilter("all");setTypeFilter("all");setFitFilter("all");setColorGroupFilter("all");}}
+            style={{height:36,borderRadius:10,border:"1px solid #fee2e2",background:"#fff",color:"#e84142",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:4}}>
+            ✕ Filter zurücksetzen ({activeFilterCount})
+          </button>}
         </div>
-        <select value={catFilter} onChange={e=>setCatFilter(e.target.value)}
-          style={{height:36,borderRadius:10,border:"1px solid #e8e8e8",fontSize:12,padding:"0 10px",background:"#fff",color:"#444",fontWeight:600}}>
-          <option value="all">Alle Kategorien</option>
-          {categories.map(c=><option key={c} value={c}>{c}</option>)}
-        </select>
+        {/* Filter chips */}
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"flex-start"}}>
+          {/* Gender */}
+          {filterOpts.genders.length > 1 && <StStFilterChips label="Gender" value={genderFilter} options={filterOpts.genders} onChange={setGenderFilter}/>}
+          {/* Category */}
+          {filterOpts.categories.length > 1 && <StStFilterChips label="Category" value={catFilter} options={filterOpts.categories} onChange={setCatFilter}/>}
+          {/* Type */}
+          {filterOpts.types.length > 1 && <StStFilterChips label="Type" value={typeFilter} options={filterOpts.types} onChange={setTypeFilter}/>}
+          {/* Fit */}
+          {filterOpts.fits.length > 1 && <StStFilterChips label="Fit" value={fitFilter} options={filterOpts.fits} onChange={setFitFilter}/>}
+          {/* Color Group */}
+          {filterOpts.colorGroups.length > 1 && <StStFilterChips label="Colors" value={colorGroupFilter} options={filterOpts.colorGroups} onChange={setColorGroupFilter}/>}
+        </div>
       </div>
 
       {/* Loading / Error */}
