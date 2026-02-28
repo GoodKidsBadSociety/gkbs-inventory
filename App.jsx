@@ -526,8 +526,8 @@ const S = {
 // ─── Style tokens ─────────────────────────────────────────────────
 const R="#e84142",OR="#f08328",GR="#1a9a50",GY="#bbb";
 const sCol=(v,lo=LOW_STOCK)=>v===0?R:v<=lo?OR:"#111";
-const capBg=(c,a)=>c?"#f0fdf4":a?"#fef6ed":"#f8f8f8";
-const capBd=(c,a)=>`1px solid ${c?"#bbf7d0":a?"#fcd5a8":"transparent"}`;
+const capBg=(c,a)=>c?"#f0fdf4":a?"#fef1f0":"#f8f8f8";
+const capBd=(c,a)=>`1px solid ${c?"#bbf7d0":a?"#fcc8c6":"transparent"}`;
 const btn=(w,red=false,dis=false)=>({width:w,height:w,borderRadius:7,border:"none",
   background:red?(dis?"#f0f0f0":"#fef1f0"):(dis?"#f0f0f0":"#ddfce6"),
   color:red?(dis?"#ccc":R):(dis?"#ccc":GR),
@@ -731,15 +731,18 @@ function StockCell({size,value,minVal,onInc,onDec,onSet,mobile}){
     return(
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:isOut?"#f0f0f0":"#f8f8f8",borderRadius:10,padding:"8px 12px",position:"relative",opacity:isOut?0.6:1}}>
         <span style={{...F_HEAD_STYLE,fontSize:22,color:isOut?"#bbb":"#555",fontWeight:800,width:44}}>{size}</span>
-        {editing?(
-          <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
-            data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
-            style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:0,minWidth:0}}/>
-        ):(
-          <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,flex:1,textAlign:"center",cursor:"text"}}>
-            {value}
-          </span>
-        )}
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
+          {editing?(
+            <input ref={inputRef} type="number" inputMode="numeric" pattern="[0-9]*" value={draft}
+              data-inlineedit="1" onChange={e=>setDraft(e.target.value)} onBlur={commitEdit} onKeyDown={handleKey}
+              style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,textAlign:"center",border:"none",background:"transparent",outline:"none",width:"100%",minWidth:0}}/>
+          ):(
+            <span onDoubleClick={startEdit} style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:isOut?"#bbb":sCol(value),lineHeight:1,cursor:"text"}}>
+              {value}
+            </span>
+          )}
+          {minVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:1}}>SOLL: <strong style={{color:belowMin?"#e84142":"#888"}}>{minVal}</strong></span>}
+        </div>
         <div style={{display:"flex",gap:6}}>
           <button onClick={onDec} style={btn(36,true)}>−</button>
           <button onClick={onInc} style={btn(36)}>+</button>
@@ -858,7 +861,7 @@ function CapStockNum({value, soll, color, onSet, fontSize=28}){
         style={{...F_HEAD_STYLE,width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/>
     : <span onDoubleClick={start} style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1,cursor:onSet?"text":"default"}} title={onSet?"Doppelklick zum Bearbeiten":""}>{value}</span>;
   return soll!==undefined
-    ? <span style={{lineHeight:1}}>{display}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>
+    ? <span style={{lineHeight:1}}>{display}<span style={{fontSize,color:"#333",fontWeight:900}}>/{soll}</span></span>
     : display;
 }
 
@@ -869,40 +872,39 @@ function ProdCellNum({value, soll, color, onSet, fontSize=28}){
   const ref = useRef(null);
   const start = () => { setDraft(String(value)); setEditing(true); setTimeout(()=>ref.current?.select(),30); };
   const commit = () => { const n=parseInt(draft); if(!isNaN(n)&&n>=0) onSet&&onSet(n); setEditing(false); };
-  if(!onSet) return <span style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1}}>{value}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>;
+  if(!onSet) return <span style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1}}>{value}<span style={{fontSize,color:"#333",fontWeight:900}}>/{soll}</span></span>;
   return editing
     ? <><input ref={ref} type="number" inputMode="numeric" value={draft}
         onChange={e=>setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={e=>{if(e.key==="Enter")commit();if(e.key==="Escape")setEditing(false);}}
-        style={{...F_HEAD_STYLE,width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/><span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></>
-    : <span onDoubleClick={start} style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1,cursor:"text"}} title="Doppelklick zum Bearbeiten">{value}<span style={{fontSize:fontSize*0.6,color:"#bbb",fontWeight:700}}>/{soll}</span></span>;
+        style={{...F_HEAD_STYLE,width:50,fontSize,fontWeight:900,color,border:"none",borderBottom:"2px solid #3b82f6",outline:"none",background:"transparent",textAlign:"center"}}/><span style={{fontSize,color:"#333",fontWeight:900}}>/{soll}</span></>
+    : <span onDoubleClick={start} style={{...F_HEAD_STYLE,fontSize,fontWeight:900,color,lineHeight:1,cursor:"text"}} title="Doppelklick zum Bearbeiten">{value}<span style={{fontSize,color:"#333",fontWeight:900}}>/{soll}</span></span>;
 }
 
 function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   const complete=soll>0&&done>=soll;
   const atLimit=disabled&&!complete;
-  const color=complete?GR:atLimit?OR:"#111";
+  const color=complete?GR:atLimit?"#e84142":"#111";
   if(mobile){
     return(
-      <div style={{display:"flex",alignItems:"center",gap:10,background:complete?"#f0fdf4":atLimit?"#fef6ed":"#f8f8f8",borderRadius:14,padding:"14px 16px",border:`1.5px solid ${complete?"#bbf7d0":atLimit?"#fcd5a8":"#f0f0f0"}`}}>
-        <span style={{...F_HEAD_STYLE,fontSize:28,color:"#333",fontWeight:900,minWidth:56,flexShrink:0}}>{size}</span>
+      <div style={{display:"flex",alignItems:"center",gap:10,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:14,padding:"12px 16px",border:`1.5px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"#f0f0f0"}`}}>
+        <span style={{...F_HEAD_STYLE,fontSize:22,color:atLimit?"#e84142":"#333",fontWeight:900,minWidth:44,flexShrink:0}}>{size}</span>
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <div style={{display:"flex",alignItems:"baseline"}}>
-            <span style={{...F_HEAD_STYLE,fontSize:36,fontWeight:900,color:done===0?"#f08328":color,lineHeight:1,cursor:onSet?"pointer":"default"}} onClick={()=>{if(onSet){const v=prompt("Erledigt:",done);if(v!=null&&!isNaN(v))onSet(parseInt(v));}}}>{done}</span>
-            <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:"#333",lineHeight:1}}>/{soll}</span>
+            <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
           </div>
           <span style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:2}}>ON STOCK: <strong style={{color:avail===0?"#e84142":"#888"}}>{avail}</strong></span>
         </div>
-        <div style={{display:"flex",gap:8,flexShrink:0}}>
-          <button onClick={onDec} style={{width:48,height:48,borderRadius:12,border:"none",background:"#fef1f0",color:"#e84142",fontSize:24,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-          <button onClick={onInc} disabled={disabled} style={{width:48,height:48,borderRadius:12,border:"none",background:disabled?"#f0f0f0":"#ddfce6",color:disabled?"#ccc":"#1a9a50",fontSize:24,fontWeight:800,cursor:disabled?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+        <div style={{display:"flex",gap:6,flexShrink:0}}>
+          <button onClick={onDec} style={btn(36,true)}>−</button>
+          <button onClick={onInc} disabled={disabled} style={btn(36,false,disabled)}>+</button>
         </div>
       </div>
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fef6ed":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcd5a8":"transparent"}`}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"transparent"}`}}>
       <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{size}</span>
       <span style={{position:"absolute",top:3,right:4}}><StockBadge value={avail} size={18}/></span>
       <div style={{textAlign:"center",lineHeight:1}}>
@@ -913,7 +915,7 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
         <button onClick={onInc} disabled={disabled} style={btn(30,false,disabled)}>+</button>
       </div>
       {complete&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#1a9a50"}}>✓</span>}
-      {atLimit&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#f08328"}}>⚠</span>}
+      {atLimit&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#e84142"}}>⚠</span>}
     </div>
   );
 }
@@ -1113,7 +1115,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
                 <div style={{width:20,height:20,borderRadius:"50%",background:c.hex,border:"2px solid #444"}}/>
                 <span style={{fontSize:10,color:"#555",fontWeight:800,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
                 <div style={{lineHeight:1,textAlign:"center"}}>
-                  <CapStockNum value={c.done} soll={c.qty} color={complete?"#1a9a50":atLimit?"#f08328":"#111"} fontSize={mobile?24:28} onSet={prod.status!=="Fertig"?v=>onUpdate({...prod,capColors:(prod.capColors||[]).map(x=>x.id===c.id?{...x,done:Math.min(max,Math.max(0,v))}:x)})  :null}/>
+                  <CapStockNum value={c.done} soll={c.qty} color={complete?"#1a9a50":atLimit?"#e84142":"#111"} fontSize={mobile?24:28} onSet={prod.status!=="Fertig"?v=>onUpdate({...prod,capColors:(prod.capColors||[]).map(x=>x.id===c.id?{...x,done:Math.min(max,Math.max(0,v))}:x)})  :null}/>
                 </div>
                 <StockBadge value={avail} size={20}/>
                 {prod.status!=="Fertig"&&(
@@ -1123,7 +1125,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
                   </div>
                 )}
                 {complete&&<span style={{position:"absolute",top:3,right:5,fontSize:9}}>✓</span>}
-                {atLimit&&!complete&&<span style={{position:"absolute",top:3,right:5,fontSize:9,color:"#f08328"}}>⚠</span>}
+                {atLimit&&!complete&&<span style={{position:"absolute",top:3,right:5,fontSize:9,color:"#e84142"}}>⚠</span>}
               </div>
             );
           })}
@@ -4042,7 +4044,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               const remainMin=Math.max(0,toOrder-oQty);
               const remainMax=Math.max(0,toOrderMax-oQty);
               // state: "red" | "orange" | "done" | "none"
-              const state=needed===0?"none":remainMin>0?"red":remainMax>0?"orange":"done";
+              const state=(needed===0&&toOrderMax===0)?"none":remainMin>0?"red":remainMax>0?"orange":"done";
               return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state};
             });
             const allDone=tileData.every(t=>t.state==="done"||t.state==="none");
