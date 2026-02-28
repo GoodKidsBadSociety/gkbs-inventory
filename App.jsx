@@ -940,7 +940,7 @@ function ProductCard({product,onUpdate,onDelete,onEdit}){
           <div style={{...F_HEAD_STYLE,fontSize:mobile?15:17,fontWeight:800,color:"#111",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{product.name}</div>
           <div style={{display:"flex",gap:5,alignItems:"center",marginTop:2,flexWrap:"wrap"}}>
             {product.color&&<span style={{fontSize:11,color:"#bbb"}}>{product.color}</span>}
-            {isCap&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category?.toUpperCase()||"VARIANT"}</span>}
+            {product.category&&<span style={{fontSize:10,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 7px",fontWeight:700}}>{product.category}</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,flexShrink:0}}>
