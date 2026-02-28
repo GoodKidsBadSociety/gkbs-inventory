@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.9.0";
+const APP_VERSION = "v3.9.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -563,6 +563,13 @@ const IC_DOWN=({size=14,color="currentColor"})=><svg width={size} height={size} 
 const IC_LAYOUT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>;
 const IC_SETTINGS=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
 const IC_PAINT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3"/></svg>;
+const IC_CLIPBOARD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>;
+const IC_HANGER=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3c0 1.1.6 2.1 1.5 2.6L12 8l9.3 6.2a2 2 0 0 1-1.1 3.8H3.8a2 2 0 0 1-1.1-3.8L12 8"/></svg>;
+const IC_PACKAGE=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m16.5 9.4-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
+const IC_GRID4=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
+const IC_TREND_DOWN=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
+const IC_ROLL=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c-4.97 0-9-2.24-9-5V7c0-2.76 4.03-5 9-5s9 2.24 9 5v10c0 2.76-4.03 5-9 5z"/><ellipse cx="12" cy="7" rx="9" ry="5"/><path d="M3 12c0 2.76 4.03 5 9 5s9-2.24 9-5"/></svg>;
+const IC_SHIRT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 2 13.5 5.5a2 2 0 0 1-3 0L8 2 3.62 3.46a2 2 0 0 0-1.34 1.88V18a2 2 0 0 0 2 2h15.44a2 2 0 0 0 2-2V5.34a2 2 0 0 0-1.34-1.88Z"/></svg>;
 const SLabel=({s})=><div style={{fontSize:11,color:GY,marginBottom:8,fontWeight:700,letterSpacing:0.8}}>{s}</div>;
 
 const DEMO_PRODUCTS = [
@@ -2248,8 +2255,8 @@ function FinanceView({products, dtfItems=[], verluste=[], setVerluste, promoGift
   return(
     <div style={S.col10}>
       <div style={{display:"flex",gap:6,background:"#e8e8e8",borderRadius:12,padding:4}}>
-        {[["dashboard","Dashboard"],["blanks","Blanks"],["dtf","DTF"],["shopify","Shopify"],["verluste","Verluste"]].map(([v,lbl])=>(
-          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+        {[["dashboard","Dashboard",IC_GRID4],["blanks","Blanks",IC_SHIRT],["dtf","DTF",IC_ROLL],["shopify","Shopify",IC_SHOP],["verluste","Verluste",IC_TREND_DOWN]].map(([v,lbl,Icon])=>(
+          <button key={v} onClick={()=>setFinTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:finTab===v?"#fff":"transparent",color:finTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:12,boxShadow:finTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><Icon size={12} color={finTab===v?"#111":"#999"}/>{lbl}</button>
         ))}
       </div>
       {finTab==="dashboard"&&(
@@ -2988,9 +2995,9 @@ function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopify
 
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["products","Produkte",0],["orders","Bestellungen",(()=>{const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);return shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);})()]].map(([t,lbl,count])=>(
+        {[["products","Produkte",IC_HANGER,0],["orders","Bestellungen",IC_PACKAGE,(()=>{const norm=s=>(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const oeNorms=ONLINE_EXCLUSIVE_PRODUCTS.map(norm);return shopifyOrders.filter(o=>o.fulfillment_status!=="fulfilled").reduce((a,o)=>a+(o.line_items||[]).filter(l=>oeNorms.includes(norm(l.title))).reduce((b,l)=>b+(l.quantity||0),0),0);})()]].map(([t,lbl,Icon,count])=>(
           <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:tab===t?"#fff":"transparent",color:tab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-            {lbl}{count>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+            <Icon size={13} color={tab===t?"#111":"#999"}/>{lbl}{count>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
         ))}
       </div>
@@ -3545,9 +3552,9 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
-        {[["textilien","Blanks",offenTextilien],["dtf","DTF",offenDtf]].map(([v,lbl,count])=>(
+        {[["textilien","Blanks",IC_SHIRT,offenTextilien],["dtf","DTF",IC_ROLL,offenDtf]].map(([v,lbl,Icon,count])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {lbl}{count>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
+            <Icon size={13} color={subTab===v?"#111":"#999"}/>{lbl}{count>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{count}</span>}
           </button>
         ))}
       </div>
@@ -3617,6 +3624,101 @@ function BestellteWareView({bestellungen, onWareneingang, onDelete}){
   );
 }
 
+// ─── Manual Bestell Modal ──────────────────────────────────────────
+function ManualBestellModal({products,dtfItems,currentUser,onClose,onAdd}){
+  const [typ,setTyp]=useState("blank"); // "blank" | "dtf"
+  const [selProd,setSelProd]=useState("");
+  const [selDtf,setSelDtf]=useState("");
+  const [qty,setQty]=useState({});
+  const [dtfMenge,setDtfMenge]=useState("");
+  const [notiz,setNotiz]=useState("");
+  const inp={background:"#f8f8f8",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"11px 14px",fontSize:14,width:"100%",outline:"none",boxSizing:"border-box"};
+  const prod=products.find(p=>p.id===selProd);
+  const dtf=dtfItems.find(d=>d.id===selDtf);
+  const isCap=prod&&(prod.category==="Cap"||prod.category==="Bag");
+  const totalQty=typ==="blank"?(isCap?(prod?.capColors||[]).reduce((a,c)=>a+(qty["cap_"+c.id]||0),0):DEFAULT_SIZES.reduce((a,s)=>a+(qty[s]||0),0)):parseInt(dtfMenge)||0;
+
+  const doSave=()=>{
+    if(typ==="blank"&&prod){
+      if(isCap){
+        (prod.capColors||[]).forEach(c=>{
+          const m=qty["cap_"+c.id]||0;
+          if(m>0) onAdd({id:Date.now().toString()+Math.random().toString(36).slice(2),produktId:prod.id,produktName:prod.name,blankId:prod.id,blankName:prod.name,blankHex:prod.colorHex||"#ccc",label:c.name,sizeKey:"cap_"+c.id+"_"+c.name,isCapKey:true,capColor:c,capColorId:c.id,menge:m,status:"offen",bestelltAm:new Date().toISOString(),createdBy:currentUser?.name,notiz,isDtf:false});
+        });
+      } else {
+        DEFAULT_SIZES.forEach(s=>{
+          const m=qty[s]||0;
+          if(m>0) onAdd({id:Date.now().toString()+Math.random().toString(36).slice(2),produktId:prod.id,produktName:prod.name,blankId:prod.id,blankName:prod.name,blankHex:prod.colorHex||"#ccc",label:s,sizeKey:s,isCapKey:false,menge:m,status:"offen",bestelltAm:new Date().toISOString(),createdBy:currentUser?.name,notiz,isDtf:false});
+        });
+      }
+    } else if(typ==="dtf"&&dtf){
+      const dpm=dtf.designsPerMeter||1;
+      const m=parseInt(dtfMenge)||0;
+      if(m>0) onAdd({id:Date.now().toString(),produktId:dtf.id,produktName:dtf.name,label:"DTF Transfer",sizeKey:"dtf",isDtf:true,dtfId:dtf.id,designsPerMeter:dpm,meterAnzahl:dpm>1?Math.ceil(m/dpm):null,menge:m,status:"offen",bestelltAm:new Date().toISOString(),createdBy:currentUser?.name,notiz});
+    }
+    onClose();
+  };
+
+  return(
+    <ModalWrap onClose={onClose} width={520} onSave={doSave} footer={<div style={{display:"flex",gap:10}}><button type="button" onClick={onClose} style={{flex:1,padding:13,borderRadius:10,border:"1px solid #e8e8e8",background:"none",color:"#888",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button><button type="button" onClick={doSave} disabled={totalQty===0} style={{flex:2,padding:13,borderRadius:10,border:"none",background:totalQty>0?"#1a9a50":"#e8e8e8",color:totalQty>0?"#fff":"#bbb",cursor:totalQty>0?"pointer":"not-allowed",fontWeight:800,fontSize:15}}>✓ Bestellen ({totalQty} Stk)</button></div>}>
+      <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Manuelle Bestellung</div>
+
+      {/* Type picker */}
+      <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:10,padding:3}}>
+        {[["blank","Blank",IC_SHIRT],["dtf","DTF",IC_ROLL]].map(([v,lbl,Icon])=>(
+          <button key={v} onClick={()=>{setTyp(v);setQty({});setDtfMenge("");}} style={{flex:1,padding:"8px 12px",borderRadius:8,border:"none",background:typ===v?"#fff":"transparent",color:typ===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:typ===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Icon size={13} color={typ===v?"#111":"#999"}/>{lbl}</button>
+        ))}
+      </div>
+
+      {typ==="blank"&&<>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8}}>BLANK AUSWÄHLEN</div>
+        <BlankPicker products={products} value={selProd} onChange={v=>{setSelProd(v);setQty({});}}/>
+        {prod&&!isCap&&<div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {DEFAULT_SIZES.map(s=>(
+            <div key={s} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"#f8f8f8",borderRadius:10,padding:"8px 6px",flex:1,minWidth:50}}>
+              <span style={{fontSize:12,fontWeight:800,color:"#555"}}>{s}</span>
+              <input type="number" inputMode="numeric" min="0" value={qty[s]||""} onChange={e=>setQty(q=>({...q,[s]:parseInt(e.target.value)||0}))}
+                style={{width:48,textAlign:"center",border:"1px solid #e8e8e8",borderRadius:8,padding:"6px 2px",fontSize:16,fontWeight:900,outline:"none",background:"#fff"}}/>
+            </div>
+          ))}
+        </div>}
+        {prod&&isCap&&<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+          {(prod.capColors||[]).map(c=>(
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f8f8",borderRadius:10,padding:"8px 12px",flex:1,minWidth:120}}>
+              <div style={{width:16,height:16,borderRadius:"50%",background:c.hex,border:"1.5px solid #444",flexShrink:0}}/>
+              <span style={{fontSize:12,fontWeight:700,flex:1}}>{c.name}</span>
+              <input type="number" inputMode="numeric" min="0" value={qty["cap_"+c.id]||""} onChange={e=>setQty(q=>({...q,["cap_"+c.id]:parseInt(e.target.value)||0}))}
+                style={{width:52,textAlign:"center",border:"1px solid #e8e8e8",borderRadius:8,padding:"6px 2px",fontSize:16,fontWeight:900,outline:"none",background:"#fff"}}/>
+            </div>
+          ))}
+        </div>}
+      </>}
+
+      {typ==="dtf"&&<>
+        <div style={{fontSize:11,color:"#bbb",fontWeight:700,letterSpacing:0.8}}>DTF DESIGN WÄHLEN</div>
+        <select value={selDtf} onChange={e=>setSelDtf(e.target.value)} style={inp}>
+          <option value="">— DTF Design wählen —</option>
+          {dtfItems.map(d=><option key={d.id} value={d.id}>{d.name} ({d.stock} Stk)</option>)}
+        </select>
+        {dtf&&<div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,color:"#bbb",fontWeight:700,marginBottom:4}}>MENGE (Stk)</div>
+            <input type="number" inputMode="numeric" min="1" value={dtfMenge} onChange={e=>setDtfMenge(e.target.value)}
+              style={{...inp,fontSize:20,fontWeight:900,textAlign:"center"}}/>
+          </div>
+          {dtf.designsPerMeter>1&&<div style={{flex:1}}>
+            <div style={{fontSize:11,color:"#bbb",fontWeight:700,marginBottom:4}}>METER</div>
+            <div style={{...inp,fontSize:20,fontWeight:900,textAlign:"center",background:"#f0f0f0",color:"#888"}}>{Math.ceil((parseInt(dtfMenge)||0)/(dtf.designsPerMeter||1))}</div>
+          </div>}
+        </div>}
+      </>}
+
+      {/* Notiz */}
+      <input value={notiz} onChange={e=>setNotiz(e.target.value)} placeholder="Notiz (optional)" style={inp}/>
+    </ModalWrap>
+  );
+}
+
 function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount}){
   const mobile = useIsMobile();
   const activeProds=prods.filter(p=>p.status!=="Fertig");
@@ -3683,10 +3785,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   return(
     <div style={S.col12}>
       {allModal&&<AllBestellungModal blank={allModal.blank} sizes={allModal.sizes} onClose={()=>setAllModal(null)} onDirectAdd={onDirectAdd}/>}
-      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:8}}>
-        {[["textilien","Blanks",bedarfCount||0],["dtf","DTF",dtfBedarfCount||0]].map(([v,lbl,count])=>(
+      <div style={{display:"flex",gap:6,background:"#f0f0f0",borderRadius:12,padding:4}}>
+        {[["textilien","Blanks",IC_SHIRT,bedarfCount||0],["dtf","DTF",IC_ROLL,dtfBedarfCount||0]].map(([v,lbl,Icon,count])=>(
           <button key={v} onClick={()=>setSubTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:9,border:"none",background:subTab===v?"#fff":"transparent",color:subTab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:subTab===v?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {lbl}{count>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
+            <Icon size={13} color={subTab===v?"#111":"#999"}/>{lbl}{count>0&&<span style={{background:"#e84142",color:"#fff",borderRadius:20,padding:"1px 6px",fontSize:9,fontWeight:800}}>{count}</span>}
           </button>
         ))}
       </div>
@@ -3742,7 +3844,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
             : <div>
                 <button onClick={()=>{const now=new Date();const dd=String(now.getDate()).padStart(2,"0");const mm=String(now.getMonth()+1).padStart(2,"0");const yy=String(now.getFullYear()).slice(-2);const hh=String(now.getHours()).padStart(2,"0");const mi=String(now.getMinutes()).padStart(2,"0");const ss=String(now.getSeconds()).padStart(2,"0");const projName=`GKBS_${(currentUser?.name||"User").replace(/\s+/g,"")}-${dd}/${mm}/${yy}+${hh}:${mi}:${ss}`;exportStanleyStellaCsv(bedarfMap,isCapMap,products,projName,csvSelected);}}
                   style={{width:"100%",padding:"12px 16px",borderRadius:10,border:"none",background:"#111",color:"#fff",fontSize:14,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <IC_DOWN size={14} color="#fff"/> Order Export
+                  <IC_DOWN size={14} color="#fff"/> CSV Export
                 </button>
               </div>
           }
@@ -3913,7 +4015,7 @@ function SheetsSetupModal({onClose, sheetsUrl}){
   useEffect(()=>{
     if(!sheetsUrl)return;
     fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.connected?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
       .catch(()=>setShopifyStatus(false));
   },[sheetsUrl]);
   return(
@@ -4694,6 +4796,7 @@ function AppInner({currentUser,onLogout}){
   const [showPAModal,setShowPAModal]=useState(false);
   const [showCats,setShowCats]=useState(false);
   const [showBestellbedarf,setShowBestellbedarf]=useState(false);
+  const [showManualBestell,setShowManualBestell]=useState(false);
   const [showArchive,setShowArchive]=useState(false);
   const [showSheetsSetup,setShowSheetsSetup]=useState(false);
   const [confirmDelete,setConfirmDelete]=useState(null);
@@ -4957,6 +5060,7 @@ function AppInner({currentUser,onLogout}){
       {confirmProduce&&<ConfirmProduceModal prod={confirmProduce} blank={products.find(p=>p.id===confirmProduce.blankId)} onConfirm={handleProduceConfirm} onCancel={()=>setConfirmProduce(null)}/>}
       {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)} sheetsUrl={sheetsUrl}/>}
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
+      {showManualBestell&&<ManualBestellModal products={products} dtfItems={dtfItems} currentUser={currentUser} onClose={()=>setShowManualBestell(false)} onAdd={(neu)=>{setBestellungen(b=>[neu,...b]);log(`Manuelle Bestellung – ${neu.produktName}${neu.isDtf?" (DTF)":" | "+neu.label}: ${neu.menge} Stk`);}}/>}
     {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
     {showSettings&&<SettingsModal currentUser={currentUser} onClose={()=>setShowSettings(false)} onUpdateUser={updateUser} settings={appSettings} onUpdateSettings={updateSettings} sheetsUrl={sheetsUrl}/>}
     {showDtfModal&&<DtfModal
@@ -4973,7 +5077,7 @@ function AppInner({currentUser,onLogout}){
       {/* ── Header ── */}
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
-        <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+        <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minHeight:36}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#e84142"}}>GKBS</div>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -4999,6 +5103,7 @@ function AppInner({currentUser,onLogout}){
               <button onClick={()=>setShowProdModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Produkt"}</button></>}
             {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"DTF"}</button>}
             {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Auftrag"}</button>}
+            {view==="bestellbedarf"&&<button onClick={()=>setShowManualBestell(true)} style={{padding:mobile?"8px 14px":"9px 16px",borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:mobile?13:14}}>+ {mobile?"":"Bestellen"}</button>}
             <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
               {currentUser.avatar}
             </button>
@@ -5062,9 +5167,9 @@ function AppInner({currentUser,onLogout}){
         {view==="production"&&(
           <div style={S.col12}>
             {/* Sub-tabs: Aufträge / Restock */}
-            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
-              {[["auftraege","Aufträge"],["restock","Restock Empfehlungen"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
+              {[["auftraege","Aufträge",IC_CLIPBOARD],["restock","Restock Empfehlungen",IC_REFRESH]].map(([t,lbl,Icon])=>(
+                <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Icon size={13} color={prodMainTab===t?"#111":"#999"}/>{lbl}</button>
               ))}
             </div>
 
@@ -5132,9 +5237,9 @@ function AppInner({currentUser,onLogout}){
         {view==="inventory"&&(
           <>
             {/* Sub-tabs: Blanks / DTF */}
-            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4,marginBottom:12}}>
-              {[["textil","Blanks"],["dtf","DTF"]].map(([t,lbl])=>(
-                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{lbl}</button>
+            <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
+              {[["textil","Blanks",IC_SHIRT],["dtf","DTF",IC_ROLL]].map(([t,lbl,Icon])=>(
+                <button key={t} onClick={()=>setInventoryTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:inventoryTab===t?"#fff":"transparent",color:inventoryTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:inventoryTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Icon size={13} color={inventoryTab===t?"#111":"#999"}/>{lbl}</button>
               ))}
             </div>
             {inventoryTab==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
@@ -5144,7 +5249,7 @@ function AppInner({currentUser,onLogout}){
               onAdd={()=>setShowDtfModal("add")}/>}
             {inventoryTab==="textil"&&<>
             {/* Search + filters – scrollable */}
-            <div style={{display:"flex",gap:8,marginBottom:14,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
+            <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
               <input placeholder="Suchen..." value={search} onChange={e=>setSearch(e.target.value)}
                 style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:10,color:"#111",padding:"9px 13px",fontSize:16,outline:"none",width:mobile?120:160,flexShrink:0}}/>
               {["All",...categories].map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"8px 12px",borderRadius:9,border:"1px solid",borderColor:catFilter===c?"#111":"#e8e8e8",background:catFilter===c?"#111":"#fff",color:catFilter===c?"#fff":"#666",cursor:"pointer",fontWeight:700,fontSize:12,flexShrink:0,whiteSpace:"nowrap"}}>{c}</button>)}
