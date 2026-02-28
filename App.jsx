@@ -905,16 +905,16 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
     );
   }
   return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:0,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:12,padding:"8px 8px",flex:1,minWidth:0,position:"relative",height:92,border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"transparent"}`}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",gap:4,background:complete?"#f0fdf4":atLimit?"#fef1f0":"#f8f8f8",borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,position:"relative",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcc8c6":"transparent"}`}}>
       <span style={{...F_HEAD_STYLE,fontSize:16,color:"#666",fontWeight:800}}>{SZ(size)}</span>
-      <span style={{position:"absolute",top:3,right:4}}><StockBadge value={avail} size={18}/></span>
-      <div style={{textAlign:"center",lineHeight:1}}>
+      <div style={{textAlign:"center",lineHeight:1,margin:"4px 0"}}>
         <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={28}/>
       </div>
       <div style={{display:"flex",gap:4}}>
         <button onClick={onDec} style={btn(30,true)}>−</button>
         <button onClick={onInc} disabled={disabled} style={btn(30,false,disabled)}>+</button>
       </div>
+      <span style={{fontSize:9,color:"#bbb",fontWeight:700,marginTop:2}}>ON STOCK: <strong style={{color:avail===0?"#e84142":"#888"}}>{avail}</strong></span>
       {complete&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#1a9a50"}}>✓</span>}
       {atLimit&&<span style={{position:"absolute",top:3,left:5,fontSize:9,color:"#e84142"}}>⚠</span>}
     </div>
@@ -1044,12 +1044,13 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       <div style={{padding:mobile?"16px 16px 0":"16px 20px 0"}}>
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           {!mobile&&<div style={{cursor:"grab",color:"#ccc",fontSize:16,flexShrink:0,marginTop:12}}>⠿</div>}
-          <SmartDot item={prod} size={mobile?36:44}/>
+          <SmartDot item={prod} size={mobile?44:52}/>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{...F_HEAD_STYLE,fontSize:mobile?17:20,fontWeight:800,color:"#111",letterSpacing:-0.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
-            <div style={{fontSize:12,color:"#bbb",marginTop:3,fontWeight:500}}>
-              {blank&&<span style={{display:"inline-flex",alignItems:"center",gap:3}}><ColorDot hex={blank.colorHex} size={10}/>{blank.name}</span>}
-              {!blank&&<span>Kein Blank</span>}
+            <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,color:"#111",letterSpacing:-0.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{prod.name}</div>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3,flexWrap:"wrap"}}>
+              {blank&&<span style={{fontSize:13,color:"#999",fontWeight:500}}>{blank.name} {blank.color}</span>}
+              {!blank&&<span style={{fontSize:13,color:"#bbb"}}>Kein Blank</span>}
+              {blank?.category&&<span style={{fontSize:11,background:"#f0f0f0",color:"#666",borderRadius:6,padding:"2px 8px",fontWeight:700}}>{blank.category}</span>}
             </div>
           </div>
           <div style={{display:"flex",gap:6,flexShrink:0}}>
@@ -1059,7 +1060,7 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
         </div>
 
         {/* Badges row */}
-        <div style={{display:"flex",gap:6,marginTop:14,flexWrap:"wrap",alignItems:"center"}}>
+        <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap",alignItems:"center"}}>
           <PriorityBadge priority={prod.priority}/>
           {(prod.veredelung||[]).map(v=><VeredBadge key={v} type={v}/>)}
           {prod.shopifyProductLink&&<span style={{fontSize:11,fontWeight:700,background:"#f0fdf4",color:"#1a9a50",borderRadius:6,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"#1a9a50"}}/>Shopify</span>}
@@ -1088,15 +1089,19 @@ function ProductionCard({prod,blank,dtfItem,onDelete,onEdit,onUpdate,onConfirmPr
       {/* Counter + Progress bar */}
       {totalQty>0&&(
         <div style={{padding:mobile?"8px 16px 4px":"8px 20px 4px"}}>
-          <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:6,justifyContent:"flex-end"}}>
-            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:allDone?"#1a9a50":"#111",lineHeight:1}}>{totalDone}</span>
-            <span style={{...F_HEAD_STYLE,fontSize:mobile?28:32,fontWeight:900,color:"#ccc",lineHeight:1}}>/{totalQty}</span>
-          </div>
-          <div style={{height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden"}}>
-            <div style={{height:4,background:allDone?"#1a9a50":"#1a9a50",borderRadius:4,width:`${progress}%`,transition:"width 0.3s"}}/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#ccc",fontWeight:600,marginTop:4}}>
-            <span>{progress}% erledigt</span><span>{totalQty-totalDone} verbleibend</span>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{flex:1}}>
+              <div style={{height:4,background:"#f0f0f0",borderRadius:4,overflow:"hidden"}}>
+                <div style={{height:4,background:"#1a9a50",borderRadius:4,width:`${progress}%`,transition:"width 0.3s"}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#ccc",fontWeight:600,marginTop:4}}>
+                <span>{progress}% erledigt</span><span>{totalQty-totalDone} verbleibend</span>
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"baseline",gap:1,flexShrink:0}}>
+              <span style={{...F_HEAD_STYLE,fontSize:mobile?30:36,fontWeight:900,color:allDone?"#1a9a50":"#111",lineHeight:1}}>{totalDone}</span>
+              <span style={{...F_HEAD_STYLE,fontSize:mobile?30:36,fontWeight:900,color:"#999",lineHeight:1}}>/{totalQty}</span>
+            </div>
           </div>
         </div>
       )}
