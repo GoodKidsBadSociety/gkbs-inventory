@@ -885,15 +885,18 @@ function ProdCell({size,soll,done,avail,onInc,onDec,onSet,disabled,mobile}){
   const color=complete?GR:atLimit?OR:"#111";
   if(mobile){
     return(
-      <div style={{display:"flex",alignItems:"center",gap:8,background:complete?"#f0fdf4":atLimit?"#fef6ed":"#f8f8f8",borderRadius:12,padding:"10px 14px",border:`1px solid ${complete?"#bbf7d0":atLimit?"#fcd5a8":"#f0f0f0"}`}}>
-        <span style={{...F_HEAD_STYLE,fontSize:22,color:"#555",fontWeight:800,width:44,flexShrink:0}}>{size}</span>
-        <div style={{flex:1,textAlign:"center"}}>
-          <ProdCellNum value={done} soll={soll} color={color} onSet={onSet} fontSize={32}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,background:complete?"#f0fdf4":atLimit?"#fef6ed":"#f8f8f8",borderRadius:14,padding:"14px 16px",border:`1.5px solid ${complete?"#bbf7d0":atLimit?"#fcd5a8":"#f0f0f0"}`}}>
+        <span style={{...F_HEAD_STYLE,fontSize:28,color:"#333",fontWeight:900,minWidth:56,flexShrink:0}}>{size}</span>
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{display:"flex",alignItems:"baseline"}}>
+            <span style={{...F_HEAD_STYLE,fontSize:36,fontWeight:900,color:done===0?"#f08328":color,lineHeight:1,cursor:onSet?"pointer":"default"}} onClick={()=>{if(onSet){const v=prompt("Erledigt:",done);if(v!=null&&!isNaN(v))onSet(parseInt(v));}}}>{done}</span>
+            <span style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:"#333",lineHeight:1}}>/{soll}</span>
+          </div>
+          <span style={{fontSize:10,color:"#bbb",fontWeight:700,marginTop:2}}>ON STOCK: <strong style={{color:avail===0?"#e84142":"#888"}}>{avail}</strong></span>
         </div>
-        <StockBadge value={avail} size={24}/>
         <div style={{display:"flex",gap:8,flexShrink:0}}>
-          <button onClick={onDec} style={btn(40,true)}>−</button>
-          <button onClick={onInc} disabled={disabled} style={btn(40,false,disabled)}>+</button>
+          <button onClick={onDec} style={{width:48,height:48,borderRadius:12,border:"none",background:"#fef1f0",color:"#e84142",fontSize:24,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+          <button onClick={onInc} disabled={disabled} style={{width:48,height:48,borderRadius:12,border:"none",background:disabled?"#f0f0f0":"#ddfce6",color:disabled?"#ccc":"#1a9a50",fontSize:24,fontWeight:800,cursor:disabled?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
         </div>
       </div>
     );
@@ -5356,7 +5359,7 @@ function AppInner({currentUser,onLogout}){
           <div style={S.col12}>
             {/* Sub-tabs: Aufträge / Restock */}
             <div style={{display:"flex",gap:0,background:"#f0f0f0",borderRadius:12,padding:4}}>
-              {[["auftraege","Aufträge",IC_CLIPBOARD],["restock","Restock Empfehlungen",IC_REFRESH]].map(([t,lbl,Icon])=>(
+              {[["auftraege","Aufträge",IC_CLIPBOARD],["restock","Restock Advice",IC_REFRESH]].map(([t,lbl,Icon])=>(
                 <button key={t} onClick={()=>setProdMainTab(t)} style={{flex:1,padding:"7px 18px",borderRadius:9,border:"none",background:prodMainTab===t?"#fff":"transparent",color:prodMainTab===t?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:prodMainTab===t?"0 1px 3px rgba(0,0,0,0.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Icon size={13} color={prodMainTab===t?"#111":"#999"}/>{lbl}</button>
               ))}
             </div>
