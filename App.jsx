@@ -2650,6 +2650,51 @@ function StStFilterChips({label, value, options, onChange}){
   );
 }
 
+// ─── S/S Color Filter (individual colors with hex circles) ────────
+function StStColorFilter({value, colors, onChange}){
+  const [open, setOpen] = useState(false);
+  const [colorSearch, setColorSearch] = useState("");
+  const ref = useRef(null);
+  const active = value !== "all";
+  const selectedColor = active ? colors.find(c=>c.code===value) : null;
+  useEffect(()=>{
+    if(!open) return;
+    const handler = (e) => { if(ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return ()=> document.removeEventListener("mousedown", handler);
+  },[open]);
+  const filteredColors = colorSearch ? colors.filter(c=>(c.name||"").toLowerCase().includes(colorSearch.toLowerCase())||(c.code||"").toLowerCase().includes(colorSearch.toLowerCase())) : colors;
+  return(
+    <div style={{position:"relative"}} ref={ref}>
+      <button onClick={()=>{setOpen(!open);setColorSearch("");}}
+        style={{height:30,borderRadius:8,border:"1px solid",borderColor:active?"#1a9a50":"#e8e8e8",
+          background:active?"#f0fdf4":"#fff",color:active?"#1a9a50":"#666",
+          cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 10px",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
+        {selectedColor && <div style={{width:12,height:12,borderRadius:"50%",background:selectedColor.hex||"#ddd",border:"1px solid rgba(0,0,0,0.15)",flexShrink:0}}/>}
+        {active ? selectedColor?.name||value : "Color"} <span style={{fontSize:8,marginLeft:2}}>{open?"▲":"▼"}</span>
+      </button>
+      {open && <div style={{position:"absolute",top:34,left:0,zIndex:100,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",width:240,maxHeight:340,display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"8px 8px 4px 8px"}}>
+          <input value={colorSearch} onChange={e=>setColorSearch(e.target.value)} placeholder="Search color..."
+            autoFocus style={{width:"100%",height:28,borderRadius:7,border:"1px solid #e8e8e8",paddingLeft:8,fontSize:11,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <div style={{overflowY:"auto",flex:1,padding:4}}>
+          <button onClick={()=>{onChange("all");setOpen(false);}}
+            style={{width:"100%",padding:"6px 10px",border:"none",background:value==="all"?"#f0fdf4":"transparent",color:value==="all"?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:11,fontWeight:value==="all"?800:600,borderRadius:7}}>
+            All ({colors.length})
+          </button>
+          {filteredColors.map(c=><button key={c.code} onClick={()=>{onChange(c.code);setOpen(false);}}
+            style={{width:"100%",padding:"5px 10px",border:"none",background:value===c.code?"#f0fdf4":"transparent",cursor:"pointer",textAlign:"left",borderRadius:7,display:"flex",alignItems:"center",gap:7}}>
+            <div style={{width:14,height:14,borderRadius:"50%",background:c.hex||"#ddd",border:"1px solid rgba(0,0,0,0.12)",flexShrink:0}}/>
+            <span style={{fontSize:11,fontWeight:value===c.code?800:600,color:value===c.code?"#1a9a50":"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.name}</span>
+            <span style={{fontSize:9,color:"#bbb",marginLeft:"auto",flexShrink:0}}>{c.code}</span>
+          </button>)}
+        </div>
+      </div>}
+    </div>
+  );
+}
+
 // ─── Stanley/Stella View ──────────────────────────────────────────
 function StanleyView({sheetsUrl, products, onImportBlank}){
   const mobile = useIsMobile();
@@ -2665,38 +2710,80 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [genderFilter, setGenderFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [fitFilter, setFitFilter] = useState("all");
-  const [colorGroupFilter, setColorGroupFilter] = useState("all");
+  const [colorFilter, setColorFilter] = useState("all"); // ColorCode e.g. "C002"
   const [detail, setDetail] = useState(null); // style detail modal
   const [imgCache, setImgCache] = useState({}); // {styleCode: [{url,...}]}
   const [importModal, setImportModal] = useState(null); // {styleName, styleCode, color, colorCode, hexCode, sizes, ...}
   const [colorHexMap, setColorHexMap] = useState({}); // ColorCode → "#hex"
+  const [ststColorData, setStstColorData] = useState([]); // Full color objects [{code, name, hex, group}]
 
   // Load S/S color palette (ColorCode → hex)
   const loadColors = async () => {
     if(!sheetsUrl) return;
-    // Cache 7 days — colors rarely change
-    try{const c=JSON.parse(localStorage.getItem("stst_colors"));if(c&&c.ts&&(Date.now()-c.ts)<7*24*60*60*1000){setColorHexMap(c.data);return;}}catch(e){}
+    // Cache 7 days — but only if non-empty
+    try{const c=JSON.parse(localStorage.getItem("stst_colors"));if(c&&c.ts&&(Date.now()-c.ts)<7*24*60*60*1000&&c.data&&Object.keys(c.data).length>0&&Object.values(c.data).some(Boolean)){setColorHexMap(c.data);if(c.full) setStstColorData(c.full);console.log("[S/S Colors] From cache:",Object.keys(c.data).length,"colors");return;}}catch(e){}
     try {
       const r = await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_colors"})});
       const t = await r.text();
       const d = JSON.parse(t);
-      if(d.error) { console.warn("[S/S Colors] Error:", d.error); return; }
+      if(d.error) { console.warn("[S/S Colors] API Error:", d.error, d.detail||"", d.debug||""); return; }
       const cols = d.colors;
-      if(Array.isArray(cols)){
+      console.log("[S/S Colors] Raw response type:", typeof cols, "isArray:", Array.isArray(cols), "length:", cols?.length);
+      if(cols && !Array.isArray(cols)) console.log("[S/S Colors] Non-array response:", JSON.stringify(cols).substring(0,500));
+      // Handle nested response: might be {result: [...]} or {data: [...]}
+      let colorArr = Array.isArray(cols) ? cols : (cols?.result || cols?.data || cols?.records || []);
+      if(!Array.isArray(colorArr)) colorArr = [];
+      if(colorArr.length > 0){
+        // Log ALL field names from first color object
+        console.log("[S/S Colors] ALL fields:", Object.keys(colorArr[0]));
+        console.log("[S/S Colors] First object:", JSON.stringify(colorArr[0]).substring(0,500));
+        // Universal hex finder: try every field for hex-like value
+        const findHex = (obj) => {
+          for(const [k,v] of Object.entries(obj)){
+            if(typeof v === "string" && /^#?[0-9a-fA-F]{6}$/.test(v.replace("#",""))) return v;
+          }
+          return "";
+        };
+        // Find code field (ColorCode, Code, code, Color_Code, etc)
+        const findCode = (obj) => {
+          for(const k of ["ColorCode","Code","code","Color_Code","colorCode","COLOR_CODE"]) if(obj[k]) return obj[k];
+          // Fallback: first field that looks like C + digits
+          for(const [k,v] of Object.entries(obj)){
+            if(typeof v === "string" && /^C\d{3}$/.test(v)) return v;
+          }
+          return "";
+        };
+        // Find name field
+        const findName = (obj) => {
+          for(const k of ["Color","ColorName","Name","name","color","Color_Name"]) if(obj[k]) return obj[k];
+          return "";
+        };
+        // Find group field
+        const findGroup = (obj) => {
+          for(const k of ["ColorGroup","Group","group","Color_Group","color_group"]) if(obj[k]) return obj[k];
+          return "";
+        };
         const map = {};
-        cols.forEach(c => {
-          const code = c.ColorCode || c.Code || c.code;
-          // Try many possible hex fields
-          const hex = c.HexColorCode || c.Hex_Color_Code || c.HexCode || c.hex || c.RGB || c.rgb || c.Hex || "";
-          if(code && hex) map[code] = hex.startsWith("#") ? hex : `#${hex}`;
+        const fullData = [];
+        colorArr.forEach(c => {
+          const code = findCode(c);
+          const hex = findHex(c);
+          const name = findName(c);
+          const group = findGroup(c);
+          if(code) {
+            map[code] = hex ? (hex.startsWith("#") ? hex : `#${hex}`) : "";
+            fullData.push({code, name: name||code, hex: map[code], group});
+          }
         });
-        console.log("[S/S Colors] Loaded", Object.keys(map).length, "colors. Sample:", Object.entries(map).slice(0,5));
-        // Also log first color object keys for debugging
-        if(cols[0]) console.log("[S/S Colors] Fields:", Object.keys(cols[0]).join(", "));
+        console.log("[S/S Colors] Loaded", Object.keys(map).length, "colors.", Object.values(map).filter(Boolean).length, "with hex");
+        console.log("[S/S Colors] Sample:", fullData.slice(0,3));
         setColorHexMap(map);
-        try{localStorage.setItem("stst_colors",JSON.stringify({ts:Date.now(),data:map}));}catch(e){}
+        setStstColorData(fullData);
+        try{localStorage.setItem("stst_colors",JSON.stringify({ts:Date.now(),data:map,full:fullData}));}catch(e){}
       }
     } catch(e) { console.warn("[S/S Colors] fetch error:", e); }
+    // Fallback: if we still have no hex data and products are loaded, log it
+    console.log("[S/S Colors] colorHexMap has", Object.keys(colorHexMap).length, "entries after load");
   };
 
   // Load products
@@ -2802,22 +2889,28 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   // Categories for filter
   // Extract filter dimensions
   const filterOpts = useMemo(() => {
-    const cats = new Set(), genders = new Set(), types = new Set(), fits = new Set(), colorGroups = new Set();
+    const cats = new Set(), genders = new Set(), types = new Set(), fits = new Set();
+    const colorMap = {}; // ColorCode → {code, name, hex}
     styles.forEach(s => {
       if(s.Category) cats.add(s.Category);
       if(s.Gender) genders.add(s.Gender);
       if(s.Type) types.add(s.Type);
       if(s.Fit) fits.add(s.Fit);
-      (s.Variants||[]).forEach(v => { if(v.ColorGroup) colorGroups.add(v.ColorGroup); });
+      (s.Variants||[]).forEach(v => {
+        const cc = v.ColorCode;
+        if(cc && !colorMap[cc]) colorMap[cc] = { code: cc, name: v.Color||cc, hex: colorHexMap[cc]||"" };
+      });
     });
+    // Sort colors alphabetically by name
+    const colors = Object.values(colorMap).sort((a,b) => a.name.localeCompare(b.name));
     return {
       categories: Array.from(cats).sort(),
       genders: Array.from(genders).sort(),
       types: Array.from(types).sort(),
       fits: Array.from(fits).sort(),
-      colorGroups: Array.from(colorGroups).sort()
+      colors
     };
-  }, [styles]);
+  }, [styles, colorHexMap]);
 
   // Filtered + searched styles
   const filtered = useMemo(() => {
@@ -2826,7 +2919,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     if(genderFilter !== "all") f = f.filter(s => s.Gender === genderFilter);
     if(typeFilter !== "all") f = f.filter(s => s.Type === typeFilter);
     if(fitFilter !== "all") f = f.filter(s => s.Fit === fitFilter);
-    if(colorGroupFilter !== "all") f = f.filter(s => (s.Variants||[]).some(v => v.ColorGroup === colorGroupFilter));
+    if(colorFilter !== "all") f = f.filter(s => (s.Variants||[]).some(v => v.ColorCode === colorFilter));
     if(search.trim()) {
       const q = search.toLowerCase().trim();
       f = f.filter(s =>
@@ -2838,8 +2931,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       );
     }
     return f;
-  }, [styles, catFilter, genderFilter, typeFilter, fitFilter, colorGroupFilter, search]);
-  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorGroupFilter].filter(f => f !== "all").length;
+  }, [styles, catFilter, genderFilter, typeFilter, fitFilter, colorFilter, search]);
+  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorFilter].filter(f => f !== "all").length;
 
   // Helper: get stock for a SKU
   const getStock = (sku) => ststStock ? (ststStock[sku] || 0) : null;
@@ -2891,7 +2984,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
               style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter("all");setGenderFilter("all");setTypeFilter("all");setFitFilter("all");setColorGroupFilter("all");}}
+          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter("all");setGenderFilter("all");setTypeFilter("all");setFitFilter("all");setColorFilter("all");}}
             style={{height:36,borderRadius:10,border:"1px solid #fee2e2",background:"#fff",color:"#e84142",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:4}}>
             ✕ Filter zurücksetzen ({activeFilterCount})
           </button>}
@@ -2906,8 +2999,8 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
           {filterOpts.types.length > 1 && <StStFilterChips label="Type" value={typeFilter} options={filterOpts.types} onChange={setTypeFilter}/>}
           {/* Fit */}
           {filterOpts.fits.length > 1 && <StStFilterChips label="Fit" value={fitFilter} options={filterOpts.fits} onChange={setFitFilter}/>}
-          {/* Color Group */}
-          {filterOpts.colorGroups.length > 1 && <StStFilterChips label="Colors" value={colorGroupFilter} options={filterOpts.colorGroups} onChange={setColorGroupFilter}/>}
+          {/* Color */}
+          {filterOpts.colors.length > 1 && <StStColorFilter value={colorFilter} colors={filterOpts.colors} onChange={setColorFilter}/>}
         </div>
       </div>
 
