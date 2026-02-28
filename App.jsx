@@ -1,4 +1,4 @@
-// GKBS INVENTORY v4.0.5
+// GKBS INVENTORY v4.0.4
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.0.5";
+const APP_VERSION = "v4.0.4";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2857,26 +2857,28 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
   // Fallback: extract prices from V2 products data (runs after products load)
   useEffect(() => {
-    try {
-      if(Object.keys(ststPrices).length > 0 || !ststProducts) return;
-      const prods = Array.isArray(ststProducts) ? ststProducts : [];
-      if(prods.length === 0) return;
-      const map = {};
-      prods.forEach(s => {
-        const sc = s.StyleCode || "";
-        let pr = s.Price || s.B2BPrice || s.UnitPrice || s.SalesPrice || s.price || null;
-        if(pr == null && s.Variants && s.Variants.length > 0) {
-          const v = s.Variants[0];
-          pr = v.Price || v.B2BPrice || v.UnitPrice || v.SalesPrice || v.price || null;
-        }
-        if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
-      });
-      if(Object.keys(map).length > 0) {
-        console.log("[S/S Prices] Extracted from products:", Object.keys(map).length);
-        setStstPrices(map);
-        try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
+    if(Object.keys(ststPrices).length > 0 || !ststProducts) return;
+    const prods = Array.isArray(ststProducts) ? ststProducts : [];
+    if(prods.length === 0) return;
+    const map = {};
+    prods.forEach(s => {
+      const sc = s.StyleCode || "";
+      // Try various price fields on style level
+      let pr = s.Price || s.B2BPrice || s.UnitPrice || s.SalesPrice || s.price || null;
+      // Try on variant level
+      if(pr == null && s.Variants && s.Variants.length > 0) {
+        const v = s.Variants[0];
+        pr = v.Price || v.B2BPrice || v.UnitPrice || v.SalesPrice || v.price || null;
       }
-    } catch(e) { console.warn("[S/S Prices] Fallback error:", e); }
+      if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
+    });
+    if(Object.keys(map).length > 0) {
+      console.log("[S/S Prices] Extracted from products:", Object.keys(map).length, "Sample:", Object.entries(map).slice(0,3));
+      setStstPrices(map);
+      try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
+    } else {
+      console.log("[S/S Prices] No prices found in product data either. Check Console for [S/S Prices] logs.");
+    }
   }, [ststProducts, ststPrices]);
 
   // Load S/S color palette (ColorCode → hex)
@@ -4357,25 +4359,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const customQty=bedarfQty;
   const setCustomQty=setBedarfQty;
 
-  // Read S/S stock from localStorage cache
-  const getSsStock = (blank, sizeKey) => {
-    try {
-      if(!blank || !blank.stProductId || !blank.stColorCode) return null;
-      const cached = JSON.parse(localStorage.getItem("stst_stock"));
-      if(!cached || !cached.data) return null;
-      const stockMap = cached.data;
-      const sc = blank.stProductId, cc = blank.stColorCode;
-      const szMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
-      const szAlt = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
-      const skus = [sc+cc+(szMap[sizeKey]||sizeKey), sc+cc+(szAlt[sizeKey]||sizeKey), sc+cc+sizeKey];
-      for(const sku of skus) { if(stockMap[sku] !== undefined) return stockMap[sku]; }
-      const prefix = sc+cc, suffix = szMap[sizeKey]||sizeKey;
-      for(const k of Object.keys(stockMap)) {
-        if(k.startsWith(prefix) && (k.endsWith(suffix) || k.endsWith(sizeKey))) return stockMap[k];
-      }
-    } catch(e) {}
-    return null;
-  };
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -4433,7 +4416,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
   const renderDetail=(t,blankId,blank,cq,cqKey)=>{
-    const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state,ssStock}=t;
+    const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state}=t;
     const items=breakdownMap[blankId]?.[key]||[];
     const orderQty=cq!=null?cq:t.remainMax;
     return(
@@ -4448,8 +4431,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           ))}
           {items.length===0&&<div style={{fontSize:11,color:"#ccc",padding:"4px 0"}}>Keine Aufträge</div>}
           {t.oQty>0&&<div style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {t.oQty} bestellt</div>}
-          {ssStock!=null&&orderQty>0&&ssStock<orderQty&&<div style={{fontSize:11,fontWeight:800,color:"#e84142",background:"#fef1f0",borderRadius:6,padding:"4px 8px",marginTop:2}}>⚠ Bei S/S nur {ssStock} von {orderQty} lagernd</div>}
-          {ssStock!=null&&orderQty>0&&ssStock>=orderQty&&<div style={{fontSize:11,fontWeight:700,color:"#1a9a50",marginTop:2}}>✓ S/S: {ssStock} lagernd</div>}
         </div>
         <button type="button" disabled={orderQty===0} onClick={()=>{if(orderQty>0){onBestellen(blank,key,isCapKey,capColor,orderQty);setCustomQty(q=>({...q,[cqKey]:0}));}}}
           style={{background:orderQty===0?"#f0f0f0":"#1a9a50",borderRadius:10,padding:"0 16px",border:"none",cursor:orderQty===0?"not-allowed":"pointer",opacity:orderQty===0?0.5:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:11,fontWeight:800,color:orderQty===0?"#bbb":"#fff",letterSpacing:0.5}}>
@@ -4556,7 +4537,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               const remainMax=Math.max(0,toOrderMax-oQty);
               // state: "red" | "orange" | "done" | "none"
               const state=(needed===0&&toOrderMax===0)?"none":remainMin>0?"red":remainMax>0?"orange":"done";
-              return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state,ssStock:isCapKey?null:getSsStock(blank,key)};
+              return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state};
             });
             const allDone=tileData.every(t=>t.state==="done"||t.state==="none");
             const activeTiles=tileData.filter(t=>t.state!=="done"&&t.state!=="none");
@@ -4594,13 +4575,12 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const cqKey=blankId+"-"+key;
                     const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMax;
                     const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
-                    const ssWarn = t.ssStock!=null && cq>0 && t.ssStock<cq;
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"stretch",
                         background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
                         borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,height:isOpen?undefined:160,
                         opacity:state==="none"?0.5:state==="done"?0.65:1,
-                        border:isOpen?"2px solid #e84142":ssWarn?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
+                        border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
                         {/* Row 1: MIN label MAX */}
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
@@ -4618,7 +4598,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                           <button type="button" onClick={()=>setCq(cq+1)}
                             style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                         </div>
-                        {/* Row 3: SOLL + ON STOCK + S/S + CSV */}
+                        {/* Row 3: SOLL + ON STOCK + CSV */}
                         <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:6}}>
                           {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -4628,7 +4608,6 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                               CSV
                             </button>}
                           </div>
-                          {(()=>{const ss=t.ssStock;if(ss==null||cq===0)return null;const warn=ss<cq;return <span style={{fontSize:9,fontWeight:800,color:warn?"#e84142":"#1a9a50",marginTop:1}}>{warn?`⚠ S/S: nur ${ss}/${cq}`:`S/S: ${ss} ✓`}</span>;})()}
                         </div>
                       </div>
                     );
@@ -4692,75 +4671,42 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 function SheetsSetupModal({onClose, sheetsUrl}){
   const [shopifyStatus,setShopifyStatus]=useState(null);
   const [ststStatus,setStstStatus]=useState(null);
-  const [reloading,setReloading]=useState({});
-  const checkStatus = () => {
+  useEffect(()=>{
     if(!sheetsUrl)return;
-    setShopifyStatus(null); setStstStatus(null);
     fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
       .catch(()=>setShopifyStatus(false));
     fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setStstStatus(d.error?(typeof d.error==="string"?d.error:d.error.message||"Fehler"):true);}catch(e){setStstStatus(false);}})
       .catch(()=>setStstStatus(false));
-  };
-  useEffect(()=>{ checkStatus(); },[sheetsUrl]);
-  const reloadSheets = async () => {
-    setReloading(r=>({...r,sheets:true}));
-    try { await fetch(`${sheetsUrl}?action=load`,{redirect:"follow"}); } catch(e) {}
-    setTimeout(()=>setReloading(r=>({...r,sheets:false})),1000);
-  };
-  const reloadShopify = async () => {
-    setReloading(r=>({...r,shopify:true}));
-    try { await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"}); } catch(e) {}
-    setShopifyStatus(null);
-    fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
-      .catch(()=>setShopifyStatus(false));
-    setTimeout(()=>setReloading(r=>({...r,shopify:false})),1000);
-  };
-  const reloadStSt = async () => {
-    setReloading(r=>({...r,stst:true}));
-    try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");localStorage.removeItem("stst_prices");}catch(e){}
-    setStstStatus(null);
-    fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setStstStatus(d.error?(typeof d.error==="string"?d.error:d.error.message||"Fehler"):true);}catch(e){setStstStatus(false);}})
-      .catch(()=>setStstStatus(false));
-    setTimeout(()=>setReloading(r=>({...r,stst:false})),1500);
-  };
-  const rlBtn = (key, onClick) => <button onClick={onClick} disabled={reloading[key]}
-    style={{padding:"6px 10px",borderRadius:8,border:"1px solid #e8e8e8",background:reloading[key]?"#f0f0f0":"#fff",color:reloading[key]?"#bbb":"#555",cursor:reloading[key]?"not-allowed":"pointer",fontWeight:700,fontSize:11,display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
-    <IC_REFRESH size={11} color={reloading[key]?"#bbb":"#555"}/> {reloading[key]?"...":"Reload"}
-  </button>;
+  },[sheetsUrl]);
   return(
-    <ModalWrap onClose={onClose} width={420}>
+    <ModalWrap onClose={onClose} width={400}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Verbindungen</div>
-      <div style={{background:"#f0fdf4",borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-        <IC_CLOUD size={22} color="#1a9a50"/>
-        <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:800,color:"#1a9a50"}}>Google Sheets</div>
-          <div style={{fontSize:11,color:"#555",marginTop:1}}>Verbunden — automatisch gespeichert</div>
+      <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_CLOUD size={24} color="#1a9a50"/>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:"#1a9a50"}}>Google Sheets</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>Verbunden — automatisch gespeichert</div>
         </div>
-        {rlBtn("sheets", reloadSheets)}
       </div>
-      <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-        <IC_SHOP size={20} color={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}/>
-        <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
-          <div style={{fontSize:11,color:"#555",marginTop:1}}>
-            {shopifyStatus===null?"Prüfe...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
+      <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_SHOP size={22} color={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}/>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>
+            {shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
           </div>
         </div>
-        {rlBtn("shopify", reloadShopify)}
       </div>
-      <div style={{background:ststStatus===true?"#f0fdf4":ststStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-        <IC_STELLA size={20} color={ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}/>
-        <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:800,color:ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}}>Stanley/Stella API</div>
-          <div style={{fontSize:11,color:"#555",marginTop:1}}>
-            {ststStatus===null?"Prüfe...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
+      <div style={{background:ststStatus===true?"#f0fdf4":ststStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_STELLA size={22} color={ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}/>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}}>Stanley/Stella API</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>
+            {ststStatus===null?"Prüfe Verbindung...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
           </div>
         </div>
-        {rlBtn("stst", reloadStSt)}
       </div>
       <button type="button" onClick={onClose} style={{width:"100%",padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>OK</button>
     </ModalWrap>
