@@ -562,6 +562,7 @@ const IC_SEARCH=({size=16,color="currentColor"})=><svg width={size} height={size
 const IC_REFRESH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>;
 const IC_TRASH=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
 const IC_TSHIRT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 2 12 5.5 8 2l-4.38 1.46a2 2 0 0 0-1.34 1.88v14.8a1 1 0 0 0 1.17.98L8 20l4-3 4 3 4.45 1.12a1 1 0 0 0 1.17-.98V5.34a2 2 0 0 0-1.24-1.88Z"/></svg>;
+const IC_STELLA=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
 const IC_THREAD=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4.8Z"/><path d="M4 22V12c0-2 1-4 4-4h3"/><path d="M15 6c0 3 2 4 4 4s4-1 4-4-2-4-4-4-4 1-4 4Z"/><path d="M11 8c-3 0-4 2-4 4v4c0 2 1 4 4 4"/></svg>;
 const IC_DOWN=({size=14,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>;
 const IC_LAYOUT=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>;
@@ -2987,6 +2988,312 @@ function ScrollTopButton(){
 }
 
 
+// ─── Stanley/Stella View ──────────────────────────────────────────
+function StanleyView({sheetsUrl, products}){
+  const mobile = useIsMobile();
+  const [ststProducts, setStstProducts] = useState(null); // grouped by style
+  const [ststStock, setStstStock] = useState(null); // {SKU: qty}
+  const [loading, setLoading] = useState(false);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState({});
+  const [catFilter, setCatFilter] = useState("all");
+  const [detail, setDetail] = useState(null); // style detail modal
+  const [imgCache, setImgCache] = useState({}); // {styleCode: [{url,...}]}
+
+  // Load products
+  const loadProducts = async (force) => {
+    if(!sheetsUrl) return;
+    // Check localStorage cache (24h)
+    if(!force){try{const c=JSON.parse(localStorage.getItem("stst_prods"));if(c&&c.ts&&(Date.now()-c.ts)<24*60*60*1000){setStstProducts(c.data);setLoading(false);return;}}catch(e){}}
+    setLoading(true); setError(null);
+    try {
+      const r = await fetch(sheetsUrl, {method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})});
+      const t = await r.text();
+      const d = JSON.parse(t);
+      if(d.error) { setError(d.error); setLoading(false); return; }
+      const prods = d.products;
+      if(Array.isArray(prods)) {
+        setStstProducts(prods);
+        try{localStorage.setItem("stst_prods",JSON.stringify({ts:Date.now(),data:prods}));}catch(e){}
+      } else if(typeof prods === "object" && !Array.isArray(prods)) {
+        setStstProducts(prods);
+        try{localStorage.setItem("stst_prods",JSON.stringify({ts:Date.now(),data:prods}));}catch(e){}
+      }
+    } catch(e) { setError(e.toString()); }
+    setLoading(false);
+  };
+
+  // Load stock
+  const loadStock = async (force) => {
+    if(!sheetsUrl) return;
+    // Check localStorage cache (4h)
+    if(!force){try{const c=JSON.parse(localStorage.getItem("stst_stock"));if(c&&c.ts&&(Date.now()-c.ts)<4*60*60*1000){setStstStock(c.data);setStockLoading(false);return;}}catch(e){}}
+    setStockLoading(true);
+    try {
+      const r = await fetch(sheetsUrl, {method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_stock"})});
+      const t = await r.text();
+      const d = JSON.parse(t);
+      if(d.stock && Array.isArray(d.stock)) {
+        const map = {};
+        d.stock.forEach(s => {
+          const sku = s.SKU || s.B2BSKUREF || s.sku;
+          const qty = parseInt(s.Stock || s.Available_Quantity || s.Quantity || 0);
+          if(sku) map[sku] = (map[sku]||0) + qty;
+        });
+        setStstStock(map);
+        try{localStorage.setItem("stst_stock",JSON.stringify({ts:Date.now(),data:map}));}catch(e){}
+      }
+    } catch(e) {}
+    setStockLoading(false);
+  };
+
+  // Load images for a style
+  const loadImages = async (styleCode) => {
+    if(!sheetsUrl || imgCache[styleCode]) return;
+    try {
+      const r = await fetch(sheetsUrl, {method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_images",StyleCode:styleCode})});
+      const t = await r.text();
+      const d = JSON.parse(t);
+      if(d.images && Array.isArray(d.images)) {
+        setImgCache(prev => ({...prev, [styleCode]: d.images}));
+      }
+    } catch(e) {}
+  };
+
+  useEffect(() => { loadProducts(); loadStock(); }, [sheetsUrl]);
+
+  // Parse V2 response into displayable styles
+  const styles = useMemo(() => {
+    if(!ststProducts) return [];
+    // V2 format: array of style objects with Variants array
+    if(Array.isArray(ststProducts)) {
+      // Check if it's V1 (flat list) or V2 (grouped)
+      if(ststProducts.length > 0 && ststProducts[0].Variants) {
+        // V2 format
+        return ststProducts;
+      }
+      // V1 flat list - group by StyleCode
+      const map = {};
+      ststProducts.forEach(v => {
+        const key = v.StyleCode;
+        if(!map[key]) map[key] = {
+          StyleCode: v.StyleCode,
+          StyleName: v.StyleName,
+          Category: v.Category,
+          Type: v.Type,
+          Gender: v.Gender,
+          Fit: v.Fit,
+          ShortDescription: v.ShortDescription,
+          CompositionList: v.CompositionList,
+          Variants: []
+        };
+        map[key].Variants.push(v);
+      });
+      return Object.values(map);
+    }
+    return [];
+  }, [ststProducts]);
+
+  // Categories for filter
+  const categories = useMemo(() => {
+    const cats = new Set();
+    styles.forEach(s => { if(s.Category) cats.add(s.Category); });
+    return Array.from(cats).sort();
+  }, [styles]);
+
+  // Filtered + searched styles
+  const filtered = useMemo(() => {
+    let f = styles;
+    if(catFilter !== "all") f = f.filter(s => s.Category === catFilter);
+    if(search.trim()) {
+      const q = search.toLowerCase().trim();
+      f = f.filter(s =>
+        (s.StyleCode||"").toLowerCase().includes(q) ||
+        (s.StyleName||"").toLowerCase().includes(q) ||
+        (s.Type||"").toLowerCase().includes(q) ||
+        (s.Category||"").toLowerCase().includes(q) ||
+        (s.Variants||[]).some(v => (v.Color||"").toLowerCase().includes(q) || (v.ColorCode||"").toLowerCase().includes(q))
+      );
+    }
+    return f;
+  }, [styles, catFilter, search]);
+
+  // Helper: get stock for a SKU
+  const getStock = (sku) => ststStock ? (ststStock[sku] || 0) : null;
+
+  // Helper: get total stock for a style
+  const getStyleStock = (style) => {
+    if(!ststStock) return null;
+    return (style.Variants||[]).reduce((sum, v) => {
+      const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
+      return sum + (ststStock[sku] || 0);
+    }, 0);
+  };
+
+  // Group variants by color
+  const groupByColor = (variants) => {
+    const map = {};
+    (variants||[]).forEach(v => {
+      const key = v.ColorCode || v.Color || "_";
+      if(!map[key]) map[key] = { color: v.Color||v.ColorCode, colorCode: v.ColorCode, hexCode: v.HexColorCode || v.Hex_Color_Code, variants: [] };
+      map[key].variants.push(v);
+    });
+    return Object.values(map);
+  };
+
+  if(!sheetsUrl) return <div style={{textAlign:"center",padding:60,color:"#bbb"}}>Nicht verfügbar im Demo-Modus</div>;
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        <button onClick={()=>{setStstProducts(null);setStstStock(null);localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");loadProducts(true);loadStock(true);}}
+      <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:"#111"}}>Stanley/Stella</div>
+          <div style={{fontSize:12,color:"#bbb"}}>{styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}</div>
+        </div>
+        <button onClick={()=>{setStstProducts(null);setStstStock(null);loadProducts();loadStock();}}
+          style={{height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#f8f8f8",color:"#888",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:5}}>
+          <IC_REFRESH size={12} color="#888"/> Neu laden
+        </button>
+      </div>
+
+      {/* Search + Filter */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:180,position:"relative"}}>
+          <IC_SEARCH size={14} color="#bbb"/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
+            style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <select value={catFilter} onChange={e=>setCatFilter(e.target.value)}
+          style={{height:36,borderRadius:10,border:"1px solid #e8e8e8",fontSize:12,padding:"0 10px",background:"#fff",color:"#444",fontWeight:600}}>
+          <option value="all">Alle Kategorien</option>
+          {categories.map(c=><option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {/* Loading / Error */}
+      {loading && <div style={{textAlign:"center",padding:40,color:"#bbb"}}>
+        <div style={{fontSize:14,fontWeight:700}}>Stanley/Stella Katalog laden...</div>
+        <div style={{fontSize:11,marginTop:4}}>Das kann beim ersten Mal ~10 Sekunden dauern</div>
+      </div>}
+      {error && <div style={{textAlign:"center",padding:40,color:"#e84142"}}>
+        <div style={{fontSize:14,fontWeight:700}}>Fehler</div>
+        <div style={{fontSize:12,marginTop:4}}>{typeof error === "string" ? error : JSON.stringify(error)}</div>
+      </div>}
+
+      {/* Product List */}
+      {!loading && !error && filtered.length === 0 && styles.length > 0 && <div style={{textAlign:"center",padding:40,color:"#bbb",fontSize:13}}>Keine Treffer für "{search}"</div>}
+      {!loading && filtered.map(style => {
+        const colorGroups = groupByColor(style.Variants);
+        const totalStock = getStyleStock(style);
+        const isExpanded = !!expanded[style.StyleCode];
+        const uniqueColors = colorGroups.length;
+        const sizes = [...new Set((style.Variants||[]).map(v=>v.SizeCode))];
+
+        return(
+          <div key={style.StyleCode} style={{background:"#fff",borderRadius:14,border:"1px solid #ebebeb",overflow:"hidden"}}>
+            {/* Style header */}
+            <div onClick={()=>{setExpanded(prev=>({...prev,[style.StyleCode]:!prev[style.StyleCode]}));if(!isExpanded && !imgCache[style.StyleCode])loadImages(style.StyleCode);}}
+              style={{padding:"14px 16px",display:"flex",gap:12,alignItems:"center",cursor:"pointer",userSelect:"none"}}>
+              <div style={{width:48,height:48,borderRadius:10,background:"#f5f5f5",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
+                {imgCache[style.StyleCode]?.length > 0
+                  ? <img src={imgCache[style.StyleCode].find(i=>i.PhotoShootCode==="Main"||i.PhotoStyle==="Front")?.URL || imgCache[style.StyleCode][0]?.URL} style={{width:48,height:48,objectFit:"cover"}} alt=""/>
+                  : <IC_TSHIRT size={22} color="#ccc"/>}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:"#111"}}>{style.StyleName || style.StyleCode}</span>
+                  <span style={{fontSize:10,color:"#bbb",fontWeight:700,background:"#f5f5f5",borderRadius:4,padding:"1px 5px"}}>{style.StyleCode}</span>
+                </div>
+                <div style={{fontSize:11,color:"#999",marginTop:1}}>
+                  {style.Type}{style.Category ? ` · ${style.Category}` : ""}{style.Gender ? ` · ${style.Gender}` : ""}
+                </div>
+                <div style={{fontSize:10,color:"#bbb",marginTop:1}}>{uniqueColors} Farbe{uniqueColors!==1?"n":""} · {sizes.length} Größe{sizes.length!==1?"n":""}</div>
+              </div>
+              <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
+                <div style={{fontSize:10,color:"#bbb"}}>S/S Stock</div>
+                <div style={{fontSize:20,fontWeight:900,color:totalStock===null?"#ddd":totalStock===0?"#e84142":totalStock<50?"#f08328":"#1a9a50",lineHeight:1}}>
+                  {totalStock===null?"...":totalStock}
+                </div>
+              </div>
+              <span style={{fontSize:14,color:"#bbb",flexShrink:0,transition:"transform 0.2s",transform:isExpanded?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
+            </div>
+
+            {/* Expanded: Color groups with size matrix */}
+            {isExpanded && (
+              <div style={{padding:"0 16px 16px",display:"flex",flexDirection:"column",gap:8}}>
+                {/* Info bar */}
+                {style.ShortDescription && <div style={{fontSize:11,color:"#888",padding:"6px 0",borderTop:"1px solid #f0f0f0"}}>{style.ShortDescription}{style.Fit ? ` · ${style.Fit}` : ""}{style.CompositionList ? ` · ${style.CompositionList}` : ""}</div>}
+
+                {/* Size header */}
+                <div style={{display:"flex",gap:4,alignItems:"center",paddingLeft:mobile?80:120}}>
+                  {sizes.map(sz => <div key={sz} style={{width:mobile?38:48,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>{SZ(sz)}</div>)}
+                  <div style={{width:50,textAlign:"center",fontSize:10,fontWeight:800,color:"#bbb"}}>TOTAL</div>
+                </div>
+
+                {/* Color rows */}
+                {colorGroups.map(cg => {
+                  const colorTotal = cg.variants.reduce((sum,v) => {
+                    const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
+                    return sum + (getStock(sku) || 0);
+                  }, 0);
+                  return(
+                    <div key={cg.colorCode} style={{display:"flex",gap:4,alignItems:"center"}}>
+                      {/* Color label */}
+                      <div style={{width:mobile?76:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+                        {cg.hexCode && <div style={{width:14,height:14,borderRadius:4,background:`#${cg.hexCode}`,border:"1px solid #e0e0e0",flexShrink:0}}/>}
+                        <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
+                      </div>
+                      {/* Size tiles */}
+                      {sizes.map(sz => {
+                        const v = cg.variants.find(v => v.SizeCode === sz);
+                        if(!v) return <div key={sz} style={{width:mobile?38:48,height:36,borderRadius:6,background:"#fafafa"}}></div>;
+                        const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
+                        const stk = getStock(sku);
+                        return(
+                          <div key={sz} style={{width:mobile?38:48,height:36,borderRadius:8,background:stk===null?"#f8f8f8":stk===0?"#fef1f0":stk<20?"#fef6ed":"#ecfdf3",
+                            display:"flex",alignItems:"center",justifyContent:"center",
+                            border:"1px solid",borderColor:stk===null?"#eee":stk===0?"#f5c6c6":stk<20?"#fde0b8":"#bbf7d0"}}>
+                            <span style={{fontSize:12,fontWeight:800,color:stk===null?"#ccc":stk===0?"#e84142":stk<20?"#f08328":"#1a9a50"}}>{stk===null?"…":stk}</span>
+                          </div>
+                        );
+                      })}
+                      {/* Total */}
+                      <div style={{width:50,textAlign:"center"}}>
+                        <span style={{fontSize:12,fontWeight:900,color:colorTotal===0?"#e84142":"#555"}}>{ststStock?colorTotal:"…"}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Quick info: linked GKBS products */}
+                {(()=>{
+                  const linked = products.filter(p => 
+                    (p.name||"").toLowerCase().includes((style.StyleName||"").toLowerCase()) ||
+                    (p.supplier||"").toLowerCase().includes("stanley") ||
+                    (p.supplier||"").toLowerCase().includes("s/s")
+                  );
+                  if(linked.length === 0) return null;
+                  return <div style={{fontSize:11,color:"#1a9a50",fontWeight:700,marginTop:4,padding:"4px 0",borderTop:"1px solid #f0f0f0"}}>
+                    ✓ GKBS: {linked.map(p=>p.name).join(", ")}
+                  </div>;
+                })()}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Totals */}
+      {!loading && filtered.length > 0 && <div style={{textAlign:"center",fontSize:11,color:"#bbb",padding:8}}>
+        {filtered.length} Style{filtered.length!==1?"s":""} angezeigt
+      </div>}
+    </div>
+  );
+}
+
 // ─── Shopify View ─────────────────────────────────────────────────
 function ShopifyView({products, prods, shopifyLinks, setShopifyLinks, setShopifyBadge, onAddProd, onSetBlankStock, sheetsUrl, orderFilter, restockMins, setRestockMins}){
   const mobile = useIsMobile();
@@ -5312,7 +5619,7 @@ function AppInner({currentUser,onLogout}){
     } catch(e) { console.warn("Shopify push failed",e); }
   };
 
-  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["finance","Finanzen",IC_DOLLAR]];
+  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["stanley","S/S",IC_STELLA],["finance","Finanzen",IC_DOLLAR]];
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [showSettings,setShowSettings]=useState(false);
   const [appSettings,setAppSettings]=useState(()=>{try{const r=localStorage.getItem("gkbs_settings");return r?JSON.parse(r):{orderFilter:"oe"};}catch(e){return {orderFilter:"oe"};}});
@@ -5464,6 +5771,7 @@ function AppInner({currentUser,onLogout}){
 
         {/* Shopify */}
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} orderFilter={appSettings.orderFilter||"oe"} restockMins={restockMins} setRestockMins={setRestockMins} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
+        {view==="stanley"&&<StanleyView sheetsUrl={sheetsUrl} products={products}/>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);shopCacheSet("shopify_links",links);if(sheetsUrl){try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={sheetsUrl}/>}
