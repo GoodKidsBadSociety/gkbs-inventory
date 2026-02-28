@@ -1,4 +1,4 @@
-// GKBS INVENTORY v1.81
+// GKBS INVENTORY v4.0.5
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 // Prevent iOS auto-zoom on input focus
@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.9.4";
+const APP_VERSION = "v4.0.5";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2571,74 +2571,81 @@ function StStImportModal({info, onClose, onConfirm}){
   };
   const normalizedSizes = hasAnySizes ? im.sizes.map(normSize) : [];
   return(
-    <ModalWrap onClose={onClose} width={440}>
+    <ModalWrap onClose={onClose} width={560}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Blank importieren</div>
       {/* Style info */}
       <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0"}}>
         <div style={{width:36,height:36,borderRadius:10,background:hexVal,border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
-        <div>
+        <div style={{flex:1}}>
           <div style={{fontSize:16,fontWeight:800,color:"#111"}}>{im.styleName}</div>
           <div style={{fontSize:12,color:"#888"}}>{im.color} · {im.styleCode} · {im.colorCode}</div>
           {im.composition && <div style={{fontSize:11,color:"#bbb"}}>{im.composition}</div>}
         </div>
       </div>
-      {/* Fit selector */}
-      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Fit</div>
-      <div style={{display:"flex",gap:6,marginBottom:14}}>
-        {FITS.map(f => <button key={f} onClick={()=>setFit(f)}
-          style={{flex:1,padding:"10px 0",borderRadius:10,border:"2px solid",
-            borderColor:fit===f?"#e84142":"#e8e8e8",
-            background:fit===f?"#fef1f0":"#fff",
-            color:fit===f?"#e84142":"#555",
-            cursor:"pointer",fontWeight:800,fontSize:13}}>{f}</button>)}
-      </div>
-      {/* EK-Preis */}
-      <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center"}}>
-        <div style={{fontSize:12,fontWeight:700,color:"#555",width:70}}>EK-Preis</div>
-        <div style={{flex:1,position:"relative"}}>
-          <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#bbb",fontSize:14,fontWeight:700,pointerEvents:"none"}}>€</span>
-          <input type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}
-            placeholder="z.B. 4.15" style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:28,fontSize:14,fontWeight:700,outline:"none",boxSizing:"border-box",color:buyPrice?"#1a9a50":"#ccc",background:buyPrice?"#f0fdf4":"#fafafa"}}/>
+      {/* Fit + EK-Preis row */}
+      <div style={{display:"flex",gap:12,marginBottom:14,alignItems:"flex-end"}}>
+        <div style={{flex:1}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Fit</div>
+          <div style={{display:"flex",gap:5}}>
+            {FITS.map(f => <button key={f} onClick={()=>setFit(f)}
+              style={{flex:1,padding:"8px 0",borderRadius:8,border:"2px solid",
+                borderColor:fit===f?"#e84142":"#e8e8e8",
+                background:fit===f?"#fef1f0":"#fff",
+                color:fit===f?"#e84142":"#555",
+                cursor:"pointer",fontWeight:800,fontSize:12}}>{f}</button>)}
+          </div>
         </div>
-        {im.buyPrice && <span style={{fontSize:10,color:"#bbb"}}>S/S Preis</span>}
+        <div style={{width:140}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>EK-Preis</div>
+          <div style={{position:"relative"}}>
+            <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#bbb",fontSize:13,fontWeight:700,pointerEvents:"none"}}>€</span>
+            <input type="number" min="0" step="0.01" value={buyPrice} onChange={e=>setBuyPrice(e.target.value)}
+              placeholder={im.buyPrice?String(im.buyPrice):"0.00"} style={{width:"100%",height:36,borderRadius:8,border:"1px solid #e8e8e8",paddingLeft:24,fontSize:14,fontWeight:700,outline:"none",boxSizing:"border-box",color:buyPrice?"#1a9a50":"#ccc",background:buyPrice?"#f0fdf4":"#fafafa"}}/>
+          </div>
+        </div>
       </div>
-      {/* Stock per size */}
-      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Bestand pro Größe</div>
-      <div style={{display:"flex",flexDirection:"column",gap:4}}>
-        {DEFAULT_SIZES.map(sz => {
-          const available = !hasAnySizes || normalizedSizes.includes(sz);
-          const qty = stock[sz]||0;
-          return <div key={sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
-            <div style={{width:42,fontSize:13,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
-            <button onClick={()=>available&&adj(sz,-1)} disabled={!available||qty===0}
-              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:qty>0?"#e84142":"#ccc",cursor:available&&qty>0?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-            <input type="number" value={qty||""} placeholder="0" onChange={e=>available&&setVal(sz,e.target.value)}
-              style={{width:56,height:32,borderRadius:8,border:"1px solid #e8e8e8",textAlign:"center",fontSize:14,fontWeight:800,color:qty>0?"#1a9a50":"#ccc",outline:"none",background:qty>0?"#f0fdf4":"#fafafa"}}
-              disabled={!available}/>
-            <button onClick={()=>available&&adj(sz,1)} disabled={!available}
-              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:available?"#1a9a50":"#ccc",cursor:available?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
-            {qty>0 && <span style={{fontSize:11,color:"#1a9a50",fontWeight:700}}>{qty} Stk</span>}
-          </div>;
-        })}
-      </div>
-      {/* Sollbestand */}
-      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6,marginTop:12}}>Sollbestand (Minimum)</div>
-      <div style={{display:"flex",flexDirection:"column",gap:4}}>
-        {DEFAULT_SIZES.map(sz => {
-          const available = !hasAnySizes || normalizedSizes.includes(sz);
-          const mq = minStock[sz]||0;
-          return <div key={"min_"+sz} style={{display:"flex",alignItems:"center",gap:8,opacity:available?1:0.3}}>
-            <div style={{width:42,fontSize:13,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
-            <button onClick={()=>available&&adjMin(sz,-1)} disabled={!available||mq===0}
-              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:mq>0?"#f08328":"#ccc",cursor:available&&mq>0?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-            <input type="number" value={mq||""} placeholder="0" onChange={e=>available&&setMinVal(sz,e.target.value)}
-              style={{width:56,height:32,borderRadius:8,border:"1px solid #e8e8e8",textAlign:"center",fontSize:14,fontWeight:800,color:mq>0?"#f08328":"#ccc",outline:"none",background:mq>0?"#fef6ed":"#fafafa"}}
-              disabled={!available}/>
-            <button onClick={()=>available&&adjMin(sz,1)} disabled={!available}
-              style={{width:32,height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:available?"#f08328":"#ccc",cursor:available?"pointer":"not-allowed",fontWeight:900,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
-            {mq>0 && <span style={{fontSize:11,color:"#f08328",fontWeight:700}}>{mq} Min</span>}
-          </div>;
-        })}
+      {/* Size grid: Bestand + Sollbestand side by side */}
+      <div style={{display:"flex",gap:0,border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden"}}>
+        {/* Header row */}
+        <div style={{flex:1,display:"flex",flexDirection:"column"}}>
+          <div style={{background:"#f8f8f8",padding:"8px 12px",fontSize:12,fontWeight:800,color:"#555",borderBottom:"1px solid #e8e8e8",textAlign:"center"}}>
+            Bestand
+          </div>
+          {DEFAULT_SIZES.map((sz,i) => {
+            const available = !hasAnySizes || normalizedSizes.includes(sz);
+            const qty = stock[sz]||0;
+            return <div key={sz} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 10px",opacity:available?1:0.25,borderBottom:i<DEFAULT_SIZES.length-1?"1px solid #f3f3f3":"none"}}>
+              <div style={{width:32,fontSize:12,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
+              <button onClick={()=>available&&adj(sz,-1)} disabled={!available||qty===0}
+                style={{width:28,height:28,borderRadius:6,border:"1px solid #e8e8e8",background:"#fff",color:qty>0?"#e84142":"#ddd",cursor:available&&qty>0?"pointer":"default",fontWeight:900,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+              <input type="number" value={qty||""} placeholder="0" onChange={e=>available&&setVal(sz,e.target.value)}
+                style={{width:48,height:28,borderRadius:6,border:"1px solid #e8e8e8",textAlign:"center",fontSize:13,fontWeight:800,color:qty>0?"#1a9a50":"#ccc",outline:"none",background:qty>0?"#f0fdf4":"#fafafa",flex:1}} disabled={!available}/>
+              <button onClick={()=>available&&adj(sz,1)} disabled={!available}
+                style={{width:28,height:28,borderRadius:6,border:"1px solid #e8e8e8",background:"#fff",color:available?"#1a9a50":"#ddd",cursor:available?"pointer":"default",fontWeight:900,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+            </div>;
+          })}
+        </div>
+        {/* Divider */}
+        <div style={{width:1,background:"#e8e8e8"}}/>
+        {/* Sollbestand */}
+        <div style={{flex:1,display:"flex",flexDirection:"column"}}>
+          <div style={{background:"#fef6ed",padding:"8px 12px",fontSize:12,fontWeight:800,color:"#b45309",borderBottom:"1px solid #e8e8e8",textAlign:"center"}}>
+            Sollbestand
+          </div>
+          {DEFAULT_SIZES.map((sz,i) => {
+            const available = !hasAnySizes || normalizedSizes.includes(sz);
+            const mq = minStock[sz]||0;
+            return <div key={"min_"+sz} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 10px",opacity:available?1:0.25,borderBottom:i<DEFAULT_SIZES.length-1?"1px solid #f3f3f3":"none"}}>
+              <div style={{width:32,fontSize:12,fontWeight:800,color:"#555"}}>{SZ(sz)}</div>
+              <button onClick={()=>available&&adjMin(sz,-1)} disabled={!available||mq===0}
+                style={{width:28,height:28,borderRadius:6,border:"1px solid #e8e8e8",background:"#fff",color:mq>0?"#f08328":"#ddd",cursor:available&&mq>0?"pointer":"default",fontWeight:900,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+              <input type="number" value={mq||""} placeholder="0" onChange={e=>available&&setMinVal(sz,e.target.value)}
+                style={{width:48,height:28,borderRadius:6,border:"1px solid #e8e8e8",textAlign:"center",fontSize:13,fontWeight:800,color:mq>0?"#f08328":"#ccc",outline:"none",background:mq>0?"#fef6ed":"#fafafa",flex:1}} disabled={!available}/>
+              <button onClick={()=>available&&adjMin(sz,1)} disabled={!available}
+                style={{width:28,height:28,borderRadius:6,border:"1px solid #e8e8e8",background:"#fff",color:available?"#f08328":"#ddd",cursor:available?"pointer":"default",fontWeight:900,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+            </div>;
+          })}
+        </div>
       </div>
       {/* Actions */}
       <div style={{display:"flex",gap:8,marginTop:16}}>
@@ -2734,18 +2741,18 @@ function StStMultiFilter({label, values, options, onChange}){
   );
 }
 
-function StStColorFilter({value, colors, onChange}){
+function StStColorFilter({values, colors, onChange}){
   const [open, setOpen] = useState(false);
   const [colorSearch, setColorSearch] = useState("");
   const ref = useRef(null);
-  const active = value !== "all";
-  const selectedColor = active ? colors.find(c=>c.code===value) : null;
+  const active = values.length > 0;
   useEffect(()=>{
     if(!open) return;
     const handler = (e) => { if(ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handler);
     return ()=> document.removeEventListener("mousedown", handler);
   },[open]);
+  const toggle = (code) => onChange(values.includes(code) ? values.filter(c=>c!==code) : [...values, code]);
   const filteredColors = colorSearch ? colors.filter(c=>(c.name||"").toLowerCase().includes(colorSearch.toLowerCase())||(c.code||"").toLowerCase().includes(colorSearch.toLowerCase())) : colors;
   return(
     <div style={{position:"relative"}} ref={ref}>
@@ -2753,25 +2760,29 @@ function StStColorFilter({value, colors, onChange}){
         style={{height:30,borderRadius:8,border:"1px solid",borderColor:active?"#1a9a50":"#e8e8e8",
           background:active?"#f0fdf4":"#fff",color:active?"#1a9a50":"#666",
           cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 10px",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
-        {selectedColor && <div style={{width:12,height:12,borderRadius:"50%",background:selectedColor.hex||"#ddd",border:"1px solid rgba(0,0,0,0.15)",flexShrink:0}}/>}
-        {active ? selectedColor?.name||value : "Color"} <span style={{fontSize:8,marginLeft:2}}>{open?"▲":"▼"}</span>
+        {active && values.length<=3 && values.map(v=>{const c=colors.find(x=>x.code===v);return <div key={v} style={{width:10,height:10,borderRadius:"50%",background:c?.hex||"#ddd",border:"1px solid rgba(0,0,0,0.15)",flexShrink:0}}/>;}) }
+        Color{active?` (${values.length})`:""} <span style={{fontSize:8,marginLeft:2}}>{open?"▲":"▼"}</span>
       </button>
       {open && <div style={{position:"absolute",top:34,left:0,zIndex:100,background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",width:240,maxHeight:340,display:"flex",flexDirection:"column"}}>
         <div style={{padding:"8px 8px 4px 8px"}}>
-          <input value={colorSearch} onChange={e=>setColorSearch(e.target.value)} placeholder="Search color..."
+          <input value={colorSearch} onChange={e=>setColorSearch(e.target.value)} placeholder="Farbe suchen..."
             autoFocus style={{width:"100%",height:28,borderRadius:7,border:"1px solid #e8e8e8",paddingLeft:8,fontSize:11,outline:"none",boxSizing:"border-box"}}/>
         </div>
         <div style={{overflowY:"auto",flex:1,padding:4}}>
-          <button onClick={()=>{onChange("all");setOpen(false);}}
-            style={{width:"100%",padding:"6px 10px",border:"none",background:value==="all"?"#f0fdf4":"transparent",color:value==="all"?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:11,fontWeight:value==="all"?800:600,borderRadius:7}}>
-            All ({colors.length})
+          <button onClick={()=>{onChange([]);setOpen(false);}}
+            style={{width:"100%",padding:"6px 10px",border:"none",background:!active?"#f0fdf4":"transparent",color:!active?"#1a9a50":"#555",cursor:"pointer",textAlign:"left",fontSize:11,fontWeight:!active?800:600,borderRadius:7}}>
+            Alle ({colors.length})
           </button>
-          {filteredColors.map(c=><button key={c.code} onClick={()=>{onChange(c.code);setOpen(false);}}
-            style={{width:"100%",padding:"5px 10px",border:"none",background:value===c.code?"#f0fdf4":"transparent",cursor:"pointer",textAlign:"left",borderRadius:7,display:"flex",alignItems:"center",gap:7}}>
-            <div style={{width:14,height:14,borderRadius:"50%",background:c.hex||"#ddd",border:"1px solid rgba(0,0,0,0.12)",flexShrink:0}}/>
-            <span style={{fontSize:11,fontWeight:value===c.code?800:600,color:value===c.code?"#1a9a50":"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.name}</span>
-            <span style={{fontSize:9,color:"#bbb",marginLeft:"auto",flexShrink:0}}>{c.code}</span>
-          </button>)}
+          {filteredColors.map(c=>{
+            const sel=values.includes(c.code);
+            return <button key={c.code} onClick={()=>toggle(c.code)}
+              style={{width:"100%",padding:"5px 10px",border:"none",background:sel?"#f0fdf4":"transparent",cursor:"pointer",textAlign:"left",borderRadius:7,display:"flex",alignItems:"center",gap:7}}>
+              <div style={{width:14,height:14,borderRadius:4,border:"2px solid",borderColor:sel?"#1a9a50":"#ddd",background:sel?"#1a9a50":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:8,color:"#fff"}}>{sel?"✓":""}</div>
+              <div style={{width:14,height:14,borderRadius:"50%",background:c.hex||"#ddd",border:"1px solid rgba(0,0,0,0.12)",flexShrink:0}}/>
+              <span style={{fontSize:11,fontWeight:sel?800:600,color:sel?"#1a9a50":"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.name}</span>
+              <span style={{fontSize:9,color:"#bbb",marginLeft:"auto",flexShrink:0}}>{c.code}</span>
+            </button>;
+          })}
         </div>
       </div>}
     </div>
@@ -2789,11 +2800,11 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState({});
   const memCache = useRef({prods:null, stock:null});
-  const [catFilter, setCatFilter] = useState("all");
-  const [genderFilter, setGenderFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [fitFilter, setFitFilter] = useState("all");
-  const [colorFilter, setColorFilter] = useState("all"); // ColorCode e.g. "C002"
+  const [catFilter, setCatFilter] = useState([]);
+  const [genderFilter, setGenderFilter] = useState([]);
+  const [typeFilter, setTypeFilter] = useState([]);
+  const [fitFilter, setFitFilter] = useState([]);
+  const [colorFilter, setColorFilter] = useState([]); // ColorCode array e.g. ["C002","C001"]
   const [nameFilter, setNameFilter] = useState([]); // Multi-select: StyleName values
   const [detail, setDetail] = useState(null); // style detail modal
   const [imgCache, setImgCache] = useState({}); // {styleCode: [{url,...}]}
@@ -3007,6 +3018,18 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
   useEffect(() => { loadProducts(); loadStock(); loadColors(); loadPrices(); }, [sheetsUrl]);
 
+  // Eagerly load images for visible styles
+  const imgLoadQueued = useRef(new Set());
+  useEffect(() => {
+    if(!sheetsUrl || !styles.length) return;
+    const toLoad = styles.filter(s => !imgCache[s.StyleCode] && !imgLoadQueued.current.has(s.StyleCode)).slice(0,30);
+    if(!toLoad.length) return;
+    toLoad.forEach(s => imgLoadQueued.current.add(s.StyleCode));
+    let idx = 0;
+    const next = () => { if(idx >= toLoad.length) return; loadImages(toLoad[idx++].StyleCode).then(next); };
+    next(); next(); next(); // 3 parallel
+  }, [styles.length, sheetsUrl]);
+
   // Parse V2 response into displayable styles
   const styles = useMemo(() => {
     if(!ststProducts) return [];
@@ -3070,11 +3093,11 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const filtered = useMemo(() => {
     let f = styles;
     if(nameFilter.length > 0) f = f.filter(s => nameFilter.includes(s.StyleName || s.StyleCode));
-    if(catFilter !== "all") f = f.filter(s => s.Category === catFilter);
-    if(genderFilter !== "all") f = f.filter(s => s.Gender === genderFilter);
-    if(typeFilter !== "all") f = f.filter(s => s.Type === typeFilter);
-    if(fitFilter !== "all") f = f.filter(s => s.Fit === fitFilter);
-    if(colorFilter !== "all") f = f.filter(s => (s.Variants||[]).some(v => v.ColorCode === colorFilter));
+    if(catFilter.length > 0) f = f.filter(s => catFilter.includes(s.Category));
+    if(genderFilter.length > 0) f = f.filter(s => genderFilter.includes(s.Gender));
+    if(typeFilter.length > 0) f = f.filter(s => typeFilter.includes(s.Type));
+    if(fitFilter.length > 0) f = f.filter(s => fitFilter.includes(s.Fit));
+    if(colorFilter.length > 0) f = f.filter(s => (s.Variants||[]).some(v => colorFilter.includes(v.ColorCode)));
     if(search.trim()) {
       const q = search.toLowerCase().trim();
       f = f.filter(s =>
@@ -3087,7 +3110,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     }
     return f;
   }, [styles, catFilter, genderFilter, typeFilter, fitFilter, colorFilter, nameFilter, search]);
-  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorFilter].filter(f => f !== "all").length + (nameFilter.length > 0 ? 1 : 0);
+  const activeFilterCount = [catFilter, genderFilter, typeFilter, fitFilter, colorFilter, nameFilter].filter(f => f.length > 0).length;
 
   // Helper: get stock for a SKU
   const getStock = (sku) => ststStock ? (ststStock[sku] || 0) : null;
@@ -3137,31 +3160,28 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
 
       {/* Search + Filters */}
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <div style={{flex:1,minWidth:180,position:"relative"}}>
-            <IC_SEARCH size={14} color="#bbb"/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
-              style={{width:"100%",height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-          </div>
-          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter("all");setGenderFilter("all");setTypeFilter("all");setFitFilter("all");setColorFilter("all");setNameFilter([]);}}
-            style={{height:36,borderRadius:10,border:"1px solid #fee2e2",background:"#fff",color:"#e84142",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:4}}>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Style, Name, Farbe suchen..."
+            style={{flex:1,minWidth:180,height:36,borderRadius:10,border:"1px solid #e8e8e8",paddingLeft:12,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+          {activeFilterCount > 0 && <button onClick={()=>{setCatFilter([]);setGenderFilter([]);setTypeFilter([]);setFitFilter([]);setColorFilter([]);setNameFilter([]);}}
+            style={{height:36,borderRadius:10,border:"1px solid #fee2e2",background:"#fff",color:"#e84142",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap",flexShrink:0}}>
             ✕ Filter zurücksetzen ({activeFilterCount})
           </button>}
         </div>
         {/* Filter chips */}
         <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"flex-start"}}>
           {/* Gender */}
-          {filterOpts.genders.length > 1 && <StStFilterChips label="Gender" value={genderFilter} options={filterOpts.genders} onChange={setGenderFilter}/>}
+          {filterOpts.genders.length > 1 && <StStMultiFilter label="Gender" values={genderFilter} options={filterOpts.genders} onChange={setGenderFilter}/>}
           {/* Category */}
-          {filterOpts.categories.length > 1 && <StStFilterChips label="Category" value={catFilter} options={filterOpts.categories} onChange={setCatFilter}/>}
+          {filterOpts.categories.length > 1 && <StStMultiFilter label="Category" values={catFilter} options={filterOpts.categories} onChange={setCatFilter}/>}
           {/* Type */}
-          {filterOpts.types.length > 1 && <StStFilterChips label="Type" value={typeFilter} options={filterOpts.types} onChange={setTypeFilter}/>}
+          {filterOpts.types.length > 1 && <StStMultiFilter label="Type" values={typeFilter} options={filterOpts.types} onChange={setTypeFilter}/>}
           {/* Fit */}
-          {filterOpts.fits.length > 1 && <StStFilterChips label="Fit" value={fitFilter} options={filterOpts.fits} onChange={setFitFilter}/>}
+          {filterOpts.fits.length > 1 && <StStMultiFilter label="Fit" values={fitFilter} options={filterOpts.fits} onChange={setFitFilter}/>}
           {/* Produkt (multi-select) */}
           {filterOpts.names.length > 1 && <StStMultiFilter label="Produkt" values={nameFilter} options={filterOpts.names} onChange={setNameFilter}/>}
           {/* Color */}
-          {filterOpts.colors.length > 1 && <StStColorFilter value={colorFilter} colors={filterOpts.colors} onChange={setColorFilter}/>}
+          {filterOpts.colors.length > 1 && <StStColorFilter values={colorFilter} colors={filterOpts.colors} onChange={setColorFilter}/>}
         </div>
       </div>
 
@@ -3186,7 +3206,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       {!loading && !error && filtered.length === 0 && styles.length > 0 && <div style={{textAlign:"center",padding:40,color:"#bbb",fontSize:13}}>Keine Treffer für "{search}"</div>}
       {!loading && filtered.map(style => {
         let colorGroups = groupByColor(style.Variants, style);
-        if(colorFilter !== "all") colorGroups = colorGroups.filter(cg => cg.colorCode === colorFilter);
+        if(colorFilter.length > 0) colorGroups = colorGroups.filter(cg => colorFilter.includes(cg.colorCode));
         if(colorGroups.length === 0) return null;
         const totalStock = getStyleStock(style);
         const isExpanded = !!expanded[style.StyleCode];
@@ -3209,7 +3229,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                   <span style={{fontSize:10,color:"#bbb",fontWeight:700,background:"#f5f5f5",borderRadius:4,padding:"1px 5px"}}>{style.StyleCode}</span>
                 </div>
                 <div style={{fontSize:11,color:"#999",marginTop:1}}>
-                  {style.Type}{style.Category ? ` · ${style.Category}` : ""}{style.Gender ? ` · ${style.Gender}` : ""}
+                  {style.Type}{style.Category ? ` · ${style.Category}` : ""}{style.Gender ? ` · ${style.Gender}` : ""}{style.Fit ? ` · ${style.Fit}` : ""}
                 </div>
                 <div style={{fontSize:10,color:"#bbb",marginTop:1}}>{uniqueColors} Farbe{uniqueColors!==1?"n":""} · {sizes.length} Größe{sizes.length!==1?"n":""}</div>
               </div>
@@ -4338,6 +4358,33 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const [csvSelected,setCsvSelected]=useState({});
   const customQty=bedarfQty;
   const setCustomQty=setBedarfQty;
+
+  // Read S/S stock from localStorage cache
+  const ststStock = useMemo(() => {
+    try { const c = JSON.parse(localStorage.getItem("stst_stock")); if(c && c.data) return c.data; } catch(e) {}
+    return null;
+  }, []);
+  // Helper: look up S/S stock for a blank + our size key
+  const SS_SIZE_MAP = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
+  const SS_SIZE_ALT = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
+  const getSsStock = (blank, sizeKey) => {
+    if(!ststStock || !blank.stProductId || !blank.stColorCode) return null;
+    const sc = blank.stProductId, cc = blank.stColorCode;
+    // Try multiple SKU patterns
+    const tries = [
+      sc + cc + (SS_SIZE_MAP[sizeKey]||sizeKey),
+      sc + cc + (SS_SIZE_ALT[sizeKey]||sizeKey),
+      sc + cc + sizeKey,
+    ];
+    for(const sku of tries) { if(ststStock[sku] !== undefined) return ststStock[sku]; }
+    // Brute-force: search for any key starting with sc+cc and containing the size
+    const prefix = sc + cc;
+    const sAlt = SS_SIZE_MAP[sizeKey]||sizeKey;
+    for(const [k,v] of Object.entries(ststStock)) {
+      if(k.startsWith(prefix) && (k.endsWith(sAlt) || k.endsWith(sizeKey))) return v;
+    }
+    return null;
+  };
   const bedarfMap={};
   const breakdownMap={};
   const isCapMap={};
@@ -4395,7 +4442,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   }).filter(e=>e.toOrder>0||e.toOrderWithMin>0);
 
   const renderDetail=(t,blankId,blank,cq,cqKey)=>{
-    const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state}=t;
+    const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state,ssStock}=t;
     const items=breakdownMap[blankId]?.[key]||[];
     const orderQty=cq!=null?cq:t.remainMax;
     return(
@@ -4410,6 +4457,8 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
           ))}
           {items.length===0&&<div style={{fontSize:11,color:"#ccc",padding:"4px 0"}}>Keine Aufträge</div>}
           {t.oQty>0&&<div style={{fontSize:10,color:"#1a9a50",fontWeight:700}}>✓ {t.oQty} bestellt</div>}
+          {ssStock!=null&&orderQty>0&&ssStock<orderQty&&<div style={{fontSize:11,fontWeight:800,color:"#e84142",background:"#fef1f0",borderRadius:6,padding:"4px 8px",marginTop:2}}>⚠ Bei S/S nur {ssStock} von {orderQty} lagernd</div>}
+          {ssStock!=null&&orderQty>0&&ssStock>=orderQty&&<div style={{fontSize:11,fontWeight:700,color:"#1a9a50",marginTop:2}}>✓ S/S: {ssStock} lagernd</div>}
         </div>
         <button type="button" disabled={orderQty===0} onClick={()=>{if(orderQty>0){onBestellen(blank,key,isCapKey,capColor,orderQty);setCustomQty(q=>({...q,[cqKey]:0}));}}}
           style={{background:orderQty===0?"#f0f0f0":"#1a9a50",borderRadius:10,padding:"0 16px",border:"none",cursor:orderQty===0?"not-allowed":"pointer",opacity:orderQty===0?0.5:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:11,fontWeight:800,color:orderQty===0?"#bbb":"#fff",letterSpacing:0.5}}>
@@ -4516,7 +4565,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               const remainMax=Math.max(0,toOrderMax-oQty);
               // state: "red" | "orange" | "done" | "none"
               const state=(needed===0&&toOrderMax===0)?"none":remainMin>0?"red":remainMax>0?"orange":"done";
-              return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state};
+              return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state,ssStock:isCapKey?null:getSsStock(blank,key)};
             });
             const allDone=tileData.every(t=>t.state==="done"||t.state==="none");
             const activeTiles=tileData.filter(t=>t.state!=="done"&&t.state!=="none");
@@ -4554,12 +4603,13 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const cqKey=blankId+"-"+key;
                     const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMax;
                     const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
+                    const ssWarn = t.ssStock!=null && cq>0 && t.ssStock<cq;
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"stretch",
                         background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
                         borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,height:isOpen?undefined:160,
                         opacity:state==="none"?0.5:state==="done"?0.65:1,
-                        border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
+                        border:isOpen?"2px solid #e84142":ssWarn?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
                         {/* Row 1: MIN label MAX */}
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
@@ -4577,7 +4627,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                           <button type="button" onClick={()=>setCq(cq+1)}
                             style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                         </div>
-                        {/* Row 3: SOLL + ON STOCK + CSV */}
+                        {/* Row 3: SOLL + ON STOCK + S/S + CSV */}
                         <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:6}}>
                           {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -4587,6 +4637,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                               CSV
                             </button>}
                           </div>
+                          {(()=>{const ss=t.ssStock;if(ss==null||cq===0)return null;const warn=ss<cq;return <span style={{fontSize:9,fontWeight:800,color:warn?"#e84142":"#1a9a50",marginTop:1}}>{warn?`⚠ S/S: nur ${ss}/${cq}`:`S/S: ${ss} ✓`}</span>;})()}
                         </div>
                       </div>
                     );
@@ -5748,7 +5799,7 @@ function AppInner({currentUser,onLogout}){
       {/* ── Header ── */}
       <div style={{background:"#fff",borderBottom:"1px solid #ebebeb",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
         <div style={{padding:mobile?"12px 14px":"16px 24px"}}>
-        <div style={{maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minHeight:36}}>
+        <div style={{maxWidth:"100%",margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,minHeight:36}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{...F_HEAD_STYLE,fontSize:mobile?18:22,fontWeight:900,letterSpacing:"0.25em",color:"#e84142"}}>GKBS</div>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -5785,7 +5836,7 @@ function AppInner({currentUser,onLogout}){
         </div>
         {/* Tab bar – desktop only */}
         {!mobile&&<div style={{padding:"4px 24px 12px",marginTop:4}}>
-          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:1300,margin:"0 auto",justifyContent:"center"}}>
+          <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:11,padding:3,maxWidth:"100%",margin:"0 auto",justifyContent:"center"}}>
             {TABS.map(([v,lbl,Icon])=>{
               const active=view===v;
               return(
@@ -5818,7 +5869,7 @@ function AppInner({currentUser,onLogout}){
         </div>}
       </div>
 
-      <div style={{padding:mobile?"12px 12px 20px":"20px 24px",maxWidth:1300,margin:"0 auto"}}>
+      <div style={{padding:mobile?"12px 12px 20px":"20px 24px",maxWidth:"100%",margin:"0 auto"}}>
 
 
         {/* Shopify */}
