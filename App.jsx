@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.9.1";
+const APP_VERSION = "v3.9.2";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -1557,7 +1557,7 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
   };
 
   const doSave = () => {
-    onSave({id:initial?.id||Date.now().toString(),name:(name||"Neues Produkt").trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock,minStock,capColors});
+    onSave({id:initial?.id||Date.now().toString(),name:(name||"Neues Produkt").trim(),category,color,colorHex,buyPrice:parseFloat(buyPrice)||null,stProductId:stProductId.trim(),stColorCode:stColorCode.trim(),stock:isCap?{}:stock,minStock:isCap?{}:minStock,capColors:isCap?capColors:null});
   };
 
   return(
@@ -1571,42 +1571,45 @@ function ProductModal({categories,variantCats,initial,onClose,onSave,onDelete}){
       {/* Stanley/Stella Preset Picker */}
       {!editing&&(
         <div style={{display:"flex",flexDirection:"column",gap:6}}>
-          {/* Category buttons */}
-          {!presetProduct&&(
-            <div style={{display:"flex",gap:0,borderBottom:"2px solid #f0f0f0"}}>
-              {["T-Shirt","Hoodie","Crewneck","Cap","Bag"].map(cat=>(
+          {/* Category buttons – show all cats that have S/S presets */}
+          {!presetProduct&&(()=>{
+            const presetCats=[...new Set(STANLEY_STELLA_PRESETS.map(p=>p.category))];
+            return <div style={{display:"flex",gap:0,borderBottom:"2px solid #f0f0f0",overflowX:"auto"}}>
+              {presetCats.map(cat=>(
                 <button key={cat} type="button"
                   onClick={()=>{setPresetCat(cat);setShowPresets(true);}}
                   style={{flex:1,padding:"8px 4px",border:"none",background:"transparent",
                     borderBottom:showPresets&&presetCat===cat?"2px solid #111":"2px solid transparent",
                     marginBottom:-2,
                     color:showPresets&&presetCat===cat?"#111":"#bbb",
-                    fontWeight:showPresets&&presetCat===cat?800:600,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>
+                    fontWeight:showPresets&&presetCat===cat?800:600,fontSize:12,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",minWidth:0}}>
                   {cat}
                 </button>
               ))}
-            </div>
-          )}
+            </div>;
+          })()}
           {/* Product list */}
           {showPresets&&!presetProduct&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
-              {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>(
+              {STANLEY_STELLA_PRESETS.filter(p=>p.category===presetCat).map(p=>{
+                const isVarCat=(variantCats||DEFAULT_VARIANT_CATS).includes(presetCat);
+                return(
                 <button key={p.id} type="button"
-                  onClick={()=>{ if(["Bag","Cap"].includes(presetCat)){applyPreset(p,p.colors[0]);}else{setPresetProduct(p);} }}
+                  onClick={()=>{ if(isVarCat){applyPreset(p,p.colors[0]);}else{setPresetProduct(p);} }}
                   style={{width:"100%",padding:"12px 14px",border:"none",borderTop:"1px solid #f0f0f0",background:"#fff",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:800,color:"#111"}}>{p.name}</div>
                     <div style={{fontSize:11,color:"#bbb"}}>{p.id} · {p.fit} · {p.colors.length} Farben</div>
                   </div>
-                  {["Bag","Cap"].includes(presetCat)
+                  {isVarCat
                     ? <span style={{fontSize:11,background:"#ddfce6",color:"#1a9a50",borderRadius:6,padding:"2px 8px",fontWeight:700}}>Alle laden</span>
                     : <span style={{color:"#bbb"}}>›</span>}
                 </button>
-              ))}
+                );})}
             </div>
           )}
-          {/* Color picker - only for T-Shirt/Hoodie/Crewneck */}
-          {showPresets&&presetProduct&&!["Bag","Cap"].includes(presetCat)&&(
+          {/* Color picker - only for size-based categories */}
+          {showPresets&&presetProduct&&!(variantCats||DEFAULT_VARIANT_CATS).includes(presetCat)&&(
             <div style={{background:"#fff",border:"1px solid #e8e8e8",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(0,0,0,0.08)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:"1px solid #f0f0f0"}}>
                 <button type="button" onClick={()=>setPresetProduct(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#888",fontSize:13}}>‹ zurück</button>
@@ -4605,7 +4608,11 @@ function AppInner({currentUser,onLogout}){
     if(!url)return;
     setSyncStatus("loading");
     sheetsLoad().then(data=>{
-      if(data?.products){__setProducts(data.products);productsRef.current=data.products;}
+      if(data?.products){
+        const vc=data?.variantCats||variantCatsRef.current||DEFAULT_VARIANT_CATS;
+        const cleaned=data.products.map(p=>vc.includes(p.category)?p:{...p,capColors:null});
+        __setProducts(cleaned);productsRef.current=cleaned;
+      }
       if(data?.prods){__setProds(data.prods);prodsRef.current=data.prods;}
       if(data?.categories&&Array.isArray(data.categories)&&data.categories.length>0){categoriesRef.current=data.categories;__setCategories(data.categories);}
       if(data?.variantCats&&Array.isArray(data.variantCats)){variantCatsRef.current=data.variantCats;__setVariantCats(data.variantCats);try{localStorage.setItem("gkbs_variant_cats",JSON.stringify(data.variantCats));}catch(e){}}
