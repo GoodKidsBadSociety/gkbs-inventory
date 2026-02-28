@@ -2989,7 +2989,7 @@ function ScrollTopButton(){
 
 
 // ─── Stanley/Stella View ──────────────────────────────────────────
-function StanleyView({sheetsUrl, products}){
+function StanleyView({sheetsUrl, products, onImportBlank}){
   const mobile = useIsMobile();
   const [ststProducts, setStstProducts] = useState(null); // grouped by style
   const [ststStock, setStstStock] = useState(null); // {SKU: qty}
@@ -3012,7 +3012,7 @@ function StanleyView({sheetsUrl, products}){
       const r = await fetch(sheetsUrl, {method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})});
       const t = await r.text();
       const d = JSON.parse(t);
-      if(d.error) { setError(d.error); setLoading(false); return; }
+      if(d.error) { setError(d); setLoading(false); return; }
       const prods = d.products;
       if(Array.isArray(prods)) {
         setStstProducts(prods);
@@ -3174,13 +3174,20 @@ function StanleyView({sheetsUrl, products}){
       </div>
 
       {/* Loading / Error */}
-      {loading && <div style={{textAlign:"center",padding:40,color:"#bbb"}}>
-        <div style={{fontSize:14,fontWeight:700}}>Stanley/Stella Katalog laden...</div>
-        <div style={{fontSize:11,marginTop:4}}>Das kann beim ersten Mal ~10 Sekunden dauern</div>
+      {(loading||stockLoading) && <div style={{display:"flex",flexDirection:"column",gap:8,padding:"20px 0"}}>
+        <div style={{height:3,borderRadius:2,background:"#e8e8e8",overflow:"hidden"}}>
+          <div style={{height:"100%",background:"#1a9a50",borderRadius:2,animation:"ststLoad 1.5s ease-in-out infinite",width:"40%"}}/>
+        </div>
+        <style>{`@keyframes ststLoad{0%{margin-left:0}50%{margin-left:60%}100%{margin-left:0}}`}</style>
+        <div style={{textAlign:"center",color:"#bbb",fontSize:12}}>
+          {loading?"Katalog laden...":"Stock laden..."}{" "}Das kann beim ersten Mal ~10s dauern
+        </div>
       </div>}
       {error && <div style={{textAlign:"center",padding:40,color:"#e84142"}}>
         <div style={{fontSize:14,fontWeight:700}}>Fehler</div>
-        <div style={{fontSize:12,marginTop:4}}>{typeof error === "string" ? error : JSON.stringify(error)}</div>
+        <div style={{fontSize:12,marginTop:4}}>{typeof error === "string" ? error : (error.error||"")}</div>
+        {error.detail && <div style={{fontSize:11,marginTop:4,color:"#888"}}>{error.detail}</div>}
+        {error.debug && <div style={{fontSize:10,marginTop:4,color:"#bbb",wordBreak:"break-all",maxWidth:500,margin:"8px auto"}}>{error.debug}</div>}
       </div>}
 
       {/* Product List */}
@@ -3239,12 +3246,19 @@ function StanleyView({sheetsUrl, products}){
                     const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
                     return sum + (getStock(sku) || 0);
                   }, 0);
+                  // Check if already imported
+                  const alreadyImported = products.some(p =>
+                    (p.stProductId||"") === style.StyleCode && (p.stColorCode||"") === cg.colorCode
+                  );
                   return(
                     <div key={cg.colorCode} style={{display:"flex",gap:4,alignItems:"center"}}>
                       {/* Color label */}
                       <div style={{width:mobile?76:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
-                        {cg.hexCode && <div style={{width:14,height:14,borderRadius:4,background:`#${cg.hexCode}`,border:"1px solid #e0e0e0",flexShrink:0}}/>}
-                        <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
+                        <div style={{width:16,height:16,borderRadius:5,background:cg.hexCode?`#${cg.hexCode}`:"#ddd",border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
+                        <div style={{overflow:"hidden",minWidth:0}}>
+                          <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
+                          <div style={{fontSize:9,color:"#bbb",fontWeight:600}}>{cg.colorCode}</div>
+                        </div>
                       </div>
                       {/* Size tiles */}
                       {sizes.map(sz => {
@@ -3264,6 +3278,23 @@ function StanleyView({sheetsUrl, products}){
                       <div style={{width:50,textAlign:"center"}}>
                         <span style={{fontSize:12,fontWeight:900,color:colorTotal===0?"#e84142":"#555"}}>{ststStock?colorTotal:"…"}</span>
                       </div>
+                      {/* Import button */}
+                      <button onClick={(e)=>{e.stopPropagation();if(alreadyImported)return;onImportBlank&&onImportBlank({
+                        styleName:style.StyleName||style.StyleCode,
+                        styleCode:style.StyleCode,
+                        color:cg.color,
+                        colorCode:cg.colorCode,
+                        hexCode:cg.hexCode?`#${cg.hexCode}`:"#000000",
+                        category:style.Category||"T-Shirt",
+                        type:style.Type||"",
+                        fit:style.Fit||"",
+                        composition:style.CompositionList||"",
+                        sizes:sizes
+                      });}}
+                        style={{width:mobile?28:32,height:mobile?28:32,borderRadius:8,border:"1px solid",borderColor:alreadyImported?"#bbf7d0":"#e8e8e8",background:alreadyImported?"#f0fdf4":"#fff",color:alreadyImported?"#1a9a50":"#888",cursor:alreadyImported?"default":"pointer",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}
+                        title={alreadyImported?"Bereits importiert":"Als Blank importieren"}>
+                        {alreadyImported?"✓":"+"}
+                      </button>
                     </div>
                   );
                 })}
@@ -4616,17 +4647,20 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 
 // ─── Google Sheets Setup Modal ────────────────────────────────────
 function SheetsSetupModal({onClose, sheetsUrl}){
-  const [shopifyStatus,setShopifyStatus]=useState(null); // null=loading, true=connected, false=error, string=error msg
+  const [shopifyStatus,setShopifyStatus]=useState(null);
+  const [ststStatus,setStstStatus]=useState(null);
   useEffect(()=>{
     if(!sheetsUrl)return;
     fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
       .catch(()=>setShopifyStatus(false));
+    fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setStstStatus(d.error?(typeof d.error==="string"?d.error:d.error.message||"Fehler"):true);}catch(e){setStstStatus(false);}})
+      .catch(()=>setStstStatus(false));
   },[sheetsUrl]);
   return(
     <ModalWrap onClose={onClose} width={400}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Verbindungen</div>
-      {/* Google Sheets */}
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
         <IC_CLOUD size={24} color="#1a9a50"/>
         <div>
@@ -4634,13 +4668,21 @@ function SheetsSetupModal({onClose, sheetsUrl}){
           <div style={{fontSize:12,color:"#555",marginTop:2}}>Verbunden — automatisch gespeichert</div>
         </div>
       </div>
-      {/* Shopify */}
       <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <IC_SHOP size={22} color={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}/>
         <div>
           <div style={{fontSize:14,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
           <div style={{fontSize:12,color:"#555",marginTop:2}}>
-            {shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden — Credentials prüfen"}
+            {shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
+          </div>
+        </div>
+      </div>
+      <div style={{background:ststStatus===true?"#f0fdf4":ststStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+        <IC_STELLA size={22} color={ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}/>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}}>Stanley/Stella API</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>
+            {ststStatus===null?"Prüfe Verbindung...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
           </div>
         </div>
       </div>
@@ -5771,7 +5813,13 @@ function AppInner({currentUser,onLogout}){
 
         {/* Shopify */}
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} orderFilter={appSettings.orderFilter||"oe"} restockMins={restockMins} setRestockMins={setRestockMins} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
-        {view==="stanley"&&<StanleyView sheetsUrl={sheetsUrl} products={products}/>}
+        {view==="stanley"&&<StanleyView sheetsUrl={sheetsUrl} products={products} onImportBlank={(info)=>{
+          const newP={id:mkId(),name:`${info.styleName} – ${info.color}`,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
+            buyPrice:"",stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
+            stock:mkQty(),minStock:mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
+          setProducts(ps=>[...ps,newP]);
+          log(`Blank importiert – ${newP.name} (${info.styleCode}/${info.colorCode})`);
+        }}/>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);shopCacheSet("shopify_links",links);if(sheetsUrl){try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={sheetsUrl}/>}
