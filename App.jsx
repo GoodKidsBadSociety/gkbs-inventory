@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v3.9.2";
+const APP_VERSION = "v3.9.3";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -3879,7 +3879,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const renderDetail=(t,blankId,blank,cq,cqKey)=>{
     const {key,label,isCapKey,capColor,needed,avail,minStockVal,remainMin,remainMax,state}=t;
     const items=breakdownMap[blankId]?.[key]||[];
-    const orderQty=cq!=null?cq:remainMin;
+    const orderQty=cq!=null?cq:t.remainMax;
     return(
       <div style={{background:"#fafafa",borderRadius:12,border:"1px solid #ebebeb",padding:"8px 10px",display:"flex",alignItems:"stretch",gap:6,flexBasis:"100%",width:"100%",marginTop:4,marginBottom:2}}>
         <div style={{flex:1,display:"flex",flexDirection:"column",gap:3}}>
@@ -4017,95 +4017,100 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                   
                   <div style={{marginLeft:"auto",display:"flex",gap:6,flexShrink:0}}>
                     <button type="button" disabled={allDone||minSizes.length===0}
-                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef1f0",color:allDone?"#bbb":"#e84142",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef6ed",color:allDone?"#bbb":"#f08328",fontSize:11,fontWeight:800,cursor:allDone||minSizes.length===0?"not-allowed":"pointer",opacity:allDone||minSizes.length===0?0.5:1,border:"1px solid #fed7aa",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&minSizes.length>0)setAllModal({blank,sizes:minSizes});}}>
                       MIN
                     </button>
                     <button type="button" disabled={allDone||maxSizes.length===0}
-                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef6ed",color:allDone?"#bbb":"#f08328",fontSize:11,fontWeight:800,cursor:allDone||maxSizes.length===0?"not-allowed":"pointer",opacity:allDone||maxSizes.length===0?0.5:1,border:"1px solid #fed7aa",letterSpacing:0.5}}
+                      style={{...F_HEAD_STYLE,padding:"6px 12px",borderRadius:9,background:allDone?"#e0e0e0":"#fef1f0",color:allDone?"#bbb":"#e84142",fontSize:11,fontWeight:800,cursor:allDone||maxSizes.length===0?"not-allowed":"pointer",opacity:allDone||maxSizes.length===0?0.5:1,border:"1px solid #fecaca",letterSpacing:0.5}}
                       onClick={()=>{if(!allDone&&maxSizes.length>0)setAllModal({blank,sizes:maxSizes});}}>
                       MAX
                     </button>
                   </div>
                 </div>
                 {/* Size cells – boxes on desktop, rows on mobile */}
-                {!mobile?<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {!mobile?<>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {tileData.map(t=>{
                     const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
                     const isInactive=state==="done"||state==="none";
                     const isOpen=openSize===`${blankId}-${key}`;
                     const cqKey=blankId+"-"+key;
-                    const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMin;
+                    const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMax;
                     const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
-                    return(<React.Fragment key={key}>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"stretch",
-                        background:isOpen?"#fff":isInactive?"#f0f0f0":"#f8f8f8",
-                        borderRadius:14,padding:"10px 10px 8px",flex:1,minWidth:0,minHeight:130,position:"relative",
-                        opacity:state==="none"?0.35:state==="done"?0.6:1,
-                        border:isOpen?"2px solid #e84142":"1px solid transparent",cursor:"pointer"}}
+                    return(
+                      <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"stretch",
+                        background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
+                        borderRadius:14,padding:"10px 10px 8px",flex:1,minWidth:0,minHeight:130,
+                        opacity:state==="none"?0.5:state==="done"?0.65:1,
+                        border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
                         {/* Row 1: MIN label MAX */}
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                          <span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#e84142",lineHeight:1}}>{remainMin}</span>
+                          <span onClick={e=>{e.stopPropagation();setCq(remainMin);}} style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMin===0?"#bbb":"#f08328",lineHeight:1,cursor:"pointer"}}>{remainMin}</span>
                           <span style={{...F_HEAD_STYLE,fontSize:16,color:isInactive?"#bbb":"#555",fontWeight:800,lineHeight:1}}>{label}</span>
                           {minStockVal>0&&remainMax!==remainMin
-                            ?<span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#f08328",lineHeight:1}}>{remainMax}</span>
+                            ?<span onClick={e=>{e.stopPropagation();setCq(remainMax);}} style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:remainMax===0?"#bbb":"#e84142",lineHeight:1,cursor:"pointer"}}>{remainMax}</span>
                             :<span style={{width:16}}/>}
                         </div>
-                        {/* Row 2: - qty + */}
-                        {state==="none"
-                          ?<div style={{display:"flex",alignItems:"center",justifyContent:"center",flex:1}}><span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:800,color:"#ccc"}}>—</span></div>
-                          :state==="done"
-                          ?<div style={{display:"flex",alignItems:"center",justifyContent:"center",flex:1}}><span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:"#bbb"}}>✓</span></div>
-                          :<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flex:1}} onClick={e=>e.stopPropagation()}>
-                            <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
-                              style={{width:34,height:34,borderRadius:9,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:18,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-                            <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:cq>0?"#111":"#ccc",lineHeight:1,minWidth:28,textAlign:"center"}}>{cq}</span>
-                            <button type="button" onClick={()=>setCq(cq+1)}
-                              style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
-                          </div>}
-                        {/* Row 3: ON STOCK + CSV */}
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
-                          <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":avail===0?"#e84142":"#888"}}>{avail}</strong></span>
-                          {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
-                            style={{padding:"1px 5px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
-                            CSV
-                          </button>}
+                        {/* Row 2: - qty + (always shown) */}
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flex:1}} onClick={e=>e.stopPropagation()}>
+                          <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
+                            style={{width:34,height:34,borderRadius:9,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:18,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                          <span style={{...F_HEAD_STYLE,fontSize:28,fontWeight:900,color:cq>0?"#111":"#ccc",lineHeight:1,minWidth:28,textAlign:"center"}}>{cq}</span>
+                          <button type="button" onClick={()=>setCq(cq+1)}
+                            style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+                        </div>
+                        {/* Row 3: SOLL + ON STOCK + CSV */}
+                        <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:6}}>
+                          {minStockVal>0&&<span style={{fontSize:9,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":avail===0?"#e84142":"#888"}}>{avail}</strong></span>
+                            {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
+                              style={{padding:"1px 5px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
+                              CSV
+                            </button>}
+                          </div>
                         </div>
                       </div>
-                      {isOpen&&renderDetail(t,blankId,blank,cq,cqKey)}
-                    </React.Fragment>);
+                    );
                   })}
                 </div>
+                {/* Detail panel below tiles */}
+                {openSize&&(()=>{
+                  const t=tileData.find(td=>openSize===`${blankId}-${td.key}`);
+                  if(!t)return null;
+                  const cqKey=blankId+"-"+t.key;
+                  const cq=customQty[cqKey]!=null?customQty[cqKey]:t.remainMax;
+                  return renderDetail(t,blankId,blank,cq,cqKey);
+                })()}
+                </>
+
                 :<div style={{display:"flex",flexDirection:"column",gap:4}}>
                   {tileData.map(t=>{
                     const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor,minStockVal}=t;
                     const isInactive=state==="done"||state==="none";
                     const isOpen=openSize===`${blankId}-${key}`;
                     const cqKey=blankId+"-"+key;
-                    const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMin;
+                    const cq=customQty[cqKey]!=null?customQty[cqKey]:remainMax;
                     const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
                     return(<React.Fragment key={key}>
                       <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                         style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,cursor:"pointer",
-                          background:isOpen?"#fff":isInactive?"#f0f0f0":"#f8f8f8",opacity:state==="none"?0.4:state==="done"?0.6:1,border:isOpen?"2px solid #e84142":"1px solid transparent"}}>
+                          background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",opacity:state==="none"?0.5:state==="done"?0.65:1,border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent")}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:32}}>{label}</span>
                         <div style={{fontSize:10,color:"#888",flexShrink:0}}>
                           <StockBadge value={avail} size={18}/>
                         </div>
                         <div style={{flex:1}}/>
-                        {state==="none"
-                          ?<span style={{...F_HEAD_STYLE,fontSize:18,fontWeight:800,color:"#ccc",flexShrink:0}}>—</span>
-                          :state==="done"
-                          ?<span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:"#bbb",flexShrink:0}}>✓</span>
-                          :<div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
-                            <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
-                              style={{width:28,height:28,borderRadius:7,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:16,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-                            <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:24,textAlign:"center"}}>{cq}</span>
-                            <button type="button" onClick={()=>setCq(cq+1)}
-                              style={{width:28,height:28,borderRadius:7,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:16,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
-                          </div>}
+                        <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
+                          <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
+                            style={{width:28,height:28,borderRadius:7,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:16,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                          <span style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:24,textAlign:"center"}}>{cq}</span>
+                          <button type="button" onClick={()=>setCq(cq+1)}
+                            style={{width:28,height:28,borderRadius:7,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:16,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+                        </div>
                       </div>
                       {isOpen&&renderDetail(t,blankId,blank,cq,cqKey)}
                     </React.Fragment>);
@@ -5211,6 +5216,10 @@ function AppInner({currentUser,onLogout}){
             </div>
           </div>
           <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            {/* Profile */}
+            <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:9,background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              {currentUser.avatar}
+            </button>
             {/* Sheets */}
             <button onClick={()=>setShowSheetsSetup(true)} title={sheetsUrl?"Verbunden":"Sheets einrichten"} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:sheetsUrl?"#f0fdf4":"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <IC_CLOUD size={14} color={sheetsUrl?"#1a9a50":"#ccc"}/>
@@ -5221,14 +5230,12 @@ function AppInner({currentUser,onLogout}){
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
             </button>
             <button onClick={()=>setShowSettings(true)} title="Einstellungen" style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_SETTINGS size={15} color="#555"/></button>
-            {view==="inventory"&&inventoryTab==="textil"&&<><button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>
-              <button onClick={()=>setShowProdModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button></>}
-            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
-            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
-            {view==="bestellbedarf"&&<button onClick={()=>setShowManualBestell(true)} style={{width:36,height:36,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
-            <button onClick={onLogout} title={`Ausloggen (${currentUser.name})`} style={{width:32,height:32,borderRadius:"50%",background:currentUser.color,border:"none",color:"#fff",fontSize:11,fontWeight:900,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              {currentUser.avatar}
-            </button>
+            {view==="inventory"&&inventoryTab==="textil"&&<button onClick={()=>setShowCats(true)} style={{width:32,height:32,borderRadius:9,border:"1px solid #e8e8e8",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><IC_FOLDER size={14} color="#555"/></button>}
+            {/* Green + button always last */}
+            {view==="inventory"&&inventoryTab==="textil"&&<button onClick={()=>setShowProdModal("add")} style={{width:32,height:32,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
+            {view==="inventory"&&inventoryTab==="dtf"&&<button onClick={()=>setShowDtfModal("add")} style={{width:32,height:32,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
+            {view==="production"&&prodMainTab==="auftraege"&&<button onClick={()=>setShowPAModal("add")} style={{width:32,height:32,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
+            {view==="bestellbedarf"&&<button onClick={()=>setShowManualBestell(true)} style={{width:32,height:32,borderRadius:9,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>}
           </div>
         </div>
         </div>
