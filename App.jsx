@@ -2989,6 +2989,77 @@ function ScrollTopButton(){
 
 
 // ─── Stanley/Stella View ──────────────────────────────────────────
+// ─── Blank Size Selector (for S/S import) ─────────────────────────
+function BlankSizeSelector({sizes, onSelect}){
+  const [selected, setSelected] = useState([]);
+  const toggle = (sz) => { const nxt = selected.includes(sz) ? selected.filter(s=>s!==sz) : [...selected, sz]; setSelected(nxt); onSelect(nxt); };
+  const allSizes = DEFAULT_SIZES;
+  return(
+    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+      {allSizes.map(sz => {
+        const available = sizes.includes(sz);
+        const active = selected.includes(sz);
+        return <button key={sz} onClick={()=>available&&toggle(sz)}
+          style={{width:52,height:40,borderRadius:10,border:"2px solid",
+            borderColor:active?"#1a9a50":"#e8e8e8",
+            background:active?"#f0fdf4":available?"#fff":"#f5f5f5",
+            color:active?"#1a9a50":available?"#555":"#ccc",
+            cursor:available?"pointer":"not-allowed",
+            fontWeight:800,fontSize:13,opacity:available?1:0.4}}>{SZ(sz)}</button>;
+      })}
+    </div>
+  );
+}
+
+// ─── S/S Import Modal ─────────────────────────────────────────────
+const FITS = ["Straight","Loose","Oversized"];
+function StStImportModal({info, onClose, onConfirm}){
+  const im = info;
+  const hexVal = im.hexCode ? (im.hexCode.startsWith("#") ? im.hexCode : `#${im.hexCode}`) : "#888";
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [fit, setFit] = useState(im.fit || "");
+  return(
+    <ModalWrap onClose={onClose} width={420}>
+      <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Blank importieren</div>
+      {/* Style info */}
+      <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0"}}>
+        <div style={{width:36,height:36,borderRadius:10,background:hexVal,border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
+        <div>
+          <div style={{fontSize:16,fontWeight:800,color:"#111"}}>{im.styleName}</div>
+          <div style={{fontSize:12,color:"#888"}}>{im.color} · {im.styleCode} · {im.colorCode}</div>
+          {im.composition && <div style={{fontSize:11,color:"#bbb"}}>{im.composition}</div>}
+        </div>
+      </div>
+      {/* Fit selector */}
+      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Fit</div>
+      <div style={{display:"flex",gap:6,marginBottom:14}}>
+        {FITS.map(f => <button key={f} onClick={()=>setFit(f)}
+          style={{flex:1,padding:"10px 0",borderRadius:10,border:"2px solid",
+            borderColor:fit===f?"#e84142":"#e8e8e8",
+            background:fit===f?"#fef1f0":"#fff",
+            color:fit===f?"#e84142":"#555",
+            cursor:"pointer",fontWeight:800,fontSize:13}}>{f}</button>)}
+      </div>
+      {/* Size toggles */}
+      <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:6}}>Größen auswählen</div>
+      <BlankSizeSelector sizes={im.sizes} onSelect={setSelectedSizes}/>
+      {/* Actions */}
+      <div style={{display:"flex",gap:8,marginTop:16}}>
+        <button onClick={onClose} style={{flex:1,padding:12,borderRadius:10,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:14}}>Abbrechen</button>
+        <button onClick={()=>onConfirm({
+          styleName:im.styleName, styleCode:im.styleCode, color:im.color, colorCode:im.colorCode,
+          hexCode:hexVal, category:im.category, fit:fit, composition:im.composition,
+          sizes:selectedSizes, stock:mkQty()
+        })} disabled={selectedSizes.length===0}
+          style={{flex:1,padding:12,borderRadius:10,border:"none",background:selectedSizes.length>0?"#1a9a50":"#ccc",color:"#fff",cursor:selectedSizes.length>0?"pointer":"not-allowed",fontWeight:800,fontSize:14}}>
+          Importieren ({selectedSizes.length})
+        </button>
+      </div>
+    </ModalWrap>
+  );
+}
+
+// ─── Stanley/Stella View ──────────────────────────────────────────
 function StanleyView({sheetsUrl, products, onImportBlank}){
   const mobile = useIsMobile();
   const [ststProducts, setStstProducts] = useState(null); // grouped by style
@@ -2998,15 +3069,20 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState({});
+  const memCache = useRef({prods:null, stock:null});
   const [catFilter, setCatFilter] = useState("all");
   const [detail, setDetail] = useState(null); // style detail modal
   const [imgCache, setImgCache] = useState({}); // {styleCode: [{url,...}]}
+  const [importModal, setImportModal] = useState(null); // {styleName, styleCode, color, colorCode, hexCode, sizes, ...}
 
   // Load products
   const loadProducts = async (force) => {
     if(!sheetsUrl) return;
+    // Already loaded? Skip unless forced
+    if(!force && ststProducts) return;
+    if(!force && memCache.current.prods){setStstProducts(memCache.current.prods);return;}
     // Check localStorage cache (24h)
-    if(!force){try{const c=JSON.parse(localStorage.getItem("stst_prods"));if(c&&c.ts&&(Date.now()-c.ts)<24*60*60*1000){setStstProducts(c.data);setLoading(false);return;}}catch(e){}}
+    if(!force){try{const c=JSON.parse(localStorage.getItem("stst_prods"));if(c&&c.ts&&(Date.now()-c.ts)<24*60*60*1000){setStstProducts(c.data);memCache.current.prods=c.data;return;}}catch(e){}}
     setLoading(true); setError(null);
     try {
       const r = await fetch(sheetsUrl, {method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})});
@@ -3016,10 +3092,10 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       const prods = d.products;
       if(Array.isArray(prods)) {
         setStstProducts(prods);
-        try{localStorage.setItem("stst_prods",JSON.stringify({ts:Date.now(),data:prods}));}catch(e){}
+        memCache.current.prods=prods;try{localStorage.setItem("stst_prods",JSON.stringify({ts:Date.now(),data:prods}));}catch(e){console.warn("[S/S] localStorage full");}
       } else if(typeof prods === "object" && !Array.isArray(prods)) {
         setStstProducts(prods);
-        try{localStorage.setItem("stst_prods",JSON.stringify({ts:Date.now(),data:prods}));}catch(e){}
+        memCache.current.prods=prods;try{localStorage.setItem("stst_prods",JSON.stringify({ts:Date.now(),data:prods}));}catch(e){console.warn("[S/S] localStorage full");}
       }
     } catch(e) { setError(e.toString()); }
     setLoading(false);
@@ -3028,8 +3104,10 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   // Load stock
   const loadStock = async (force) => {
     if(!sheetsUrl) return;
+    if(!force && ststStock) return;
+    if(!force && memCache.current.stock){setStstStock(memCache.current.stock);return;}
     // Check localStorage cache (4h)
-    if(!force){try{const c=JSON.parse(localStorage.getItem("stst_stock"));if(c&&c.ts&&(Date.now()-c.ts)<4*60*60*1000){setStstStock(c.data);setStockLoading(false);return;}}catch(e){}}
+    if(!force){try{const c=JSON.parse(localStorage.getItem("stst_stock"));if(c&&c.ts&&(Date.now()-c.ts)<4*60*60*1000){setStstStock(c.data);memCache.current.stock=c.data;return;}}catch(e){}}
     setStockLoading(true);
     try {
       const r = await fetch(sheetsUrl, {method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_stock"})});
@@ -3043,6 +3121,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
           if(sku) map[sku] = (map[sku]||0) + qty;
         });
         setStstStock(map);
+        memCache.current.stock=map;
         try{localStorage.setItem("stst_stock",JSON.stringify({ts:Date.now(),data:map}));}catch(e){}
       }
     } catch(e) {}
@@ -3071,7 +3150,13 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
     if(Array.isArray(ststProducts)) {
       // Check if it's V1 (flat list) or V2 (grouped)
       if(ststProducts.length > 0 && ststProducts[0].Variants) {
-        // V2 format
+        // V2 format — debug: log first style's keys and first variant's keys
+        if(ststProducts[0].Variants[0]){
+          const v0=ststProducts[0].Variants[0];
+          const colorKeys=Object.keys(v0).filter(k=>/hex|color/i.test(k));
+          console.log("[S/S V2] First variant color fields:", colorKeys.map(k=>k+"="+JSON.stringify(v0[k])));
+          console.log("[S/S V2] All variant keys:", Object.keys(v0).join(", "));
+        }
         return ststProducts;
       }
       // V1 flat list - group by StyleCode
@@ -3133,14 +3218,35 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
   };
 
   // Group variants by color
-  const groupByColor = (variants) => {
+  const groupByColor = (variants, style) => {
     const map = {};
     (variants||[]).forEach(v => {
       const key = v.ColorCode || v.Color || "_";
-      if(!map[key]) map[key] = { color: v.Color||v.ColorCode, colorCode: v.ColorCode, hexCode: v.HexColorCode || v.Hex_Color_Code, variants: [] };
+      // Search ALL keys for hex value (S/S API field names vary)
+      let rawHex = "";
+      if(!rawHex) for(const k of Object.keys(v)){
+        if(/hex/i.test(k) && typeof v[k]==="string" && /^#?[0-9a-fA-F]{3,6}$/.test((v[k]||"").replace("#",""))){
+          rawHex = v[k]; break;
+        }
+      }
+      // Also check Color_Hex, HexColorCode etc explicitly
+      if(!rawHex) rawHex = v.HexColorCode || v.Hex_Color_Code || v.ColorHexCode || v.HexCode || v.hex_color_code || v.hexColorCode || v.hexcode || v.Color_Hex || "";
+      // Normalize: strip # if present (we add it in rendering)
+      rawHex = (rawHex||"").replace(/^#/,"");
+      if(!map[key]) map[key] = { color: v.Color||v.ColorCode, colorCode: v.ColorCode, hexCode: rawHex, variants: [] };
+      if(rawHex && !map[key].hexCode) map[key].hexCode = rawHex;
       map[key].variants.push(v);
     });
-    return Object.values(map);
+    // Debug: log ALL keys of first variant to find hex
+    const vals = Object.values(map);
+    if(vals.length>0 && vals[0].variants.length>0){
+      const v0=vals[0].variants[0];
+      if(!vals[0].hexCode){
+        console.log("[S/S] NO HEX FOUND. All variant keys:", Object.keys(v0).join(", "));
+        console.log("[S/S] Full first variant:", JSON.stringify(v0).substring(0,800));
+      }
+    }
+    return vals;
   };
 
   if(!sheetsUrl) return <div style={{textAlign:"center",padding:60,color:"#bbb"}}>Nicht verfügbar im Demo-Modus</div>;
@@ -3193,7 +3299,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       {/* Product List */}
       {!loading && !error && filtered.length === 0 && styles.length > 0 && <div style={{textAlign:"center",padding:40,color:"#bbb",fontSize:13}}>Keine Treffer für "{search}"</div>}
       {!loading && filtered.map(style => {
-        const colorGroups = groupByColor(style.Variants);
+        const colorGroups = groupByColor(style.Variants, style);
         const totalStock = getStyleStock(style);
         const isExpanded = !!expanded[style.StyleCode];
         const uniqueColors = colorGroups.length;
@@ -3254,7 +3360,7 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                     <div key={cg.colorCode} style={{display:"flex",gap:4,alignItems:"center"}}>
                       {/* Color label */}
                       <div style={{width:mobile?76:116,display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
-                        <div style={{width:16,height:16,borderRadius:5,background:cg.hexCode?`#${cg.hexCode}`:"#ddd",border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
+                        <div style={{width:16,height:16,borderRadius:5,background:cg.hexCode?(cg.hexCode.startsWith("#")?cg.hexCode:`#${cg.hexCode}`):"#ddd",border:"1px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
                         <div style={{overflow:"hidden",minWidth:0}}>
                           <div style={{fontSize:11,fontWeight:700,color:"#555",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={`${cg.color} (${cg.colorCode})`}>{cg.color}</div>
                           <div style={{fontSize:9,color:"#bbb",fontWeight:600}}>{cg.colorCode}</div>
@@ -3279,12 +3385,12 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                         <span style={{fontSize:12,fontWeight:900,color:colorTotal===0?"#e84142":"#555"}}>{ststStock?colorTotal:"…"}</span>
                       </div>
                       {/* Import button */}
-                      <button onClick={(e)=>{e.stopPropagation();if(alreadyImported)return;onImportBlank&&onImportBlank({
+                      <button onClick={(e)=>{e.stopPropagation();if(alreadyImported)return;setImportModal({
                         styleName:style.StyleName||style.StyleCode,
                         styleCode:style.StyleCode,
                         color:cg.color,
                         colorCode:cg.colorCode,
-                        hexCode:cg.hexCode?`#${cg.hexCode}`:"#000000",
+                        hexCode:cg.hexCode,
                         category:style.Category||"T-Shirt",
                         type:style.Type||"",
                         fit:style.Fit||"",
@@ -3321,6 +3427,12 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       {!loading && filtered.length > 0 && <div style={{textAlign:"center",fontSize:11,color:"#bbb",padding:8}}>
         {filtered.length} Style{filtered.length!==1?"s":""} angezeigt
       </div>}
+
+      {/* Import Modal */}
+      {importModal && <StStImportModal info={importModal} onClose={()=>setImportModal(null)} onConfirm={(data)=>{
+        onImportBlank && onImportBlank(data);
+        setImportModal(null);
+      }}/>}
     </div>
   );
 }
@@ -5813,13 +5925,13 @@ function AppInner({currentUser,onLogout}){
 
         {/* Shopify */}
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} orderFilter={appSettings.orderFilter||"oe"} restockMins={restockMins} setRestockMins={setRestockMins} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
-        {view==="stanley"&&<StanleyView sheetsUrl={sheetsUrl} products={products} onImportBlank={(info)=>{
-          const newP={id:mkId(),name:`${info.styleName} – ${info.color}`,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
+        {<div style={{display:view==="stanley"?"block":"none"}}><StanleyView sheetsUrl={sheetsUrl} products={products} onImportBlank={(info)=>{
+          const newP={id:mkId(),name:info.styleName,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
             buyPrice:"",stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
-            stock:mkQty(),minStock:mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
+            stock:info.stock||mkQty(),minStock:mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
           setProducts(ps=>[...ps,newP]);
-          log(`Blank importiert – ${newP.name} (${info.styleCode}/${info.colorCode})`);
-        }}/>}
+          log(`Blank importiert – ${newP.name} ${info.color} (${info.styleCode}/${info.colorCode})`);
+        }}/></div>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);shopCacheSet("shopify_links",links);if(sheetsUrl){try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
         {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={sheetsUrl}/>}
