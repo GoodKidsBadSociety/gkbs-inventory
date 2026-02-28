@@ -1,6 +1,23 @@
 // GKBS INVENTORY v4.0.5
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
+// Error Boundary – catches crashes and shows reset button instead of white screen
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, info) { console.error("[GKBS Error]", error, info); }
+  render() {
+    if(this.state.hasError) return React.createElement("div", {style:{padding:40,textAlign:"center",fontFamily:"-apple-system, sans-serif"}},
+      React.createElement("div", {style:{fontSize:40,marginBottom:12}}, "\u26A0\uFE0F"),
+      React.createElement("div", {style:{fontSize:18,fontWeight:800,color:"#e84142"}}, "App-Fehler"),
+      React.createElement("div", {style:{fontSize:13,color:"#888",marginTop:8,maxWidth:400,margin:"8px auto"}}, String(this.state.error?.message||"Unbekannter Fehler")),
+      React.createElement("button", {onClick:()=>{try{localStorage.clear();}catch(e){}window.location.reload();},
+        style:{marginTop:16,padding:"10px 20px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}, "Cache l\u00F6schen & Neu laden")
+    );
+    return this.props.children;
+  }
+}
+
 // Prevent iOS auto-zoom on input focus
 if (typeof document !== "undefined") {
   const meta = document.querySelector("meta[name=viewport]");
@@ -4357,26 +4374,21 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
   const customQty=bedarfQty;
   const setCustomQty=setBedarfQty;
 
-  // Read S/S stock from localStorage cache (safe, no hooks)
-  var ssCache = null;
-  try { var _c = JSON.parse(localStorage.getItem("stst_stock")); if(_c && _c.data) ssCache = _c.data; } catch(e) {}
-  // Helper: look up S/S stock for a blank + our size key
+  // Read S/S stock from localStorage cache
   const getSsStock = (blank, sizeKey) => {
     try {
-      if(!ssCache || !blank || !blank.stProductId || !blank.stColorCode) return null;
+      if(!blank || !blank.stProductId || !blank.stColorCode) return null;
+      const cached = JSON.parse(localStorage.getItem("stst_stock"));
+      if(!cached || !cached.data) return null;
+      const stockMap = cached.data;
       const sc = blank.stProductId, cc = blank.stColorCode;
-      const SS_SIZE_MAP = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
-      const SS_SIZE_ALT = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
-      const tries = [
-        sc + cc + (SS_SIZE_MAP[sizeKey]||sizeKey),
-        sc + cc + (SS_SIZE_ALT[sizeKey]||sizeKey),
-        sc + cc + sizeKey,
-      ];
-      for(const sku of tries) { if(ssCache[sku] !== undefined) return ssCache[sku]; }
-      const prefix = sc + cc;
-      const sAlt = SS_SIZE_MAP[sizeKey]||sizeKey;
-      for(const [k,v] of Object.entries(ssCache)) {
-        if(k.startsWith(prefix) && (k.endsWith(sAlt) || k.endsWith(sizeKey))) return v;
+      const szMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
+      const szAlt = { XXS:"XXS", XS:"XS", S:"S", M:"M", L:"L", XL:"XL", XXL:"XXL", XXXL:"3XL" };
+      const skus = [sc+cc+(szMap[sizeKey]||sizeKey), sc+cc+(szAlt[sizeKey]||sizeKey), sc+cc+sizeKey];
+      for(const sku of skus) { if(stockMap[sku] !== undefined) return stockMap[sku]; }
+      const prefix = sc+cc, suffix = szMap[sizeKey]||sizeKey;
+      for(const k of Object.keys(stockMap)) {
+        if(k.startsWith(prefix) && (k.endsWith(suffix) || k.endsWith(sizeKey))) return stockMap[k];
       }
     } catch(e) {}
     return null;
@@ -6066,24 +6078,6 @@ function AppInner({currentUser,onLogout}){
       <ScrollTopButton/>
     </div>
   );
-}
-
-class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
-  static getDerivedStateFromError(error) { return { hasError: true, error }; }
-  componentDidCatch(error, info) { console.error("[GKBS Error]", error, info); }
-  render() {
-    if(this.state.hasError) return(
-      <div style={{padding:40,textAlign:"center",fontFamily:"-apple-system, sans-serif"}}>
-        <div style={{fontSize:40,marginBottom:12}}>⚠️</div>
-        <div style={{fontSize:18,fontWeight:800,color:"#e84142"}}>App-Fehler</div>
-        <div style={{fontSize:13,color:"#888",marginTop:8,maxWidth:400,margin:"8px auto"}}>{this.state.error?.message||"Unbekannter Fehler"}</div>
-        <button onClick={()=>{try{localStorage.clear();}catch(e){}window.location.reload();}}
-          style={{marginTop:16,padding:"10px 20px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}>Cache löschen & Neu laden</button>
-      </div>
-    );
-    return this.props.children;
-  }
 }
 
 export default function App(){
