@@ -3147,13 +3147,13 @@ function StanleyView({sheetsUrl, products}){
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-        <button onClick={()=>{setStstProducts(null);setStstStock(null);localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");loadProducts(true);loadStock(true);}}
+      {/* Header */}
       <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:200}}>
           <div style={{...F_HEAD_STYLE,fontSize:18,fontWeight:900,color:"#111"}}>Stanley/Stella</div>
           <div style={{fontSize:12,color:"#bbb"}}>{styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}</div>
         </div>
-        <button onClick={()=>{setStstProducts(null);setStstStock(null);loadProducts();loadStock();}}
+        <button onClick={()=>{setStstProducts(null);setStstStock(null);try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");}catch(e){}loadProducts(true);loadStock(true);}}
           style={{height:32,borderRadius:8,border:"1px solid #e8e8e8",background:"#f8f8f8",color:"#888",cursor:"pointer",fontSize:11,fontWeight:700,padding:"0 12px",display:"flex",alignItems:"center",gap:5}}>
           <IC_REFRESH size={12} color="#888"/> Neu laden
         </button>
