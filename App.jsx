@@ -1,23 +1,6 @@
 // GKBS INVENTORY v4.0.5
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
-// Error Boundary – catches crashes and shows reset button instead of white screen
-class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
-  static getDerivedStateFromError(error) { return { hasError: true, error }; }
-  componentDidCatch(error, info) { console.error("[GKBS Error]", error, info); }
-  render() {
-    if(this.state.hasError) return React.createElement("div", {style:{padding:40,textAlign:"center",fontFamily:"-apple-system, sans-serif"}},
-      React.createElement("div", {style:{fontSize:40,marginBottom:12}}, "\u26A0\uFE0F"),
-      React.createElement("div", {style:{fontSize:18,fontWeight:800,color:"#e84142"}}, "App-Fehler"),
-      React.createElement("div", {style:{fontSize:13,color:"#888",marginTop:8,maxWidth:400,margin:"8px auto"}}, String(this.state.error?.message||"Unbekannter Fehler")),
-      React.createElement("button", {onClick:()=>{try{localStorage.clear();}catch(e){}window.location.reload();},
-        style:{marginTop:16,padding:"10px 20px",borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:14}}, "Cache l\u00F6schen & Neu laden")
-    );
-    return this.props.children;
-  }
-}
-
 // Prevent iOS auto-zoom on input focus
 if (typeof document !== "undefined") {
   const meta = document.querySelector("meta[name=viewport]");
@@ -6083,7 +6066,6 @@ function AppInner({currentUser,onLogout}){
 export default function App(){
   const [user,setUser] = useState(()=>localStorage.getItem("gkbs_user"));
   const validUser = USERS.find(u=>u.name===user);
-  return <ErrorBoundary>
-    {!validUser ? <LoginScreen onUnlock={(name)=>setUser(name)}/> : <AppInner currentUser={validUser} onLogout={()=>{localStorage.removeItem("gkbs_user");setUser(null);}}/>}
-  </ErrorBoundary>;
+  if(!validUser) return <LoginScreen onUnlock={(name)=>setUser(name)}/>;
+  return <AppInner currentUser={validUser} onLogout={()=>{localStorage.removeItem("gkbs_user");setUser(null);}}/>;
 }
