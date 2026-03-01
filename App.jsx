@@ -2827,7 +2827,7 @@ function StStColorFilter({values, colors, onChange}){
 }
 
 // ─── Stanley/Stella View ──────────────────────────────────────────
-function StanleyView({sheetsUrl, products, onImportBlank}){
+function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
   const mobile = useIsMobile();
   const [ststProducts, setStstProducts] = useState(null); // grouped by style
   const [ststStock, setStstStock] = useState(null); // {SKU: qty}
@@ -2917,6 +2917,11 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
       console.log("[S/S Prices] No prices found in product data either. Check Console for [S/S Prices] logs.");
     }
   }, [ststProducts, ststPrices]);
+
+  // Push prices to parent to sync with blanks
+  useEffect(() => {
+    if(Object.keys(ststPrices).length > 0 && onPriceSync) onPriceSync(ststPrices);
+  }, [ststPrices]);
 
   // Load S/S color palette (ColorCode → hex)
   const loadColors = async () => {
@@ -3271,7 +3276,10 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
                 <div style={{fontSize:11,color:"#999",marginTop:1}}>
                   {style.Type}{style.Category ? ` · ${style.Category}` : ""}{style.Gender ? ` · ${style.Gender}` : ""}{style.Fit ? ` · ${style.Fit}` : ""}
                 </div>
-                <div style={{fontSize:10,color:"#bbb",marginTop:1}}>{uniqueColors} Farbe{uniqueColors!==1?"n":""} · {sizes.length} Größe{sizes.length!==1?"n":""}</div>
+                <div style={{fontSize:10,color:"#bbb",marginTop:1}}>
+                  {uniqueColors} Farbe{uniqueColors!==1?"n":""} · {sizes.length} Größe{sizes.length!==1?"n":""}
+                  {ststPrices[style.StyleCode]!=null&&<span style={{color:"#1a9a50",fontWeight:700}}> · €{ststPrices[style.StyleCode].toFixed(2)}</span>}
+                </div>
               </div>
               <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
                 <div style={{fontSize:10,color:"#bbb"}}>S/S Stock</div>
@@ -3286,7 +3294,10 @@ function StanleyView({sheetsUrl, products, onImportBlank}){
             {isExpanded && (
               <div style={{padding:mobile?"0 8px 12px":"0 16px 16px",display:"flex",flexDirection:"column",gap:8}}>
                 {/* Info bar */}
-                {style.ShortDescription && <div style={{fontSize:11,color:"#888",padding:"6px 0",borderTop:"1px solid #f0f0f0"}}>{style.ShortDescription}{style.Fit ? ` · ${style.Fit}` : ""}{style.CompositionList ? ` · ${style.CompositionList}` : ""}</div>}
+                {(style.ShortDescription||ststPrices[style.StyleCode]!=null) && <div style={{fontSize:11,color:"#888",padding:"6px 0",borderTop:"1px solid #f0f0f0"}}>
+                  {style.ShortDescription}{style.Fit ? ` · ${style.Fit}` : ""}{style.CompositionList ? ` · ${style.CompositionList}` : ""}
+                  {ststPrices[style.StyleCode]!=null&&<span style={{fontWeight:800,color:"#1a9a50"}}>{style.ShortDescription?" · ":""}EK €{ststPrices[style.StyleCode].toFixed(2)}</span>}
+                </div>}
 
                 {/* Size header */}
                 <div style={{display:"flex",gap:4,alignItems:"center",paddingLeft:mobile?62:120}}>
@@ -5888,9 +5899,23 @@ function AppInner({currentUser,onLogout}){
 
         {/* Shopify */}
         {view==="shopify"&&<ShopifyView products={products} prods={prods} shopifyLinks={shopifyLinks} setShopifyLinks={setShopifyLinks} setShopifyBadge={setShopifyBadge} orderFilter={appSettings.orderFilter||"oe"} restockMins={restockMins} setRestockMins={setRestockMins} onAddProd={(p)=>{setProds(ps=>[...ps,p]);log(`Online Exclusive Auftrag: ${p.name}`);}} onSetBlankStock={(id,upd)=>{setProducts(ps=>ps.map(p=>p.id===id?upd:p));log(`Bestand geändert via Shopify: ${upd.name}`);}} sheetsUrl={sheetsUrl}/>}
-        {<div style={{display:view==="stanley"?"block":"none"}}><StanleyView sheetsUrl={sheetsUrl} products={products} onImportBlank={(info)=>{
+        {<div style={{display:view==="stanley"?"block":"none"}}><StanleyView sheetsUrl={sheetsUrl} products={products} onPriceSync={(priceMap)=>{
+          let changed=false;
+          const updated=products.map(p=>{
+            if(!p.stProductId||!priceMap[p.stProductId])return p;
+            const newPrice=priceMap[p.stProductId];
+            if(p.buyPrice===newPrice)return p;
+            changed=true;
+            return {...p,buyPrice:newPrice};
+          });
+          if(changed){
+            setProducts(updated);
+            triggerSave(updated);
+            log("EK-Preise von S/S synchronisiert");
+          }
+        }} onImportBlank={(info)=>{
           const newP={id:mkId(),name:info.styleName,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
-            buyPrice:info.buyPrice||"",stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
+            buyPrice:info.buyPrice||null,stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
             stock:info.stock||mkQty(),minStock:info.minStock||mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
           setProducts(ps=>[...ps,newP]);
           log(`Blank importiert – ${newP.name} ${info.color} (${info.styleCode}/${info.colorCode})`);
