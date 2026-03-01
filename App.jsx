@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.0.5";
+const APP_VERSION = "v4.1.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2851,9 +2851,9 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
   const [ststPrices, setStstPrices] = useState({}); // {StyleCode: price}
   const [priceStatus, setPriceStatus] = useState(""); // "loading" | "ok" | error message
 
-  const loadPrices = async () => {
+  const loadPrices = async (force) => {
     if(!sheetsUrl) return;
-    try { const c = JSON.parse(localStorage.getItem("stst_prices")); if(c && c.ts && (Date.now()-c.ts) < 86400000 && c.data && Object.keys(c.data).length > 0) { setStstPrices(c.data); setPriceStatus("ok"); console.log("[S/S Prices] From cache:", Object.keys(c.data).length); return; } } catch(e) {}
+    if(!force) { try { const c = JSON.parse(localStorage.getItem("stst_prices")); if(c && c.ts && (Date.now()-c.ts) < 86400000 && c.data && Object.keys(c.data).length > 0) { setStstPrices(c.data); setPriceStatus("ok"); console.log("[S/S Prices] From cache:", Object.keys(c.data).length); return; } } catch(e) {} }
     setPriceStatus("loading");
     try {
       const r = await fetch(sheetsUrl, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain"}, body:JSON.stringify({action:"stst_prices"})});
@@ -2881,9 +2881,10 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
       }
       // Case 2: Array of price objects
       if(Array.isArray(prices) && prices.length > 0) {
-        console.log("[S/S Prices] Array length:", prices.length);
-        console.log("[S/S Prices] Array[0] ALL fields:", JSON.stringify(prices[0]));
-        if(prices.length > 1) console.log("[S/S Prices] Array[1]:", JSON.stringify(prices[1]).substring(0,300));
+        const fields = Object.keys(prices[0]);
+        console.log("[S/S Prices] Array length:", prices.length, "Fields:", fields.join(", "));
+        console.log("[S/S Prices] Sample[0]:", JSON.stringify(prices[0]));
+        if(prices.length > 1) console.log("[S/S Prices] Sample[1]:", JSON.stringify(prices[1]).substring(0,400));
         const map = {};
         // Helper: case-insensitive field finder
         const getField = (obj, ...names) => {
@@ -2894,31 +2895,51 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
           }
           return undefined;
         };
+        // Extract StyleCode from B2BSKUREF: e.g. "STTU258C152L" → "STTU258"
+        // Pattern: style code = letters+digits up to the first C followed by digits (color code)
+        const extractStyleFromSKU = (sku) => {
+          if(!sku) return null;
+          // S/S SKU format: StyleCode + ColorCode + SizeCode
+          // StyleCode: 4-8 chars like STTU258, STJM837, STSU800, STTK184
+          // ColorCode: C + 3-4 digits like C002, C152, C727
+          const m = sku.match(/^([A-Z]{2,5}\d{2,4})/i);
+          return m ? m[1].toUpperCase() : null;
+        };
         prices.forEach(p => {
           if(!p || typeof p !== "object") return;
-          const sc = getField(p, "StyleCode", "Style_Code", "Style", "ProductCode", "Product_Code", "STYLECODE", "style_code", "ArticleCode", "ItemCode");
-          let pr = getField(p, "B2BUnitPriceExcVAT", "B2BPrice", "B2B_Price", "UnitPrice", "Unit_Price", "Price", "SalesPrice", "NetPrice", "CostPrice", "PurchasePrice", "price", "unitPrice", "b2bPrice", "Amount");
+          // Try direct StyleCode field first
+          let sc = getField(p, "StyleCode", "Style_Code", "Style", "ProductCode", "Product_Code", "style_code", "ArticleCode", "ItemCode");
+          // Fallback: extract from B2BSKUREF
+          if(!sc) {
+            const sku = getField(p, "B2BSKUREF", "SKU", "Sku", "sku", "B2bSkuRef", "SkuRef", "ItemSKU", "ProductSKU", "Reference");
+            sc = extractStyleFromSKU(sku);
+          }
+          // Try all known price field names
+          let pr = getField(p, "B2BUnitPriceExcVAT", "B2BUnitPrice", "B2BPrice", "B2B_Price", "UnitPriceExcVAT", "UnitPrice", "Unit_Price", "Price", "SalesPrice", "NetPrice", "CostPrice", "PurchasePrice", "price", "unitPrice", "b2bPrice", "Amount", "ListPrice", "WholesalePrice");
           if(pr == null) {
+            // Auto-detect: find first numeric field with price-like value
             for(const [k,v] of Object.entries(p)) {
               const num = typeof v === "string" ? parseFloat(v) : (typeof v === "number" ? v : null);
-              if(num != null && num > 0.5 && num < 200 && !k.toLowerCase().includes("size") && !k.toLowerCase().includes("code") && !k.toLowerCase().includes("qty") && !k.toLowerCase().includes("stock")) {
+              if(num != null && num > 0.5 && num < 200 && !k.toLowerCase().includes("size") && !k.toLowerCase().includes("code") && !k.toLowerCase().includes("qty") && !k.toLowerCase().includes("stock") && !k.toLowerCase().includes("id")) {
                 pr = num; break;
               }
             }
           }
           if(typeof pr === "string") pr = parseFloat(pr);
           if(sc && pr != null && !isNaN(pr) && pr > 0) {
+            // Keep lowest price per style (base price)
             if(!map[sc] || pr < map[sc]) map[sc] = pr;
           }
         });
         if(Object.keys(map).length > 0) {
-          console.log("[S/S Prices] ✅ Parsed", Object.keys(map).length, "prices. Sample:", Object.entries(map).slice(0,5));
+          console.log("[S/S Prices] ✅ Parsed", Object.keys(map).length, "prices from", prices.length, "SKUs. Sample:", Object.entries(map).slice(0,5));
           setStstPrices(map); setPriceStatus("ok");
           try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
           return;
         } else {
-          setPriceStatus("0 Preise aus " + prices.length + " Einträgen");
-          console.warn("[S/S Prices] ⚠️ Array had", prices.length, "items but 0 prices parsed. Fields:", Object.keys(prices[0]).join(", "));
+          // Show fields in status for debugging
+          setPriceStatus("0/" + prices.length + " [" + fields.slice(0,6).join(", ") + "]");
+          console.warn("[S/S Prices] ⚠️ 0 prices parsed. Fields:", fields.join(", "), "Sample:", JSON.stringify(prices[0]));
         }
       } else {
         setPriceStatus(prices ? "Leere Antwort" : "Keine Daten");
@@ -3229,8 +3250,8 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
               {Object.keys(ststPrices).length>0
                 ?<span style={{color:"#1a9a50"}}>{` · ${Object.keys(ststPrices).length} Preise ✓`}</span>
                 :priceStatus==="loading"?<span style={{color:"#888"}}>{" · Preise laden..."}</span>
-                :priceStatus&&priceStatus!=="ok"?<span style={{color:"#f08328",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();setPriceStatus("loading");loadPrices();}} title="Klick zum Neuversuch">{` · ⚠ ${priceStatus}`}</span>
-                :styles.length>0&&!loading?<span style={{color:"#f08328",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();setPriceStatus("loading");loadPrices();}} title="Klick zum Laden">{" · Preise laden"}</span>
+                :priceStatus&&priceStatus!=="ok"?<span style={{color:"#f08328",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();try{localStorage.removeItem("stst_prices");}catch(x){}setPriceStatus("loading");loadPrices(true);}} title="Klick zum Neuversuch">{` · ⚠ ${priceStatus}`}</span>
+                :styles.length>0&&!loading?<span style={{color:"#f08328",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();setPriceStatus("loading");loadPrices(true);}} title="Klick zum Laden">{" · Preise laden"}</span>
                 :""}
             </span>
           </div>
