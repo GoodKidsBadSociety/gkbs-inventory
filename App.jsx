@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.2.1";
+const APP_VERSION = "v4.2.3";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2844,7 +2844,7 @@ function StStColorFilter({values, colors, onChange}){
 }
 
 // ─── Stanley/Stella View ──────────────────────────────────────────
-function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSync, onStockSync}){
+function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSync, onStockSync, reloadKey}){
   const mobile = useIsMobile();
   const [ststProducts, setStstProducts] = useState(null); // grouped by style
   const [ststStock, setStstStock] = useState(null); // {SKU: qty}
@@ -3130,6 +3130,14 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSyn
   };
 
   useEffect(() => { loadProducts(); loadStock(); loadColors(); loadPrices(); }, [sheetsUrl]);
+  // External reload trigger (from Verbindungen modal)
+  const ststReloadRef = useRef(reloadKey);
+  useEffect(() => {
+    if(reloadKey === ststReloadRef.current) return; // skip initial
+    ststReloadRef.current = reloadKey;
+    setStstProducts(null); setStstStock(null); setColorHexMap({}); setStstPrices({});
+    loadProducts(true); loadStock(true); loadColors(); loadPrices();
+  }, [reloadKey]);
 
   // Parse V2 response into displayable styles
   const styles = useMemo(() => {
@@ -4816,27 +4824,36 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
                     return(<React.Fragment key={key}>
                       <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,cursor:"pointer",
+                        style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,cursor:"pointer",
                           background:ststInsufficient?"#fef1f0":isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",opacity:state==="none"?0.5:state==="done"?0.65:1,border:isOpen?"2px solid #e84142":ststInsufficient?"1.5px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent")}}>
-                        {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
-                        <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:32}}>{label}</span>
-                        {ststInsufficient&&<span style={{fontSize:9,fontWeight:800,color:"#e84142",background:"#fef1f0",border:"1px solid #fecaca",borderRadius:4,padding:"1px 4px"}}>{ststAvail===0?"S/S OOS":`S/S: ${ststAvail}`}</span>}
-                        {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
-                          style={{padding:"1px 5px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
-                          CSV
-                        </button>}
-                        <div style={{flex:1}}/>
-                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:0,flexShrink:0,marginRight:8}}>
-                          {ststInsufficient&&<span style={{fontSize:10,fontWeight:800,color:"#e84142"}}>S/S: {ststAvail===0?"✗ OOS":ststAvail.toLocaleString()}</span>}
-                          {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
-                          <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":"#888"}}>{avail}</strong></span>
+                        {/* Left: Size + CSV */}
+                        <div style={{display:"flex",alignItems:"center",gap:6,minWidth:44}}>
+                          {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
+                          <span style={{...F_HEAD_STYLE,fontSize:16,fontWeight:900,color:isInactive?"#bbb":"#111"}}>{label}</span>
+                          {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
+                            style={{padding:"2px 6px",borderRadius:5,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"#f0f0f0",color:csvSelected[blankId+"__"+key]?"#fff":"#999",fontSize:9,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
+                            CSV
+                          </button>}
                         </div>
+                        {/* Middle: MAX/MIN + SOLL/ON STOCK */}
+                        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:1,marginRight:4}}>
+                          <div style={{display:"flex",gap:12,alignItems:"baseline"}}>
+                            <span style={{fontSize:11,fontWeight:800,color:remainMax>0?"#e84142":"#bbb"}}>MAX: <strong>{remainMax}</strong></span>
+                            {minStockVal>0&&<span style={{fontSize:11,fontWeight:700,color:"#888"}}>SOLL: <strong style={{color:"#333"}}>{minStockVal}</strong></span>}
+                          </div>
+                          <div style={{display:"flex",gap:12,alignItems:"baseline"}}>
+                            <span style={{fontSize:11,fontWeight:800,color:remainMin>0?"#e84142":"#bbb"}}>MIN: <strong>{remainMin}</strong></span>
+                            <span style={{fontSize:11,fontWeight:700,color:"#888"}}>ON STOCK: <strong style={{color:"#333"}}>{avail}</strong></span>
+                          </div>
+                          {ststInsufficient&&<span style={{fontSize:9,fontWeight:800,color:"#e84142",marginTop:1}}>S/S: {ststAvail===0?"✗ OOS":ststAvail.toLocaleString()}</span>}
+                        </div>
+                        {/* Right: − qty + */}
                         <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
                           <button type="button" onClick={()=>setCq(cq-1)} disabled={cq<=0}
-                            style={{width:28,height:28,borderRadius:7,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:16,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
-                          <span onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)} style={{...F_HEAD_STYLE,fontSize:20,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:24,textAlign:"center",cursor:"pointer"}}>{cq}</span>
+                            style={{width:30,height:30,borderRadius:8,border:"none",background:cq<=0?"#f0f0f0":"#fef1f0",color:cq<=0?"#ccc":"#e84142",fontSize:16,fontWeight:800,cursor:cq<=0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>−</button>
+                          <span onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)} style={{...F_HEAD_STYLE,fontSize:22,fontWeight:900,color:cq>0?"#111":"#ccc",minWidth:26,textAlign:"center",cursor:"pointer"}}>{cq}</span>
                           <button type="button" onClick={()=>setCq(cq+1)}
-                            style={{width:28,height:28,borderRadius:7,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:16,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
+                            style={{width:30,height:30,borderRadius:8,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:16,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                         </div>
                       </div>
                       {isOpen&&renderDetail(t,blankId,blank,cq,cqKey)}
@@ -4854,45 +4871,67 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 }
 
 // ─── Google Sheets Setup Modal ────────────────────────────────────
-function SheetsSetupModal({onClose, sheetsUrl}){
+function SheetsSetupModal({onClose, sheetsUrl, onReloadSheets, onReloadShopify, onReloadStSt, reloadState}){
   const [shopifyStatus,setShopifyStatus]=useState(null);
   const [ststStatus,setStstStatus]=useState(null);
-  useEffect(()=>{
+  const checkStatus=()=>{
     if(!sheetsUrl)return;
+    setShopifyStatus(null);setStstStatus(null);
     fetch(`${sheetsUrl}?action=shopify_status`,{redirect:"follow"})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setShopifyStatus(d.ok?true:(d.error||false));}catch(e){setShopifyStatus(false);}})
       .catch(()=>setShopifyStatus(false));
     fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"stst_products"})})
       .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);setStstStatus(d.error?(typeof d.error==="string"?d.error:d.error.message||"Fehler"):true);}catch(e){setStstStatus(false);}})
       .catch(()=>setStstStatus(false));
-  },[sheetsUrl]);
+  };
+  useEffect(checkStatus,[sheetsUrl]);
+  const spinStyle={animation:"connSpin 1s linear infinite",display:"inline-block"};
+  const rs=reloadState||{};
   return(
-    <ModalWrap onClose={onClose} width={400}>
+    <ModalWrap onClose={onClose} width={420}>
+      <style>{`@keyframes connSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Verbindungen</div>
+      {/* Google Sheets */}
       <div style={{background:"#f0fdf4",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
         <IC_CLOUD size={24} color="#1a9a50"/>
-        <div>
+        <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:"#1a9a50"}}>Google Sheets</div>
-          <div style={{fontSize:12,color:"#555",marginTop:2}}>Verbunden — automatisch gespeichert</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>
+            {rs.sheets==="loading"?"Lade Daten...":rs.sheets==="ok"?"Neu geladen ✓":"Verbunden — automatisch gespeichert"}
+          </div>
         </div>
+        <button onClick={onReloadSheets} disabled={rs.sheets==="loading"} title="Sheets Daten neu laden"
+          style={{width:34,height:34,borderRadius:9,border:"1px solid #bbf7d0",background:"#fff",cursor:rs.sheets==="loading"?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={rs.sheets==="loading"?spinStyle:{}}><IC_REFRESH size={15} color={rs.sheets==="loading"?"#bbb":"#1a9a50"}/></span>
+        </button>
       </div>
+      {/* Shopify */}
       <div style={{background:shopifyStatus===true?"#f0fdf4":shopifyStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
         <IC_SHOP size={22} color={shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}/>
-        <div>
+        <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:shopifyStatus===true?"#1a9a50":shopifyStatus===null?"#bbb":"#e84142"}}>Shopify</div>
           <div style={{fontSize:12,color:"#555",marginTop:2}}>
-            {shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
+            {rs.shopify==="loading"?"Lade Produkte...":rs.shopify==="ok"?"Neu geladen ✓":shopifyStatus===null?"Prüfe Verbindung...":shopifyStatus===true?"Verbunden":typeof shopifyStatus==="string"?shopifyStatus:"Nicht verbunden"}
           </div>
         </div>
+        <button onClick={onReloadShopify} disabled={rs.shopify==="loading"||!sheetsUrl} title="Shopify Daten neu laden"
+          style={{width:34,height:34,borderRadius:9,border:"1px solid",borderColor:shopifyStatus===true?"#bbf7d0":"#e8e8e8",background:"#fff",cursor:(rs.shopify==="loading"||!sheetsUrl)?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={rs.shopify==="loading"?spinStyle:{}}><IC_REFRESH size={15} color={rs.shopify==="loading"?"#bbb":shopifyStatus===true?"#1a9a50":"#888"}/></span>
+        </button>
       </div>
+      {/* Stanley/Stella */}
       <div style={{background:ststStatus===true?"#f0fdf4":ststStatus===null?"#f8f8f8":"#fef1f0",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
         <IC_STELLA size={22} color={ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}/>
-        <div>
+        <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:ststStatus===true?"#1a9a50":ststStatus===null?"#bbb":"#e84142"}}>Stanley/Stella API</div>
           <div style={{fontSize:12,color:"#555",marginTop:2}}>
-            {ststStatus===null?"Prüfe Verbindung...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
+            {rs.stst==="loading"?"Lade Katalog & Stock...":rs.stst==="ok"?"Neu geladen ✓":ststStatus===null?"Prüfe Verbindung...":ststStatus===true?"Verbunden":typeof ststStatus==="string"?ststStatus:"Nicht verbunden"}
           </div>
         </div>
+        <button onClick={()=>{onReloadStSt();checkStatus();}} disabled={rs.stst==="loading"||!sheetsUrl} title="S/S Daten neu laden"
+          style={{width:34,height:34,borderRadius:9,border:"1px solid",borderColor:ststStatus===true?"#bbf7d0":"#e8e8e8",background:"#fff",cursor:(rs.stst==="loading"||!sheetsUrl)?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={rs.stst==="loading"?spinStyle:{}}><IC_REFRESH size={15} color={rs.stst==="loading"?"#bbb":ststStatus===true?"#1a9a50":"#888"}/></span>
+        </button>
       </div>
       <button type="button" onClick={onClose} style={{width:"100%",padding:13,borderRadius:10,border:"none",background:"#111",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>OK</button>
     </ModalWrap>
@@ -5442,6 +5481,8 @@ function AppInner({currentUser,onLogout}){
   const [showManualBestell,setShowManualBestell]=useState(false);
   const [showArchive,setShowArchive]=useState(false);
   const [showSheetsSetup,setShowSheetsSetup]=useState(false);
+  const [connReload,setConnReload]=useState({}); // {sheets:"loading"|"ok", shopify:..., stst:...}
+  const [ststReloadKey,setStstReloadKey]=useState(0);
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [confirmProduce,setConfirmProduce]=useState(null);
   const [prioFilter,setPrioFilter]=useState("Alle");
@@ -5641,6 +5682,42 @@ function AppInner({currentUser,onLogout}){
     // Load restockMins from Sheets
     if(url){fetch(`${url}?action=restock_hidden`,{redirect:"follow"}).then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.mins)setRestockMins(d.mins);}catch(e){}}).catch(()=>{});}
   },[]);
+
+  // ── Reload handlers for Verbindungen modal ──
+  const reloadSheets = async () => {
+    if(!sheetsUrl)return;
+    setConnReload(r=>({...r,sheets:"loading"}));
+    try{
+      const data = await sheetsLoad();
+      if(data?.products){const vc=data?.variantCats||variantCatsRef.current||DEFAULT_VARIANT_CATS;const cleaned=data.products.map(p=>vc.includes(p.category)?p:{...p,capColors:null});__setProducts(cleaned);productsRef.current=cleaned;}
+      if(data?.prods){__setProds(data.prods);prodsRef.current=data.prods;}
+      if(data?.dtfItems&&Array.isArray(data.dtfItems)&&data.dtfItems.length>0){__setDtfItems(data.dtfItems);dtfItemsRef.current=data.dtfItems;localStorage.setItem("gkbs_dtf",JSON.stringify(data.dtfItems));}
+      if(data?.bestellungen&&Array.isArray(data.bestellungen)&&data.bestellungen.length>0){__setBestellungen(data.bestellungen);bestellungenRef.current=data.bestellungen;localStorage.setItem("gkbs_bestellungen",JSON.stringify(data.bestellungen));}
+      if(data?.categories&&Array.isArray(data.categories)&&data.categories.length>0){categoriesRef.current=data.categories;__setCategories(data.categories);}
+      if(data?.bedarfQty&&typeof data.bedarfQty==="object")setBedarfQty(data.bedarfQty);
+      setConnReload(r=>({...r,sheets:"ok"}));
+    }catch(e){setConnReload(r=>({...r,sheets:"error"}));}
+    setTimeout(()=>setConnReload(r=>{const n={...r};delete n.sheets;return n;}),2500);
+  };
+  const reloadShopify = async () => {
+    if(!sheetsUrl)return;
+    setConnReload(r=>({...r,shopify:"loading"}));
+    try{
+      const res=await fetch(`${sheetsUrl}?action=shopify_products`,{redirect:"follow"});
+      const d=JSON.parse(await res.text());
+      if(d.products){shopCacheSet("shopify_products",d.products);}
+      setConnReload(r=>({...r,shopify:"ok"}));
+    }catch(e){setConnReload(r=>({...r,shopify:"error"}));}
+    setTimeout(()=>setConnReload(r=>{const n={...r};delete n.shopify;return n;}),2500);
+  };
+  const reloadStSt = () => {
+    setConnReload(r=>({...r,stst:"loading"}));
+    try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");localStorage.removeItem("stst_prices");}catch(e){}
+    setStstStockMap(null);
+    setStstReloadKey(k=>k+1);
+    setTimeout(()=>setConnReload(r=>({...r,stst:"ok"})),3000);
+    setTimeout(()=>setConnReload(r=>{const n={...r};delete n.stst;return n;}),5500);
+  };
 
   const handleBestellen = (blank, key, isCapKey, capColor, menge) => {
     const label = isCapKey ? (capColor?.name || key) : key;
@@ -6040,7 +6117,7 @@ function AppInner({currentUser,onLogout}){
         </div>
       )}
       {confirmProduce&&<ConfirmProduceModal prod={confirmProduce} blank={products.find(p=>p.id===confirmProduce.blankId)} onConfirm={handleProduceConfirm} onCancel={()=>setConfirmProduce(null)}/>}
-      {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)} sheetsUrl={sheetsUrl}/>}
+      {showSheetsSetup&&<SheetsSetupModal onClose={()=>setShowSheetsSetup(false)} sheetsUrl={sheetsUrl} onReloadSheets={reloadSheets} onReloadShopify={reloadShopify} onReloadStSt={reloadStSt} reloadState={connReload}/>}
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
       {showManualBestell&&<ManualBestellModal products={products} dtfItems={dtfItems} currentUser={currentUser} onClose={()=>setShowManualBestell(false)} onAddProd={(neu)=>{setProds(ps=>[neu,...ps]);log(`Manueller Bedarf – ${neu.name}`);}} onAddDtfBedarf={(dtf,menge,notiz)=>{const dpm=dtf.designsPerMeter||1;setBestellungen(b=>[{id:Date.now().toString(),produktId:dtf.id,produktName:dtf.name,label:"DTF Transfer",sizeKey:"dtf",isDtf:true,dtfId:dtf.id,designsPerMeter:dpm,meterAnzahl:dpm>1?Math.ceil(menge/dpm):null,menge,status:"offen",bestelltAm:new Date().toISOString(),createdBy:currentUser?.name,notiz},...b]);log(`Manueller DTF Bedarf – ${dtf.name}: ${menge} Stk`);}}/>}
     {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
@@ -6148,7 +6225,7 @@ function AppInner({currentUser,onLogout}){
             triggerSave(updated);
             log("EK-Preise von S/S synchronisiert");
           }
-        }} onFitsSync={setStstFits} onStockSync={setStstStockMap} onImportBlank={(info)=>{
+        }} onFitsSync={setStstFits} onStockSync={setStstStockMap} reloadKey={ststReloadKey} onImportBlank={(info)=>{
           const newP={id:mkId(),name:info.styleName,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
             buyPrice:info.buyPrice||null,stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
             skuMap:info.skuMap||{},
