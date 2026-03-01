@@ -2849,47 +2849,82 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
   const [colorHexMap, setColorHexMap] = useState({}); // ColorCode → "#hex"
   const [ststColorData, setStstColorData] = useState([]); // Full color objects [{code, name, hex, group}]
   const [ststPrices, setStstPrices] = useState({}); // {StyleCode: price}
+  const [priceStatus, setPriceStatus] = useState(""); // "loading" | "ok" | error message
 
   const loadPrices = async () => {
     if(!sheetsUrl) return;
-    try { const c = JSON.parse(localStorage.getItem("stst_prices")); if(c && c.ts && (Date.now()-c.ts) < 86400000 && c.data && Object.keys(c.data).length > 0) { setStstPrices(c.data); console.log("[S/S Prices] From cache:", Object.keys(c.data).length); return; } } catch(e) {}
+    try { const c = JSON.parse(localStorage.getItem("stst_prices")); if(c && c.ts && (Date.now()-c.ts) < 86400000 && c.data && Object.keys(c.data).length > 0) { setStstPrices(c.data); setPriceStatus("ok"); console.log("[S/S Prices] From cache:", Object.keys(c.data).length); return; } } catch(e) {}
+    setPriceStatus("loading");
     try {
       const r = await fetch(sheetsUrl, {method:"POST", redirect:"follow", headers:{"Content-Type":"text/plain"}, body:JSON.stringify({action:"stst_prices"})});
       const t = await r.text(); const d = JSON.parse(t);
-      if(d.error) { console.warn("[S/S Prices] API error:", d.error, d.detail||""); }
+      if(d._debug) console.log("[S/S Prices] 🔍 Server debug:", JSON.stringify(d._debug));
+      if(d.error) { console.warn("[S/S Prices] API error:", d.error, d.detail||""); setPriceStatus("API: "+(d.error||"Fehler")); return; }
       let prices = d.prices;
-      console.log("[S/S Prices] Raw type:", typeof prices, "isArray:", Array.isArray(prices));
+      console.log("[S/S Prices] Raw response type:", typeof prices, "isArray:", Array.isArray(prices));
+      if(typeof prices === "string") { try { prices = JSON.parse(prices); } catch(e) { console.warn("[S/S Prices] String parse failed"); } }
+      // Case 1: Direct {StyleCode: price} map
       if(prices && typeof prices === "object" && !Array.isArray(prices)) {
-        console.log("[S/S Prices] Object keys:", Object.keys(prices).slice(0,10));
-        // Could be {StyleCode: price} map directly
         const keys = Object.keys(prices);
-        if(keys.length > 0 && typeof prices[keys[0]] === "number") {
-          console.log("[S/S Prices] Direct map format detected");
-          setStstPrices(prices);
-          try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:prices})); } catch(e) {}
-          return;
+        console.log("[S/S Prices] Object keys (first 5):", keys.slice(0,5));
+        if(keys.length > 0) {
+          const firstVal = prices[keys[0]];
+          console.log("[S/S Prices] First value type:", typeof firstVal, "value:", JSON.stringify(firstVal).substring(0,200));
+          if(typeof firstVal === "number") {
+            setStstPrices(prices); setPriceStatus("ok");
+            try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:prices})); } catch(e) {}
+            return;
+          }
         }
-        prices = prices.result || prices.data || prices.records || [];
+        // Could be wrapped: {result:[], data:[], records:[], Products:[], PriceList:[]}
+        prices = prices.result || prices.data || prices.records || prices.Products || prices.PriceList || prices.prices || Object.values(prices).find(v => Array.isArray(v)) || [];
       }
+      // Case 2: Array of price objects
       if(Array.isArray(prices) && prices.length > 0) {
-        console.log("[S/S Prices] Array[0] fields:", Object.keys(prices[0]));
-        console.log("[S/S Prices] Array[0]:", JSON.stringify(prices[0]).substring(0,500));
+        console.log("[S/S Prices] Array length:", prices.length);
+        console.log("[S/S Prices] Array[0] ALL fields:", JSON.stringify(prices[0]));
+        if(prices.length > 1) console.log("[S/S Prices] Array[1]:", JSON.stringify(prices[1]).substring(0,300));
         const map = {};
+        // Helper: case-insensitive field finder
+        const getField = (obj, ...names) => {
+          for(const name of names) {
+            if(obj[name] !== undefined) return obj[name];
+            const lc = name.toLowerCase();
+            for(const k of Object.keys(obj)) { if(k.toLowerCase() === lc) return obj[k]; }
+          }
+          return undefined;
+        };
         prices.forEach(p => {
-          const sc = p.StyleCode || p.Style || p.ProductCode || p.style_code || "";
-          let pr = p.Price || p.UnitPrice || p.B2BPrice || p.SalesPrice || p.price || p.unit_price || null;
-          if(pr === null) { for(const [k,v] of Object.entries(p)) { if(typeof v === "number" && v > 0 && v < 200) { pr = v; break; } } }
-          if(sc && pr != null) map[sc] = typeof pr === "string" ? parseFloat(pr) : pr;
+          if(!p || typeof p !== "object") return;
+          const sc = getField(p, "StyleCode", "Style_Code", "Style", "ProductCode", "Product_Code", "STYLECODE", "style_code", "ArticleCode", "ItemCode");
+          let pr = getField(p, "B2BUnitPriceExcVAT", "B2BPrice", "B2B_Price", "UnitPrice", "Unit_Price", "Price", "SalesPrice", "NetPrice", "CostPrice", "PurchasePrice", "price", "unitPrice", "b2bPrice", "Amount");
+          if(pr == null) {
+            for(const [k,v] of Object.entries(p)) {
+              const num = typeof v === "string" ? parseFloat(v) : (typeof v === "number" ? v : null);
+              if(num != null && num > 0.5 && num < 200 && !k.toLowerCase().includes("size") && !k.toLowerCase().includes("code") && !k.toLowerCase().includes("qty") && !k.toLowerCase().includes("stock")) {
+                pr = num; break;
+              }
+            }
+          }
+          if(typeof pr === "string") pr = parseFloat(pr);
+          if(sc && pr != null && !isNaN(pr) && pr > 0) {
+            if(!map[sc] || pr < map[sc]) map[sc] = pr;
+          }
         });
         if(Object.keys(map).length > 0) {
-          console.log("[S/S Prices] Parsed", Object.keys(map).length, "prices. Sample:", Object.entries(map).slice(0,3));
-          setStstPrices(map);
+          console.log("[S/S Prices] ✅ Parsed", Object.keys(map).length, "prices. Sample:", Object.entries(map).slice(0,5));
+          setStstPrices(map); setPriceStatus("ok");
           try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
           return;
+        } else {
+          setPriceStatus("0 Preise aus " + prices.length + " Einträgen");
+          console.warn("[S/S Prices] ⚠️ Array had", prices.length, "items but 0 prices parsed. Fields:", Object.keys(prices[0]).join(", "));
         }
+      } else {
+        setPriceStatus(prices ? "Leere Antwort" : "Keine Daten");
       }
-      console.log("[S/S Prices] No prices from API. Will try extracting from product data.");
-    } catch(e) { console.warn("[S/S Prices] fetch error:", e); }
+      console.log("[S/S Prices] No prices from API. Full response:", JSON.stringify(d).substring(0,1000));
+    } catch(e) { console.warn("[S/S Prices] fetch error:", e); setPriceStatus("Fehler: "+e.message); }
   };
 
   // Fallback: extract prices from V2 products data (runs after products load)
@@ -2900,9 +2935,7 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
     const map = {};
     prods.forEach(s => {
       const sc = s.StyleCode || "";
-      // Try various price fields on style level
       let pr = s.Price || s.B2BPrice || s.UnitPrice || s.SalesPrice || s.price || null;
-      // Try on variant level
       if(pr == null && s.Variants && s.Variants.length > 0) {
         const v = s.Variants[0];
         pr = v.Price || v.B2BPrice || v.UnitPrice || v.SalesPrice || v.price || null;
@@ -2911,10 +2944,10 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
     });
     if(Object.keys(map).length > 0) {
       console.log("[S/S Prices] Extracted from products:", Object.keys(map).length, "Sample:", Object.entries(map).slice(0,3));
-      setStstPrices(map);
+      setStstPrices(map); setPriceStatus("ok");
       try { localStorage.setItem("stst_prices", JSON.stringify({ts:Date.now(), data:map})); } catch(e) {}
     } else {
-      console.log("[S/S Prices] No prices found in product data either. Check Console for [S/S Prices] logs.");
+      console.log("[S/S Prices] No prices found in product data either.");
     }
   }, [ststProducts, ststPrices]);
 
@@ -3192,7 +3225,14 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync}){
           <div style={{...F_HEAD_STYLE,fontSize:15,fontWeight:800}}>Stanley/Stella Sync</div>
           <div style={{fontSize:11,color:"#bbb",display:"flex",alignItems:"center",gap:6,marginTop:2}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:styles.length>0?"#1a9a50":loading?"#d1d5db":error?"#e84142":"#d1d5db",display:"inline-block",flexShrink:0}}/>
-            <span>{styles.length>0?"Verbunden":loading?"Verbinden...":error?"Fehler":"..."} · {styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}{Object.keys(ststPrices).length>0?` · Preise geladen`:""}</span>
+            <span>{styles.length>0?"Verbunden":loading?"Verbinden...":error?"Fehler":"..."} · {styles.length} Styles · {styles.reduce((a,s)=>(a+(s.Variants||[]).length),0)} Varianten{ststStock ? ` · Stock geladen` : ""}
+              {Object.keys(ststPrices).length>0
+                ?<span style={{color:"#1a9a50"}}>{` · ${Object.keys(ststPrices).length} Preise ✓`}</span>
+                :priceStatus==="loading"?<span style={{color:"#888"}}>{" · Preise laden..."}</span>
+                :priceStatus&&priceStatus!=="ok"?<span style={{color:"#f08328",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();setPriceStatus("loading");loadPrices();}} title="Klick zum Neuversuch">{` · ⚠ ${priceStatus}`}</span>
+                :styles.length>0&&!loading?<span style={{color:"#f08328",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();setPriceStatus("loading");loadPrices();}} title="Klick zum Laden">{" · Preise laden"}</span>
+                :""}
+            </span>
           </div>
         </div>
         <button onClick={()=>{setStstProducts(null);setStstStock(null);setColorHexMap({});setStstPrices({});try{localStorage.removeItem("stst_prods");localStorage.removeItem("stst_stock");localStorage.removeItem("stst_colors");localStorage.removeItem("stst_prices");}catch(e){}loadProducts(true);loadStock(true);loadColors();loadPrices();}}
