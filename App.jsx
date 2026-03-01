@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.2.0";
+const APP_VERSION = "v4.2.1";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -4925,12 +4925,15 @@ function PrintPie({colors,r=10,vk="stock"}){
 
 // ─── Password Lock ────────────────────────────────────────────────
 // ─── Users (passwords stored as SHA-256 hashes) ───────────────────
-const USERS = [
+const BUILTIN_USERS = [
   {name:"Carlos", hash:"f6ccb3e8d609012238c0b39e60b2c9632b3cdede91e035dad1de43469768f4cc", avatar:"C", color:"#4078e0"},
-  {name:"Merlin", hash:"eb14d69963691a08c6cae2708c3e37593f5fc636bf73d451d42afebb471d4529", avatar:"M", color:"#e84142"},
+  {name:"Merlin", hash:"eb14d69963691a08c6cae2708c3e37593f5fc636bf73d451d42afebb471d4529", avatar:"M", color:"#e84142", isAdmin:true},
   {name:"Vroni",  hash:"60c720535468526bc33eb3ace311f9cba42bbd844b068d53ff5efc5bdfc6c4fa", avatar:"V", color:"#9b5de5"},
   {name:"Demo",   hash:"_demo_", avatar:"D", color:"#f08328", isDemo:true},
 ];
+// Custom users (added by admin) — loaded from localStorage, merged at runtime
+const loadCustomUsers = () => {try{const r=localStorage.getItem("gkbs_custom_users");return r?JSON.parse(r):[];}catch(e){return [];}};
+const USERS = [...BUILTIN_USERS, ...loadCustomUsers()];
 
 // ─── Demo Data ───────────────────────────────────────────────────
 const DEMO_DATA = (()=>{
@@ -5043,7 +5046,7 @@ function ActivityLogModal({onClose}){
 }
 
 // ─── Login Screen ──────────────────────────────────────────────────
-function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSettings, sheetsUrl}){
+function SettingsModal({currentUser, isAdmin, onClose, onUpdateUser, settings, onUpdateSettings, sheetsUrl}){
   const [tab,setTab]=useState("account");
   const [newName,setNewName]=useState(currentUser.name);
   const [oldPw,setOldPw]=useState("");
@@ -5055,12 +5058,19 @@ function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSe
   const [showNew,setShowNew]=useState(false);
   const [sheetsHash,setSheetsHash]=useState(null);
   const [saving,setSaving]=useState(false);
+  // Admin: user management
+  const [allHashes,setAllHashes]=useState(null);
+  const [newUserName,setNewUserName]=useState("");
+  const [newUserPw,setNewUserPw]=useState("");
+  const [adminMsg,setAdminMsg]=useState(null);
+  const [resetPwUser,setResetPwUser]=useState(null);
+  const [resetPwVal,setResetPwVal]=useState("");
 
   // Load current Sheets hash for this user
   useEffect(()=>{
     if(!sheetsUrl)return;
     fetch(`${sheetsUrl}?action=user_hashes`,{redirect:"follow"})
-      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hashes&&d.hashes[currentUser.name])setSheetsHash(d.hashes[currentUser.name]);}catch(e){}})
+      .then(r=>r.text()).then(t=>{try{const d=JSON.parse(t);if(d.hashes){if(d.hashes[currentUser.name])setSheetsHash(d.hashes[currentUser.name]);if(isAdmin)setAllHashes(d.hashes);}}catch(e){}})
       .catch(()=>{});
   },[sheetsUrl,currentUser.name]);
 
@@ -5110,7 +5120,8 @@ function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSe
 
       {/* Tabs */}
       <div style={{display:"flex",gap:3,background:"#e8e8e8",borderRadius:9,padding:3,marginTop:4}}>
-        {[["account","Account"],["display","Shopify Orders"],["log","Activity Log"]].map(([v,lbl])=>(
+        {[["account","Account"],["display","Shopify Orders"],["log","Activity Log"],
+          ...(isAdmin?[["users","Kontoverwaltung"]]:[])].map(([v,lbl])=>(
           <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 12px",borderRadius:7,border:"none",background:tab===v?"#fff":"transparent",color:tab===v?"#111":"#666",cursor:"pointer",fontWeight:700,fontSize:13,boxShadow:tab===v?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>
             {lbl}
           </button>
@@ -5190,6 +5201,83 @@ function SettingsModal({currentUser, onClose, onUpdateUser, settings, onUpdateSe
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Kontoverwaltung Tab (Admin only) */}
+      {tab==="users"&&isAdmin&&(
+        <div style={{display:"flex",flexDirection:"column",gap:14,marginTop:8}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#888"}}>Benutzer</div>
+          {/* Existing users */}
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {USERS.filter(u=>!u.isDemo).map(u=>{
+              const hasCustomHash = allHashes && allHashes[u.name];
+              return(
+                <div key={u.name} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:"#f8f8f8",borderRadius:12,border:u.isAdmin?"1.5px solid #e84142":"1px solid #ebebeb"}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:u.color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,flexShrink:0}}>
+                    {u.avatar}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:800,color:"#111"}}>{u.name}{u.isAdmin&&<span style={{fontSize:10,fontWeight:700,color:"#e84142",marginLeft:6}}>Admin</span>}</div>
+                    <div style={{fontSize:11,color:"#bbb",marginTop:1}}>
+                      {hasCustomHash?"Passwort geändert":"Standard-Passwort"}
+                    </div>
+                  </div>
+                  {/* Reset password */}
+                  {!u.isAdmin&&(
+                    resetPwUser===u.name
+                      ? <div style={{display:"flex",gap:6,alignItems:"center"}} onClick={e=>e.stopPropagation()}>
+                          <input type="text" value={resetPwVal} onChange={e=>setResetPwVal(e.target.value)} placeholder="Neues PW"
+                            style={{width:100,padding:"6px 10px",borderRadius:8,border:"1px solid #e8e8e8",fontSize:12,outline:"none"}}/>
+                          <button onClick={async()=>{
+                            if(!resetPwVal||resetPwVal.length<3){setAdminMsg({ok:false,text:"Min. 3 Zeichen"});return;}
+                            const h=await sha256(resetPwVal);
+                            try{if(sheetsUrl)await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"save_user_hash",username:u.name,hash:h})});
+                              setAllHashes(prev=>({...prev,[u.name]:h}));
+                              setAdminMsg({ok:true,text:`Passwort für ${u.name} zurückgesetzt ✓`});
+                              setResetPwUser(null);setResetPwVal("");
+                            }catch(e){setAdminMsg({ok:false,text:"Fehler"});}
+                          }} style={{padding:"6px 10px",borderRadius:8,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:11}}>OK</button>
+                          <button onClick={()=>{setResetPwUser(null);setResetPwVal("");}} style={{padding:"6px 8px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#888",cursor:"pointer",fontWeight:700,fontSize:11}}>✕</button>
+                        </div>
+                      : <button onClick={()=>setResetPwUser(u.name)} style={{padding:"6px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff",color:"#555",cursor:"pointer",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>PW Reset</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {adminMsg&&<div style={{fontSize:12,color:adminMsg.ok?"#1a9a50":"#e84142",fontWeight:600}}>{adminMsg.text}</div>}
+
+          {/* Add new user */}
+          <div style={{borderTop:"1px solid #ebebeb",paddingTop:14}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#888",marginBottom:8}}>Neuen Benutzer anlegen</div>
+            <div style={{display:"flex",gap:8}}>
+              <input value={newUserName} onChange={e=>setNewUserName(e.target.value)} placeholder="Name"
+                style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",background:"#f8f8f8"}}/>
+              <input type="text" value={newUserPw} onChange={e=>setNewUserPw(e.target.value)} placeholder="Passwort"
+                style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1px solid #e8e8e8",fontSize:14,outline:"none",background:"#f8f8f8"}}/>
+              <button onClick={async()=>{
+                const name=newUserName.trim();
+                if(!name){setAdminMsg({ok:false,text:"Name eingeben"});return;}
+                if(!newUserPw||newUserPw.length<3){setAdminMsg({ok:false,text:"Passwort min. 3 Zeichen"});return;}
+                if(USERS.find(u=>u.name.toLowerCase()===name.toLowerCase())){setAdminMsg({ok:false,text:"User existiert bereits"});return;}
+                const h=await sha256(newUserPw);
+                const newUser={name,hash:h,avatar:name[0].toUpperCase(),color:"#"+Math.floor(Math.random()*0xCCCCCC+0x333333).toString(16)};
+                // Add to USERS array at runtime (before Demo)
+                const demoIdx=USERS.findIndex(u=>u.isDemo);
+                if(demoIdx>=0)USERS.splice(demoIdx,0,newUser);else USERS.push(newUser);
+                // Persist custom users to localStorage
+                const custom=USERS.filter(u=>!u.isDemo&&!BUILTIN_USERS.find(b=>b.name===u.name));
+                try{localStorage.setItem("gkbs_custom_users",JSON.stringify(custom));}catch(e){}
+                // Save hash to sheets
+                try{if(sheetsUrl)await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"save_user_hash",username:name,hash:h})});
+                  setAllHashes(prev=>({...prev,[name]:h}));
+                  setAdminMsg({ok:true,text:`${name} angelegt ✓`});
+                  setNewUserName("");setNewUserPw("");
+                }catch(e){setAdminMsg({ok:false,text:"Fehler beim Speichern"});}
+              }} style={{padding:"10px 18px",borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:700,fontSize:13,whiteSpace:"nowrap"}}>Anlegen</button>
+            </div>
           </div>
         </div>
       )}
@@ -5360,7 +5448,9 @@ function AppInner({currentUser,onLogout}){
   const [ststFits,setStstFits]=useState([]); // S/S API fit values
   const [ststStockMap,setStstStockMap]=useState(null); // S/S stock {SKU: qty} for Bestellbedarf
   const dragItem=useRef(null),dragOver=useRef(null);
-  const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["stanley","S/S",IC_STELLA],["finance","Finanzen",IC_DOLLAR]];
+  const isAdmin = !!currentUser.isAdmin;
+  const ALL_TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["stanley","S/S",IC_STELLA],["finance","Finanzen",IC_DOLLAR]];
+  const TABS = isAdmin ? ALL_TABS : ALL_TABS.filter(([v])=>v!=="finance");
   const [showActivityLog,setShowActivityLog]=useState(false);
   const [showSettings,setShowSettings]=useState(false);
   const [appSettings,setAppSettings]=useState(()=>{try{const r=localStorage.getItem("gkbs_settings");return r?JSON.parse(r):{orderFilter:"oe"};}catch(e){return {orderFilter:"oe"};}});
@@ -5954,7 +6044,7 @@ function AppInner({currentUser,onLogout}){
       {showBestellbedarf&&<BestellbedarfModal prods={prods} products={products} onClose={()=>setShowBestellbedarf(false)}/>}
       {showManualBestell&&<ManualBestellModal products={products} dtfItems={dtfItems} currentUser={currentUser} onClose={()=>setShowManualBestell(false)} onAddProd={(neu)=>{setProds(ps=>[neu,...ps]);log(`Manueller Bedarf – ${neu.name}`);}} onAddDtfBedarf={(dtf,menge,notiz)=>{const dpm=dtf.designsPerMeter||1;setBestellungen(b=>[{id:Date.now().toString(),produktId:dtf.id,produktName:dtf.name,label:"DTF Transfer",sizeKey:"dtf",isDtf:true,dtfId:dtf.id,designsPerMeter:dpm,meterAnzahl:dpm>1?Math.ceil(menge/dpm):null,menge,status:"offen",bestelltAm:new Date().toISOString(),createdBy:currentUser?.name,notiz},...b]);log(`Manueller DTF Bedarf – ${dtf.name}: ${menge} Stk`);}}/>}
     {showActivityLog&&<ActivityLogModal onClose={()=>setShowActivityLog(false)}/>}
-    {showSettings&&<SettingsModal currentUser={currentUser} onClose={()=>setShowSettings(false)} onUpdateUser={updateUser} settings={appSettings} onUpdateSettings={updateSettings} sheetsUrl={sheetsUrl}/>}
+    {showSettings&&<SettingsModal currentUser={currentUser} isAdmin={isAdmin} onClose={()=>setShowSettings(false)} onUpdateUser={updateUser} settings={appSettings} onUpdateSettings={updateSettings} sheetsUrl={sheetsUrl}/>}
     {showDtfModal&&<DtfModal
       initial={showDtfModal==="add"?null:showDtfModal}
       onClose={()=>setShowDtfModal(false)}
@@ -6068,7 +6158,7 @@ function AppInner({currentUser,onLogout}){
         }}/></div>}
         {shopifyLinkModal&&<ShopifyLinkModal prod={shopifyLinkModal} products={products} sheetsUrl={sheetsUrl} links={shopifyLinks} onSave={async(links)=>{setShopifyLinks(links);shopCacheSet("shopify_links",links);if(sheetsUrl){try{await fetch(sheetsUrl,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"shopify_save_links",links})});}catch(e){}}setShopifyLinkModal(null);}} onClose={()=>setShopifyLinkModal(null)}/>}
         {/* Finance */}
-        {view==="finance"&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={sheetsUrl}/>}
+        {view==="finance"&&isAdmin&&<FinanceView products={products} dtfItems={dtfItems} verluste={verluste} setVerluste={setVerlusteAndSave} promoGifts={promoGifts} setPromoGifts={setPromoGifts} sheetsUrl={sheetsUrl}/>}
         {view==="dtf"&&<DtfView dtfItems={dtfItems} prods={prods}
           onUpdate={u=>{setDtfItems(d=>d.map(x=>x.id===u.id?u:x));log(`DTF Bestand geändert: ${u.name} → ${u.stock} Stk`);}}
           onDelete={id=>{const item=dtfItems.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name,onConfirm:()=>{setDtfItems(d=>d.filter(x=>x.id!==id));log(`DTF gelöscht: ${item.name}`);setConfirmDelete(null);}});}}
