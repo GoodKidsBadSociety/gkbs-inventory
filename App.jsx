@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.1.5";
+const APP_VERSION = "v4.2.0";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -92,7 +92,7 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
   const rows = [];
   rows.push("ProductId,Quantity,UnitOfMeasureId,VariantId,Project");
 
-  const sizeMap = { XXS:"XXS", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
+  const sizeMap = { XXS:"2S", XS:"XS", S:"1S", M:"1M", L:"1L", XL:"1X", XXL:"2X", XXXL:"3X" };
 
   Object.entries(bedarfMap).forEach(([blankId, sizeNeeds]) => {
     const blank = products.find(p => p.id === blankId);
@@ -116,8 +116,14 @@ function exportStanleyStellaCsv(bedarfMap, isCapMap, products, projectName, csvS
         const colorCode = capColor?.stColorCode || blank.stColorCode || "";
         variantId = colorCode;
       } else {
-        const stSize = sizeMap[key] || key;
-        variantId = (blank.stColorCode || "") + stSize;
+        // Use saved skuMap B2BSKUREF if available, extract variantId (everything after StyleCode)
+        if(blank.skuMap && blank.skuMap[key]) {
+          const fullSku = blank.skuMap[key];
+          variantId = fullSku.replace(blank.stProductId, "");
+        } else {
+          const stSize = sizeMap[key] || key;
+          variantId = (blank.stColorCode || "") + stSize;
+        }
       }
 
       rows.push(`${blank.stProductId},${toOrder},PCS,${variantId},${projectName}`);
@@ -2607,6 +2613,17 @@ function StStImportModal({info, onClose, onConfirm, availableFits=[]}){
     return map[sz] || map[sz?.toUpperCase()] || sz;
   };
   const normalizedSizes = hasAnySizes ? im.sizes.map(normSize) : [];
+  // Build SKU map: appSize → B2BSKUREF from actual variant data
+  const skuMap = useMemo(() => {
+    if(!im.variants) return {};
+    const map = {};
+    (im.variants||[]).forEach(v => {
+      const appSize = normSize(v.SizeCode);
+      const sku = v.B2BSKUREF || `${v.StyleCode||im.styleCode}${v.ColorCode||im.colorCode}${v.SizeCode}`;
+      map[appSize] = sku;
+    });
+    return map;
+  }, [im.variants]);
   return(
     <ModalWrap onClose={onClose} width={560}>
       <div style={{...F_HEAD_STYLE,fontSize:17,fontWeight:800}}>Blank importieren</div>
@@ -2690,7 +2707,7 @@ function StStImportModal({info, onClose, onConfirm, availableFits=[]}){
         <button onClick={()=>onConfirm({
           styleName:im.styleName, styleCode:im.styleCode, color:im.color, colorCode:im.colorCode,
           hexCode:hexVal, category:im.category, fit:fit, composition:im.composition,
-          stock:stock, minStock:minStock, buyPrice:parseFloat(buyPrice)||null
+          stock:stock, minStock:minStock, buyPrice:parseFloat(buyPrice)||null, skuMap:skuMap
         })}
           style={{flex:1,padding:12,borderRadius:10,border:"none",background:"#1a9a50",color:"#fff",cursor:"pointer",fontWeight:800,fontSize:14}}>
           Importieren{totalQty>0?` (${totalQty} Stk)`:""}
@@ -3193,10 +3210,35 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSyn
     }
   }, [styles]);
 
-  // Push stock map to parent for Bestellbedarf S/S availability check
+  // Build stock lookup keyed by StyleCode_ColorCode_appSize using actual variant B2BSKUREFs
+  // This avoids guessing SKU format — we use the real B2BSKUREF from product data
+  const SIZECODE_TO_APP = {"2XS":"XXS", "3XL":"XXXL", "2XL":"XXL"}; // S/S SizeCode → app size
+  const APP_TO_SIZECODE = {"XXS":"2XS", "XXXL":"3XL", "XXL":"2XL"};
+  const blanksStStock = useMemo(() => {
+    if(!ststStock || !styles.length) return null;
+    const map = {};
+    styles.forEach(style => {
+      (style.Variants||[]).forEach(v => {
+        const sku = v.B2BSKUREF || `${v.StyleCode}${v.ColorCode}${v.SizeCode}`;
+        const stock = ststStock[sku] || 0;
+        const appSize = SIZECODE_TO_APP[v.SizeCode] || v.SizeCode; // 3XL→XXXL, rest 1:1
+        const key = `${style.StyleCode}_${v.ColorCode}_${appSize}`;
+        map[key] = (map[key]||0) + stock;
+      });
+    });
+    return map;
+  }, [ststStock, styles]);
+
+  // Push merged stock map to parent: raw SKU→qty + StyleCode_ColorCode_appSize→qty
   useEffect(() => {
-    if(ststStock && onStockSync) onStockSync(ststStock);
-  }, [ststStock]);
+    if(onStockSync) {
+      if(blanksStStock && ststStock) {
+        onStockSync({...ststStock, ...blanksStStock});
+      } else if(ststStock) {
+        onStockSync(ststStock);
+      }
+    }
+  }, [blanksStStock, ststStock]);
 
   // Filtered + searched styles
   const filtered = useMemo(() => {
@@ -3430,7 +3472,8 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSyn
                         fit:style.Fit||"",
                         composition:style.CompositionList||"",
                         sizes:sizes,
-                        buyPrice:ststPrices[style.StyleCode]||""
+                        buyPrice:ststPrices[style.StyleCode]||"",
+                        variants:cg.variants
                       });}}
                         style={{width:mobile?28:32,height:mobile?28:32,borderRadius:8,border:"1px solid",borderColor:alreadyImported?"#bbf7d0":"#e8e8e8",background:alreadyImported?"#f0fdf4":"#fff",color:alreadyImported?"#1a9a50":"#888",cursor:alreadyImported?"default":"pointer",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}
                         title={alreadyImported?"Bereits importiert":"Als Blank importieren"}>
@@ -4466,12 +4509,23 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAddProd,onA
 function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount,bedarfQty,setBedarfQty,ststStockMap}){
   const mobile = useIsMobile();
   // Helper: check S/S stock for a blank + size
-  const STST_SIZE_MAP = {XXXL:"3XL"}; // app size → S/S SizeCode
+  // Uses blank.skuMap (saved on import) for direct B2BSKUREF lookup
+  // Falls back to ststStockMap keyed by StyleCode_ColorCode_appSize (built from live variant data)
   const getStstStock = (blank, sizeKey) => {
-    if(!ststStockMap || !blank.stProductId || !blank.stColorCode) return null; // null = no data
-    const sstSize = STST_SIZE_MAP[sizeKey] || sizeKey;
-    const sku = blank.stProductId + blank.stColorCode + sstSize;
-    return ststStockMap[sku] || 0;
+    if(!ststStockMap) return null;
+    // Method 1: direct SKU from saved skuMap
+    if(blank.skuMap && blank.skuMap[sizeKey]) {
+      const sku = blank.skuMap[sizeKey];
+      const val = ststStockMap[sku];
+      if(val !== undefined) return val;
+    }
+    // Method 2: lookup via StyleCode_ColorCode_appSize (for blanks imported before skuMap existed)
+    if(blank.stProductId && blank.stColorCode) {
+      const key = `${blank.stProductId}_${blank.stColorCode}_${sizeKey}`;
+      const val = ststStockMap[key];
+      if(val !== undefined) return val;
+    }
+    return null;
   };
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
@@ -6007,6 +6061,7 @@ function AppInner({currentUser,onLogout}){
         }} onFitsSync={setStstFits} onStockSync={setStstStockMap} onImportBlank={(info)=>{
           const newP={id:mkId(),name:info.styleName,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
             buyPrice:info.buyPrice||null,stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
+            skuMap:info.skuMap||{},
             stock:info.stock||mkQty(),minStock:info.minStock||mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
           setProducts(ps=>[...ps,newP]);
           log(`Blank importiert – ${newP.name} ${info.color} (${info.styleCode}/${info.colorCode})`);
