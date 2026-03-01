@@ -7,7 +7,7 @@ if (typeof document !== "undefined") {
   if (meta) meta.content = "width=device-width, initial-scale=1, maximum-scale=1";
 }
 const MAX_HISTORY = 50;
-const APP_VERSION = "v4.1.3";
+const APP_VERSION = "v4.1.5";
 const ONLINE_EXCLUSIVE_PRODUCTS = [
   "CHROME LOOSE FIT T-SHIRT",
   "BURNING POLICE CAR LOOSE FIT T-SHIRT",
@@ -2827,7 +2827,7 @@ function StStColorFilter({values, colors, onChange}){
 }
 
 // ─── Stanley/Stella View ──────────────────────────────────────────
-function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSync}){
+function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSync, onStockSync}){
   const mobile = useIsMobile();
   const [ststProducts, setStstProducts] = useState(null); // grouped by style
   const [ststStock, setStstStock] = useState(null); // {SKU: qty}
@@ -3192,6 +3192,11 @@ function StanleyView({sheetsUrl, products, onImportBlank, onPriceSync, onFitsSyn
       if(fits.length > 0) onFitsSync(fits);
     }
   }, [styles]);
+
+  // Push stock map to parent for Bestellbedarf S/S availability check
+  useEffect(() => {
+    if(ststStock && onStockSync) onStockSync(ststStock);
+  }, [ststStock]);
 
   // Filtered + searched styles
   const filtered = useMemo(() => {
@@ -4458,8 +4463,16 @@ function ManualBestellModal({products,dtfItems,currentUser,onClose,onAddProd,onA
   );
 }
 
-function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount,bedarfQty,setBedarfQty}){
+function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onDirectAdd,onBestellenDtf,currentUser,bedarfCount,dtfBedarfCount,bedarfQty,setBedarfQty,ststStockMap}){
   const mobile = useIsMobile();
+  // Helper: check S/S stock for a blank + size
+  const STST_SIZE_MAP = {XXXL:"3XL"}; // app size → S/S SizeCode
+  const getStstStock = (blank, sizeKey) => {
+    if(!ststStockMap || !blank.stProductId || !blank.stColorCode) return null; // null = no data
+    const sstSize = STST_SIZE_MAP[sizeKey] || sizeKey;
+    const sku = blank.stProductId + blank.stColorCode + sstSize;
+    return ststStockMap[sku] || 0;
+  };
   const activeProds=prods.filter(p=>p.status!=="Fertig");
   const [subTab,setSubTab]=useState("textilien");
   const [openSize,setOpenSize]=useState(null);
@@ -4644,9 +4657,13 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
               const oQty=orderedQty(key);
               const remainMin=Math.max(0,toOrder-oQty);
               const remainMax=Math.max(0,toOrderMax-oQty);
+              // S/S availability: null = no data, 0 = out of stock, >0 = available
+              const ststAvail = isCapKey ? null : getStstStock(blank, key);
+              // S/S insufficient: we need more than S/S has in stock (MIN or MAX exceeds S/S)
+              const ststInsufficient = ststAvail !== null && (remainMin > ststAvail || remainMax > ststAvail);
               // state: "red" | "orange" | "done" | "none"
               const state=(needed===0&&toOrderMax===0)?"none":remainMin>0?"red":remainMax>0?"orange":"done";
-              return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state};
+              return {key,label,isCapKey,capColor,needed,avail,minStockVal,toOrder,toOrderMax,oQty,remainMin,remainMax,state,ststAvail,ststInsufficient};
             });
             const allDone=tileData.every(t=>t.state==="done"||t.state==="none");
             const activeTiles=tileData.filter(t=>t.state!=="done"&&t.state!=="none");
@@ -4680,7 +4697,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                 {blankOpen&&<>{!mobile?<>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {tileData.map(t=>{
-                    const {key,label,state,remainMin,remainMax,avail,needed,minStockVal}=t;
+                    const {key,label,state,remainMin,remainMax,avail,needed,minStockVal,ststAvail,ststInsufficient}=t;
                     const isInactive=state==="done"||state==="none";
                     const isOpen=openSize===`${blankId}-${key}`;
                     const cqKey=blankId+"-"+key;
@@ -4688,10 +4705,10 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     const setCq=(v)=>setCustomQty(q=>({...q,[cqKey]:Math.max(0,v)}));
                     return(
                       <div key={key} style={{display:"flex",flexDirection:"column",alignItems:"stretch",
-                        background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
+                        background:ststInsufficient?"#fef1f0":isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",
                         borderRadius:14,padding:"10px 8px 8px",flex:1,minWidth:0,height:isOpen?undefined:160,
                         opacity:state==="none"?0.5:state==="done"?0.65:1,
-                        border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
+                        border:isOpen?"2px solid #e84142":ststInsufficient?"1.5px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent"),cursor:"pointer"}}
                         onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}>
                         {/* Row 1: MIN label MAX */}
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
@@ -4709,8 +4726,9 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                           <button type="button" onClick={()=>setCq(cq+1)}
                             style={{width:34,height:34,borderRadius:9,border:"none",background:"#ddfce6",color:"#1a9a50",fontSize:18,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>+</button>
                         </div>
-                        {/* Row 3: SOLL + ON STOCK + CSV */}
+                        {/* Row 3: S/S (only if insufficient) + SOLL + ON STOCK + CSV */}
                         <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:6}}>
+                          {ststInsufficient&&<span style={{fontSize:10,fontWeight:800,color:"#e84142"}}>S/S: <strong>{ststAvail===0?"✗ OOS":ststAvail.toLocaleString()}</strong></span>}
                           {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":"#888"}}>{avail}</strong></span>
@@ -4736,7 +4754,7 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
 
                 :<div style={{display:"flex",flexDirection:"column",gap:4}}>
                   {tileData.map(t=>{
-                    const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor,minStockVal}=t;
+                    const {key,label,state,remainMin,remainMax,avail,needed,isCapKey,capColor,minStockVal,ststAvail,ststInsufficient}=t;
                     const isInactive=state==="done"||state==="none";
                     const isOpen=openSize===`${blankId}-${key}`;
                     const cqKey=blankId+"-"+key;
@@ -4745,15 +4763,17 @@ function BestellbedarfView({prods,products,dtfItems,bestellungen,onBestellen,onD
                     return(<React.Fragment key={key}>
                       <div onClick={()=>setOpenSize(o=>o===`${blankId}-${key}`?null:`${blankId}-${key}`)}
                         style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,cursor:"pointer",
-                          background:isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",opacity:state==="none"?0.5:state==="done"?0.65:1,border:isOpen?"2px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent")}}>
+                          background:ststInsufficient?"#fef1f0":isOpen?"#fff":isInactive?"#f6f6f6":"#f8f8f8",opacity:state==="none"?0.5:state==="done"?0.65:1,border:isOpen?"2px solid #e84142":ststInsufficient?"1.5px solid #e84142":"1px solid "+(isInactive?"#e8e8e8":"transparent")}}>
                         {isCapKey&&capColor?<ColorDot hex={capColor.hex} size={14}/>:null}
                         <span style={{...F_HEAD_STYLE,fontSize:14,fontWeight:800,color:isInactive?"#bbb":"#333",minWidth:32}}>{label}</span>
+                        {ststInsufficient&&<span style={{fontSize:9,fontWeight:800,color:"#e84142",background:"#fef1f0",border:"1px solid #fecaca",borderRadius:4,padding:"1px 4px"}}>{ststAvail===0?"S/S OOS":`S/S: ${ststAvail}`}</span>}
                         {hasStCode&&<button type="button" onClick={(e)=>{e.stopPropagation();toggleKey(key);}}
                           style={{padding:"1px 5px",borderRadius:4,border:`1px solid ${csvSelected[blankId+"__"+key]?"#111":"#ddd"}`,background:csvSelected[blankId+"__"+key]?"#111":"transparent",color:csvSelected[blankId+"__"+key]?"#fff":"#ccc",fontSize:8,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
                           CSV
                         </button>}
                         <div style={{flex:1}}/>
                         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:0,flexShrink:0,marginRight:8}}>
+                          {ststInsufficient&&<span style={{fontSize:10,fontWeight:800,color:"#e84142"}}>S/S: {ststAvail===0?"✗ OOS":ststAvail.toLocaleString()}</span>}
                           {minStockVal>0&&<span style={{fontSize:10,color:"#bbb",fontWeight:700}}>SOLL: <strong style={{color:"#888"}}>{minStockVal}</strong></span>}
                           <span style={{fontSize:10,color:"#bbb",fontWeight:700}}>ON STOCK: <strong style={{color:isInactive?"#ccc":"#888"}}>{avail}</strong></span>
                         </div>
@@ -5284,6 +5304,7 @@ function AppInner({currentUser,onLogout}){
   const [confirmProduce,setConfirmProduce]=useState(null);
   const [prioFilter,setPrioFilter]=useState("Alle");
   const [ststFits,setStstFits]=useState([]); // S/S API fit values
+  const [ststStockMap,setStstStockMap]=useState(null); // S/S stock {SKU: qty} for Bestellbedarf
   const dragItem=useRef(null),dragOver=useRef(null);
   const TABS=[["production","Produktion",IC_PROD],["inventory","Bestand",IC_BOX],["bestellbedarf","Bestellbedarf",IC_CHART],["bestellungen","Bestellte Ware",IC_CART],["shopify","Shopify",IC_SHOP],["stanley","S/S",IC_STELLA],["finance","Finanzen",IC_DOLLAR]];
   const [showActivityLog,setShowActivityLog]=useState(false);
@@ -5983,7 +6004,7 @@ function AppInner({currentUser,onLogout}){
             triggerSave(updated);
             log("EK-Preise von S/S synchronisiert");
           }
-        }} onFitsSync={setStstFits} onImportBlank={(info)=>{
+        }} onFitsSync={setStstFits} onStockSync={setStstStockMap} onImportBlank={(info)=>{
           const newP={id:mkId(),name:info.styleName,category:info.category||"T-Shirt",fit:info.fit||"",color:info.color,colorHex:info.hexCode||"#000000",
             buyPrice:info.buyPrice||null,stProductId:info.styleCode,stColorCode:info.colorCode,supplier:"Stanley/Stella",
             stock:info.stock||mkQty(),minStock:info.minStock||mkQty(),capColors:[],photo:null,created:new Date().toISOString()};
@@ -6001,7 +6022,7 @@ function AppInner({currentUser,onLogout}){
         {view==="bestellungen"&&<BestellteWareView bestellungen={bestellungen} onWareneingang={(b)=>setWareneingangModal(b)} onDelete={(id)=>{const item=bestellungen.find(x=>x.id===id);if(item)setConfirmDelete({name:item.name||(item.isDtf?"DTF-Bestellung":"Bestellung"),onConfirm:()=>{setBestellungen(b=>b.filter(x=>x.id!==id));log("Bestellung entfernt");setConfirmDelete(null);}});}}/>}
 
         {/* Bestellbedarf as tab */}
-        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} bedarfCount={bedarfCount} dtfBedarfCount={dtfBedarfCount} bedarfQty={bedarfQty} setBedarfQty={setBedarfQty} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
+        {view==="bestellbedarf"&&<BestellbedarfView prods={prods} products={products} dtfItems={dtfItems} bestellungen={bestellungen} currentUser={currentUser} bedarfCount={bedarfCount} dtfBedarfCount={dtfBedarfCount} bedarfQty={bedarfQty} setBedarfQty={setBedarfQty} ststStockMap={ststStockMap} onBestellen={handleBestellen} onDirectAdd={handleDirectAdd} onBestellenDtf={(dtf,menge)=>{
   const dpm=dtf.designsPerMeter||1;
   const meter=dpm>1?Math.ceil(menge/dpm):null;
   setBestellModal({blank:{...dtf,category:"DTF"},key:"DTF",isCapKey:false,capColor:null,toOrder:menge,isDtf:true,dtfId:dtf.id,dtfName:dtf.name,designsPerMeter:dpm,meterAnzahl:meter});
